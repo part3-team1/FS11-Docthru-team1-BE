@@ -1,5 +1,5 @@
 {
-  "name": "Team3-Docthru-BE",
+  "name": "docthru-be",
   "version": "1.0.0",
   "description": "문서의 번역을 챌린지를 통해 돕고 활용하는 웹사이트입니다.",
   "main": "index.js",
@@ -13,7 +13,6 @@
     "#constants": "./src/common/constants/*",
     "#exceptions": "./src/common/exceptions/*",
     "#controllers": "./src/controllers/*",
-    "#controllers/*": "./src/controllers/*",
     "#services": "./src/services/*",
     "#middlewares": "./src/middlewares/*",
     "#providers": "./src/providers/*",
@@ -28,7 +27,8 @@
     "seed": "pnpm run prisma:generate && node ./scripts/seed.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [],
   "author": "FS_11_Team3",
