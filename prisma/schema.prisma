@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Grade {
+  NORMAL
+  EXPERT
+}
+
+enum Provider {
+  LOCAL
+  GOOGLE
+  KAKAO
+  NAVER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ChallengeStatus {
+  OPENED
+  CLOSED
+  DELETED
+}
+
+model User {
+  id                   Int      @id @default(autoincrement())
+  email                String   @unique
+  password_hash        String?
+  nickname             String   @unique
+  role                 Role     @default(USER)
+  grade                Grade    @default(NORMAL)
+  participation_count  Int      @default(0)
+  best_selection_count Int      @default(0)
+  provider             Provider @default(LOCAL)
+  created_at           DateTime @default(now())
+
+  challenge_requests ChallengeRequest[]
+  participations     Participation[]
+  submissions        Submission[]
+  feedbacks          Feedback[]
+  hearts             Heart[]
+  notifications      Notification[]
+  workspaces         UserWorkspace[]
+  edit_requests      EditRequest[]
+
+  @@map("users")
+}
+
+model ChallengeRequest {
+  id               Int           @id @default(autoincrement())
+  requested_by     Int
+  title            String
+  doc_url          String
+  description      String?       @db.Text
+  category         String
+  document_type    String
+  due_date         DateTime
+  max_participants Int
+  status           RequestStatus @default(PENDING)
+  rejection_reason String?       @db.Text
+  created_at       DateTime      @default(now())
+
+  user      User       @relation(fields: [requested_by], references: [id])
+  challenge Challenge?
+
+  @@map("challenge_requests")
+}
+
+model Challenge {
+  id                   Int             @id @default(autoincrement())
+  request_id           Int             @unique
+  title                String
+  doc_url              String
+  description          String?         @db.Text
+  category             String
+  document_type        String
+  due_date             DateTime
+  max_participants     Int
+  current_participants Int             @default(0)
+  status               ChallengeStatus @default(OPENED)
+  approved_at          DateTime        @default(now())
+
+  request        ChallengeRequest @relation(fields: [request_id], references: [id])
+  participations Participation[]
+  submissions    Submission[]
+  edit_requests  EditRequest[]
+  workspaces     UserWorkspace[]
+
+  @@map("challenges")
+}
+
+model UserWorkspace {
+  id               Int      @id @default(autoincrement())
+  user_id          Int
+  challenge_id     Int
+  title            String
+  doc_url          String
+  description      String?  @db.Text
+  category         String
+  document_type    String
+  due_date         DateTime
+  max_participants Int
+  updated_at       DateTime @updatedAt
+
+  user      User      @relation(fields: [user_id], references: [id])
+  challenge Challenge @relation(fields: [challenge_id], references: [id])
+
+  @@map("user_workspaces")
+}
+
+model EditRequest {
+  id             Int           @id @default(autoincrement())
+  challenge_id   Int
+  user_id        Int
+  reason         String        @db.Text
+  change_content Json
+  status         RequestStatus @default(PENDING)
+  created_at     DateTime      @default(now())
+
+  challenge Challenge @relation(fields: [challenge_id], references: [id])
+  user      User      @relation(fields: [user_id], references: [id])
+
+  @@map("edit_requests")
+}
+
+model Participation {
+  id           Int      @id @default(autoincrement())
+  challenge_id Int
+  user_id      Int
+  joined_at    DateTime @default(now())
+
+  challenge Challenge @relation(fields: [challenge_id], references: [id])
+  user      User      @relation(fields: [user_id], references: [id])
+
+  @@unique([challenge_id, user_id])
+  @@map("participations")
+}
+
+model Submission {
+  id           Int      @id @default(autoincrement())
+  challenge_id Int
+  user_id      Int
+  content      String   @db.Text
+  heart_count  Int      @default(0)
+  is_best      Boolean  @default(false)
+  created_at   DateTime @default(now())
+
+  challenge Challenge  @relation(fields: [challenge_id], references: [id])
+  user      User       @relation(fields: [user_id], references: [id])
+  feedbacks Feedback[]
+  hearts    Heart[]
+
+  @@map("submissions")
+}
+
+model Feedback {
+  id            Int      @id @default(autoincrement())
+  submission_id Int
+  user_id       Int
+  content       String   @db.Text
+  is_blocked    Boolean  @default(false)
+  created_at    DateTime @default(now())
+
+  submission Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [user_id], references: [id])
+
+  @@map("feedbacks")
+}
+
+model Heart {
+  id            Int      @id @default(autoincrement())
+  submission_id Int
+  user_id       Int
+  created_at    DateTime @default(now())
+
+  submission Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [user_id], references: [id])
+
+  @@unique([submission_id, user_id])
+  @@map("hearts")
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  type       String
+  message    String
+  reason     String?  @db.Text
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("notifications")
+}
