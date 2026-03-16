@@ -5,10 +5,10 @@ export class UserRepository {
     this.#prisma = prisma;
   }
 
-  findAll({ skip = 0, take = 10 } = {}) {
+  findAllUsers({ skip = 0, take = 10 } = {}) {
     return this.#prisma.user.findMany({
-      skip,
-      take,
+      skip: Number(skip),
+      take: Number(take),
       orderBy: {
         created_at: 'desc',
       },
@@ -23,7 +23,7 @@ export class UserRepository {
     });
   }
 
-  findById(id) {
+  findUserById(id) {
     return this.#prisma.user.findUnique({
       where: { id },
       select: {
@@ -38,7 +38,7 @@ export class UserRepository {
     });
   }
 
-  findEmail(email, { inclusePassword = false } = {}) {
+  findUserByEmail(email, { includePassword = false } = {}) {
     return this.#prisma.user.findUnique({
       where: { email },
       select: {
@@ -49,12 +49,12 @@ export class UserRepository {
         grade: true,
         participation_count: true,
         best_selection_count: true,
-        ...(inclusePassword ? { password_hash: true } : {}),
+        ...(includePassword ? { password_hash: true } : {}),
       },
     });
   }
 
-  create(data) {
+  createUser(data) {
     return this.#prisma.user.create({
       data: {
         email: data.email,
@@ -71,7 +71,7 @@ export class UserRepository {
     });
   }
 
-  update(id, data) {
+  updateUser(id, data) {
     return this.#prisma.user.update({
       where: { id },
       data,
@@ -83,4 +83,10 @@ export class UserRepository {
       },
     });
   }
+
+  // deleteUser(id) {
+  //   return this.#prisma.user.delete({
+  //     where: { id },
+  //   });
+  // }
 }
