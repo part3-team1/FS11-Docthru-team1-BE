@@ -35,8 +35,14 @@ enum ChallengeStatus {
   DELETED
 }
 
+enum NotificationType {
+  STATUS
+  ACTIVITY
+  ADMIN
+}
+
 model User {
-  id                   Int      @id @default(autoincrement())
+  id                   String   @id @default(cuid())
   email                String   @unique
   password_hash        String?
   nickname             String   @unique
@@ -60,8 +66,8 @@ model User {
 }
 
 model ChallengeRequest {
-  id               Int           @id @default(autoincrement())
-  requested_by     Int
+  id               String        @id @default(cuid())
+  requested_by     String
   title            String
   doc_url          String
   description      String?       @db.Text
@@ -80,8 +86,8 @@ model ChallengeRequest {
 }
 
 model Challenge {
-  id                   Int             @id @default(autoincrement())
-  request_id           Int             @unique
+  id                   String          @id @default(cuid())
+  request_id           String          @unique
   title                String
   doc_url              String
   description          String?         @db.Text
@@ -103,9 +109,9 @@ model Challenge {
 }
 
 model UserWorkspace {
-  id               Int      @id @default(autoincrement())
-  user_id          Int
-  challenge_id     Int
+  id               String   @id @default(cuid())
+  user_id          String
+  challenge_id     String
   title            String
   doc_url          String
   description      String?  @db.Text
@@ -118,13 +124,15 @@ model UserWorkspace {
   user      User      @relation(fields: [user_id], references: [id])
   challenge Challenge @relation(fields: [challenge_id], references: [id])
 
+  @@index([user_id])
+  @@index([challenge_id])
   @@map("user_workspaces")
 }
 
 model EditRequest {
-  id             Int           @id @default(autoincrement())
-  challenge_id   Int
-  user_id        Int
+  id             String        @id @default(cuid())
+  challenge_id   String
+  user_id        String
   reason         String        @db.Text
   change_content Json
   status         RequestStatus @default(PENDING)
@@ -133,26 +141,29 @@ model EditRequest {
   challenge Challenge @relation(fields: [challenge_id], references: [id])
   user      User      @relation(fields: [user_id], references: [id])
 
+  @@index([challenge_id])
+  @@index([user_id])
   @@map("edit_requests")
 }
 
 model Participation {
-  id           Int      @id @default(autoincrement())
-  challenge_id Int
-  user_id      Int
+  id           String   @id @default(cuid())
+  challenge_id String
+  user_id      String
   joined_at    DateTime @default(now())
 
   challenge Challenge @relation(fields: [challenge_id], references: [id])
   user      User      @relation(fields: [user_id], references: [id])
 
   @@unique([challenge_id, user_id])
+  @@index([user_id])
   @@map("participations")
 }
 
 model Submission {
-  id           Int      @id @default(autoincrement())
-  challenge_id Int
-  user_id      Int
+  id           String   @id @default(cuid())
+  challenge_id String
+  user_id      String
   content      String   @db.Text
   heart_count  Int      @default(0)
   is_best      Boolean  @default(false)
@@ -163,13 +174,15 @@ model Submission {
   feedbacks Feedback[]
   hearts    Heart[]
 
+  @@index([challenge_id])
+  @@index([user_id])
   @@map("submissions")
 }
 
 model Feedback {
-  id            Int      @id @default(autoincrement())
-  submission_id Int
-  user_id       Int
+  id            String   @id @default(cuid())
+  submission_id String
+  user_id       String
   content       String   @db.Text
   is_blocked    Boolean  @default(false)
   created_at    DateTime @default(now())
@@ -177,13 +190,15 @@ model Feedback {
   submission Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
   user       User       @relation(fields: [user_id], references: [id])
 
+  @@index([submission_id])
+  @@index([user_id])
   @@map("feedbacks")
 }
 
 model Heart {
-  id            Int      @id @default(autoincrement())
-  submission_id Int
-  user_id       Int
+  id            String   @id @default(cuid())
+  submission_id String
+  user_id       String
   created_at    DateTime @default(now())
 
   submission Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
@@ -194,9 +209,9 @@ model Heart {
 }
 
 model Notification {
-  id         Int      @id @default(autoincrement())
-  user_id    Int
-  type       String
+  id         String   @id @default(cuid())
+  user_id    String
+  type       NotificationType
   message    String
   reason     String?  @db.Text
   is_read    Boolean  @default(false)
@@ -204,5 +219,6 @@ model Notification {
 
   user User @relation(fields: [user_id], references: [id])
 
+  @@index([user_id])
   @@map("notifications")
 }
