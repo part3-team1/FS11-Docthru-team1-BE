@@ -5,17 +5,24 @@ export class ChallengeRepository {
     this.#prisma = prisma;
   }
 
+  //페이지네이션, 필터링, 분류 포함
   findAllchallenges({
     skip = 0,
     take = 10,
     keyword,
+    category,
+    documentType,
+    status,
     sortBy = 'approved_at',
     sortOrder = 'desc',
-    ...filters
+    ...rest
   } = {}) {
     const queryOptions = {
       ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }),
-      ...filters,
+      ...(category && { category }),
+      ...(documentType && { document_type: documentType }),
+      ...(status && { status }),
+      ...rest,
       status: { not: 'DELETED' },
     };
 
@@ -40,21 +47,7 @@ export class ChallengeRepository {
     return this.#prisma.challenge.findUnique({ where: { id } });
   }
 
-  createRequest(data) {
-    return this.#prisma.challengeRequest.create({
-      data: {
-        requested_by: data.userId,
-        title: data.title,
-        doc_url: data.docUrl,
-        description: data.description,
-        category: data.category,
-        document_type: data.documentType,
-        due_date: data.dueDate,
-        max_participants: data.maxParticipants,
-      },
-    });
-  }
-
+  //챌린지 상세페이지 '작업 도전하기' 버튼 부분(참여 생성 + 인원 증가)
   joinChallenge(userId, challengeId) {
     return this.#prisma.$transaction([
       this.#prisma.participation.create({
@@ -67,20 +60,7 @@ export class ChallengeRepository {
     ]);
   }
 
-  //어드민 관련 API
-  findRequestById(requestId) {
-    return this.#prisma.challengeRequest.findUnique({
-      where: { id: requestId },
-    });
-  }
-
-  updateRequestStatus(requestId, status, rejectionReason = null) {
-    return this.#prisma.challengeRequest.update({
-      where: { id: requestId },
-      data: { status, rejection_reason: rejectionReason },
-    });
-  }
-
+  //어드민 관련 (맨 아래 까지)
   createChallenge(data) {
     return this.#prisma.challenge.create({
       data: {
@@ -99,7 +79,12 @@ export class ChallengeRepository {
   }
 
   updateChallenge(id, data) {
-    return this.#prisma.challenge.update({ where: { id }, data });
+    const { documentType, ...rest } = data;
+
+    return this.#prisma.challenge.update({
+      where: { id },
+      data: { ...rest, ...(documentType && { document_type: documentType }) },
+    });
   }
 
   deleteChallenge(id) {

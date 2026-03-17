@@ -5,6 +5,7 @@ export class UserRepository {
     this.#prisma = prisma;
   }
 
+  //페이지네이션 포함
   findAllUsers({ skip = 0, take = 10 } = {}) {
     return this.#prisma.user.findMany({
       skip: Number(skip),
@@ -18,6 +19,8 @@ export class UserRepository {
         nickname: true,
         role: true,
         grade: true,
+        participation_count: true,
+        best_selection_count: true,
         created_at: true,
       },
     });
@@ -80,6 +83,8 @@ export class UserRepository {
         email: true,
         nickname: true,
         grade: true,
+        participation_count: true,
+        best_selection_count: true,
       },
     });
   }

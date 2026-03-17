@@ -5,6 +5,7 @@ export class SubmissionRepository {
     this.#prisma = prisma;
   }
 
+  //페이지네이션 포함
   findAllByChallengeId(challengeId, { skip = 0, take = 5 } = {}) {
     return this.#prisma
       .$transaction([
@@ -24,6 +25,16 @@ export class SubmissionRepository {
       .then(([submissions, totalCount]) => {
         return { submissions, totalCount };
       });
+  }
+
+  //상위 5위 조회 시
+  findTopRankings(challengeId, limit = 5) {
+    return this.#prisma.submission.findMany({
+      where: { challenge_id: challengeId },
+      take: limit,
+      orderBy: { heart_count: 'desc' },
+      include: { user: { select: { nickname: true, grade: true } } },
+    });
   }
 
   findSubmissionById(id) {
@@ -56,7 +67,7 @@ export class SubmissionRepository {
     });
   }
 
-  //어드민 관련 API
+  //어드민 관련 (1등 왕관 표시용)
   updateBestStatus(id, isBest) {
     return this.#prisma.submission.update({
       where: { id },

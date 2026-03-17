@@ -17,6 +17,24 @@ export class HeartRepository {
     ]);
   }
 
+  deleteHeart(userId, submissionId) {
+    return this.#prisma.$transaction([
+      this.#prisma.heart.delete({
+        where: {
+          submission_id_user_id: {
+            user_id: userId,
+            submission_id: submissionId,
+          },
+        },
+      }),
+      this.#prisma.heart.update({
+        where: { id: submissionId },
+        data: { heart_count: { decrement: 1 } },
+      }),
+    ]);
+  }
+
+  //중복 체크(유저 1명당 제출물에 1회 가능)
   findHeart(userId, submissionId) {
     return this.#prisma.heart.findFirst({
       where: { user_id: userId, submission_id: submissionId },
