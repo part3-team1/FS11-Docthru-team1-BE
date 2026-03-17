@@ -94,4 +94,38 @@ export class UserRepository {
   //     where: { id },
   //   });
   // }
+
+  //리프레시 토큰 저장용
+  updateRefreshToken(id, refreshToken) {
+    return this.#prisma.user.update({
+      where: { id },
+      data: { refresh_token: refreshToken },
+    });
+  }
+
+  //소셜로그인 관련
+  findBySocialAccount(provider, providerId) {
+    return this.#prisma.user.findFirst({
+      where: { provider: provider, provider_id: providerId },
+    });
+  }
+
+  connectSocialAccount(userId, { provider, providerId }) {
+    return this.#prisma.user.update({
+      where: { id: userId },
+      data: { provider: provider, provider_id: providerId },
+    });
+  }
+
+  creatWithSocialAccount(data) {
+    return this.#prisma.user.create({
+      data: {
+        email: data.email,
+        nickname: data.name,
+        provider: data.provider,
+        provider_id: data.providerId,
+        grade: 'NORMAL',
+      },
+    });
+  }
 }

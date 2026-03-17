@@ -23,7 +23,7 @@ export class ChallengeRepository {
       ...(documentType && { document_type: documentType }),
       ...(status && { status }),
       ...rest,
-      status: { not: 'DELETED' },
+      status: status ? status : { not: 'DELETED' },
     };
 
     const orderBy = { [sortBy]: sortOrder };
@@ -44,7 +44,19 @@ export class ChallengeRepository {
   }
 
   findChallengeById(id) {
-    return this.#prisma.challenge.findUnique({ where: { id } });
+    return this.#prisma.challenge.findUnique({
+      where: { id },
+      include: { request: true },
+    });
+  }
+
+  //중복 참여 방지
+  isParticipating(userId, challengeId) {
+    return this.#prisma.participation.findUnique({
+      where: {
+        challenge_id_user_id: { user_id: userId, challenge_id: challengeId },
+      },
+    });
   }
 
   //챌린지 상세페이지 '작업 도전하기' 버튼 부분(참여 생성 + 인원 증가)
@@ -70,8 +82,8 @@ export class ChallengeRepository {
         description: data.description,
         category: data.category,
         document_type: data.documentType,
-        due_date: data.dueDate,
-        max_participants: data.maxParticipants,
+        due_date: new Date(data.dueDate),
+        max_participants: Number(data.maxParticipants),
         status: 'OPENED',
         approved_at: new Date(),
       },

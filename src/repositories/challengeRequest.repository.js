@@ -14,8 +14,8 @@ export class ChallengeRequestRepository {
         description: data.description,
         category: data.category,
         document_type: data.documentType,
-        due_date: data.dueDate,
-        max_participants: data.maxParticipants,
+        due_date: new Date(data.dueDate),
+        max_participants: Number(data.maxParticipants),
       },
     });
   }
@@ -57,7 +57,7 @@ export class ChallengeRequestRepository {
   updateRequestStatus(id, status, rejectionReason = null) {
     return this.#prisma.challengeRequest.update({
       where: { id },
-      data: { status, rejection_reason: rejectionReason },
+      data: { status, ...(reason && { rejection_reason: reason }) },
     });
   }
 

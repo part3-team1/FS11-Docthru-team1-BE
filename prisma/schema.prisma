@@ -51,6 +51,8 @@ model User {
   participation_count  Int      @default(0)
   best_selection_count Int      @default(0)
   provider             Provider @default(LOCAL)
+  provider_id          String?
+  refresh_token        String?
   created_at           DateTime @default(now())
 
   challenge_requests ChallengeRequest[]
@@ -124,6 +126,7 @@ model UserWorkspace {
   user      User      @relation(fields: [user_id], references: [id])
   challenge Challenge @relation(fields: [challenge_id], references: [id])
 
+  @@unique([user_id, challenge_id])
   @@index([user_id])
   @@index([challenge_id])
   @@map("user_workspaces")
@@ -209,13 +212,13 @@ model Heart {
 }
 
 model Notification {
-  id         String   @id @default(cuid())
+  id         String           @id @default(cuid())
   user_id    String
   type       NotificationType
-  message    String
-  reason     String?  @db.Text
-  is_read    Boolean  @default(false)
-  created_at DateTime @default(now())
+  message    String?
+  reason     String?          @db.Text
+  is_read    Boolean          @default(false)
+  created_at DateTime         @default(now())
 
   user User @relation(fields: [user_id], references: [id])
 

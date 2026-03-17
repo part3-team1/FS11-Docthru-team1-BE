@@ -15,8 +15,8 @@ export class UserWorkspaceRepository {
     //   description: data.description,
     //   category: data.category,
     //   document_type: data.documentType,
-    //   due_date: data.dueDate,
-    //   max_participants: data.maxParticipants,
+    //   due_date: new Date(data.dueDate),
+    //   max_participants: Number(data.maxParticipants),
     // };
     // return this.#prisma.userWorkspace.upsert({
     //   where: {
@@ -34,6 +34,8 @@ export class UserWorkspaceRepository {
     // });
   }
 
+  //메소드 이름은 원하시는대로 변경하셔도 되고, 필요하시면 더 추가하셔도 됩니다!
+
   findAllByUserId(userId) {
     //모달에 목록리스트 그릴 때
   }
@@ -42,9 +44,20 @@ export class UserWorkspaceRepository {
     //모달에서 특정 저장 불러올 때
   }
 
-  deleteUserWorkspace(id) {
-    //제출 완료 후 또는 유저가 삭제할 때?
+  findByUserAndChallenge(userId, challengeId) {
+    //서비스의 getLatestUserWorkspace에 활용
   }
 
-  //필요하시면 추가 또는 삭제하시면 됩니다!!
+  deleteUserWorkspace(id) {
+    //모달에서 직접 유저가 삭제할 때?
+  }
+
+  //최종제출 완료 후 임시저장에서 비워질 때
+  deleteUserWorkspaceByChallenge(userId, challengeId) {
+    return this.#prisma.userWorkspace.delelte({
+      where: {
+        user_id_challenge_id: { user_id: userId, challenge_id: challengeId },
+      },
+    });
+  }
 }
