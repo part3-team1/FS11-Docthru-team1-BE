@@ -7,15 +7,24 @@ export class FeedbackRepository {
 
   //페이지네이션 포함
   findAllBySubmissionId(submissionId, { skip = 0, take = 10 } = {}) {
-    return this.#prisma.feedback.findMany({
-      where: { submission_id: submissionId, is_blocked: false },
-      skip: Number(skip),
-      take: Number(take),
-      orderBy: { created_at: 'desc' },
-      include: {
-        user: { select: { nickname: true, grade: true } },
-      },
-    });
+    return this.#prisma
+      .$transaction([
+        this.#prisma.feedback.findMany({
+          where: { submission_id: submissionId },
+          skip: Number(skip),
+          take: Number(take),
+          orderBy: { created_at: 'desc' },
+          include: {
+            user: { select: { nickname: true, grade: true, status: true } },
+          },
+        }),
+        this.#prisma.feedback.count({
+          where: { submission_id: submissionId },
+        }),
+      ])
+      .then(([feedbacks, totalCount]) => {
+        return { feedbacks, totalCount };
+      });
   }
 
   createFeedback(data) {
@@ -24,17 +33,19 @@ export class FeedbackRepository {
         submission_id: data.submissionId,
         user_id: data.userId,
         content: data.content,
+        is_blocked: false,
       },
     });
   }
 
-  updateFeedback(id, content) {
-    return this.#prisma.feedback.update({ where: { id }, data: { content } });
-  }
+  //수정 및 삭제 기능 없음
+  // updateFeedback(id, content) {
+  //   return this.#prisma.feedback.update({ where: { id }, data: { content } });
+  // }
 
-  deleteFeedback(id) {
-    return this.#prisma.feedback.delete({ where: { id } });
-  }
+  // deleteFeedback(id) {
+  //   return this.#prisma.feedback.delete({ where: { id } });
+  // }
 
   blockFeedback(id) {
     return this.#prisma.feedback.update({

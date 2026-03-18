@@ -23,7 +23,7 @@ export class ChallengeRepository {
       ...(documentType && { document_type: documentType }),
       ...(status && { status }),
       ...rest,
-      status: status ? status : { not: 'DELETED' },
+      status: status || { not: 'DELETED' },
     };
 
     const orderBy = { [sortBy]: sortOrder };
@@ -68,6 +68,21 @@ export class ChallengeRepository {
       this.#prisma.challenge.update({
         where: { id: challengeId },
         data: { current_participants: { increment: 1 } },
+      }),
+    ]);
+  }
+
+  //챌린지 나가기(포기 + 인원 감소)
+  leaveChallenge(userId, challengeId) {
+    return this.#prisma.$transaction([
+      this.#prisma.participation.delete({
+        where: {
+          challenge_id_user_id: { user_id: userId, challenge_id: challengeId },
+        },
+      }),
+      this.#prisma.challenge.update({
+        where: { id: challengeId },
+        data: { current_participants: { decrement: 1 } },
       }),
     ]);
   }

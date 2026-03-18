@@ -1,3 +1,5 @@
+import { email } from 'zod';
+
 export class EditRequestRepository {
   #prisma;
 
@@ -12,6 +14,7 @@ export class EditRequestRepository {
         user_id: data.userId,
         reason: data.reason,
         change_content: data.changeContent,
+        status: 'PENDING',
       },
     });
   }
@@ -19,7 +22,9 @@ export class EditRequestRepository {
   //어드민 관련 (맨 아래 까지)
 
   //페이지네이션 포함
-  findAllEditRequests({ skip = 0, take = 10, status = 'PENDING' } = {}) {
+  findAllEditRequests({ skip = 0, take = 10, status } = {}) {
+    const queryOptions = { ...(status && { status }) };
+
     return this.#prisma
       .$transaction([
         this.#prisma.editRequest.findMany({
@@ -28,8 +33,8 @@ export class EditRequestRepository {
           take: Number(take),
           orderBy: { created_at: 'desc' },
           include: {
-            user: { select: { nickname: true } },
-            challenge: { select: { title: true } },
+            user: { select: { nickname: true, status: true } },
+            challenge: { select: { id: true, title: true } },
           },
         }),
         this.#prisma.editRequest.count({ where: { status } }),
@@ -42,7 +47,10 @@ export class EditRequestRepository {
   findById(id) {
     return this.#prisma.editRequest.findUnique({
       where: { id },
-      include: { challenge: true },
+      include: {
+        challenge: true,
+        user: { select: { nickname: true, email: true, status: true } },
+      },
     });
   }
 

@@ -13,10 +13,10 @@ export class SubmissionRepository {
           where: { challenge_id: challengeId },
           skip: Number(skip),
           take: Number(take),
-          orderBy: { heart_count: 'desc' },
+          orderBy: [{ heart_count: 'desc' }, { created_at: 'desc' }],
           include: {
             user: {
-              select: { nickname: true, grade: true },
+              select: { nickname: true, grade: true, status: true },
             },
           },
         }),
@@ -31,9 +31,11 @@ export class SubmissionRepository {
   findTopRankings(challengeId, limit = 5) {
     return this.#prisma.submission.findMany({
       where: { challenge_id: challengeId },
-      take: limit,
-      orderBy: { heart_count: 'desc' },
-      include: { user: { select: { nickname: true, grade: true } } },
+      take: Number(limit),
+      orderBy: [{ is_best: 'desc' }, { heart_count: 'desc' }],
+      include: {
+        user: { select: { nickname: true, grade: true, status: true } },
+      },
     });
   }
 
@@ -41,7 +43,7 @@ export class SubmissionRepository {
     return this.#prisma.submission.findUnique({
       where: { id },
       include: {
-        user: { select: { nickname: true, grade: true } },
+        user: { select: { nickname: true, grade: true, status: true } },
         challenge: { select: { title: true, doc_url: true } },
       },
     });
@@ -52,13 +54,17 @@ export class SubmissionRepository {
       data: {
         challenge_id: data.challengeId,
         user_id: data.userId,
+        title: data.title,
         content: data.content,
       },
     });
   }
 
   updateSubmission(id, data) {
-    return this.#prisma.submission.update({ where: { id }, data });
+    return this.#prisma.submission.update({
+      where: { id },
+      data: { title: data.title, content: data.content },
+    });
   }
 
   deleteSubmission(id) {

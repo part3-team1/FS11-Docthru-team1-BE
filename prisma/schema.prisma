@@ -6,9 +6,22 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserStatus {
+  ACTIVE
+  BANNED
+  WITHDRAWN
+}
+
+enum ReportType {
+  USER
+  SUBMISSION
+  FEEDBACK
+}
+
 enum Role {
   USER
   ADMIN
+  MASTER
 }
 
 enum Grade {
@@ -42,18 +55,21 @@ enum NotificationType {
 }
 
 model User {
-  id                   String   @id @default(cuid())
-  email                String   @unique
+  id                   String     @id @default(cuid())
+  email                String     @unique
   password_hash        String?
-  nickname             String   @unique
-  role                 Role     @default(USER)
-  grade                Grade    @default(NORMAL)
-  participation_count  Int      @default(0)
-  best_selection_count Int      @default(0)
-  provider             Provider @default(LOCAL)
+  nickname             String     @unique
+  role                 Role       @default(USER)
+  grade                Grade      @default(NORMAL)
+  status               UserStatus @default(ACTIVE)
+  is_banned            Boolean    @default(false)
+  participation_count  Int        @default(0)
+  best_selection_count Int        @default(0)
+  provider             Provider   @default(LOCAL)
   provider_id          String?
   refresh_token        String?
-  created_at           DateTime @default(now())
+  created_at           DateTime   @default(now())
+  deleted_at           DateTime?
 
   challenge_requests ChallengeRequest[]
   participations     Participation[]
@@ -63,6 +79,8 @@ model User {
   notifications      Notification[]
   workspaces         UserWorkspace[]
   edit_requests      EditRequest[]
+  reports_made       Report[]           @relation("Reporter")
+  reports_received   Report[]           @relation("TargetUser")
 
   @@map("users")
 }
@@ -167,6 +185,7 @@ model Submission {
   id           String   @id @default(cuid())
   challenge_id String
   user_id      String
+  title        String
   content      String   @db.Text
   heart_count  Int      @default(0)
   is_best      Boolean  @default(false)
@@ -224,4 +243,22 @@ model Notification {
 
   @@index([user_id])
   @@map("notifications")
+}
+
+model Report {
+  id             String     @id @default(cuid())
+  reporter_id    String
+  target_user_id String?
+  target_id      String
+  report_type    ReportType
+  reason         String     @db.VarChar(100)
+  is_resolved    Boolean    @default(false)
+  is_approved    Boolean?
+  created_at     DateTime   @default(now())
+
+  reporter    User  @relation("Reporter", fields: [reporter_id], references: [id])
+  target_user User? @relation("TargetUser", fields: [target_user_id], references: [id])
+
+  @@index([target_id])
+  @@map("reports")
 }

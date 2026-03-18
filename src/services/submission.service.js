@@ -20,6 +20,7 @@ export class SubmissionService {
     const submission = await this.#submissionRepository.createSubmission({
       userId,
       challengeId,
+      title: data.title,
       content: data.content,
     });
 

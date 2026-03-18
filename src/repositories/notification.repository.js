@@ -26,6 +26,7 @@ export class NotificationRepository {
         id: true,
         type: true,
         message: true,
+        reason: true,
         is_read: true,
         created_at: true,
       },
@@ -33,7 +34,7 @@ export class NotificationRepository {
   }
 
   //알림 클릭 했을때 읽은 알람 표시용
-  markIsRead(id) {
+  markAsRead(id) {
     return this.#prisma.notification.update({
       where: { id },
       data: { is_read: true },

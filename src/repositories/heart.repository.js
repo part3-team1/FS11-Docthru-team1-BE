@@ -27,7 +27,7 @@ export class HeartRepository {
           },
         },
       }),
-      this.#prisma.heart.update({
+      this.#prisma.submission.update({
         where: { id: submissionId },
         data: { heart_count: { decrement: 1 } },
       }),
@@ -36,7 +36,7 @@ export class HeartRepository {
 
   //중복 체크(유저 1명당 제출물에 1회 가능)
   findHeart(userId, submissionId) {
-    return this.#prisma.heart.findFirst({
+    return this.#prisma.heart.findUnique({
       where: { user_id: userId, submission_id: submissionId },
     });
   }

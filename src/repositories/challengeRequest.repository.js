@@ -16,6 +16,7 @@ export class ChallengeRequestRepository {
         document_type: data.documentType,
         due_date: new Date(data.dueDate),
         max_participants: Number(data.maxParticipants),
+        status: 'PENDING',
       },
     });
   }
@@ -41,7 +42,7 @@ export class ChallengeRequestRepository {
           skip: Number(skip),
           take: Number(take),
           orderBy: { [sortBy]: sortOrder },
-          include: { user: { select: { nickname: true } } },
+          include: { user: { select: { nickname: true, status: true } } },
         }),
         this.#prisma.challengeRequest.count({ where: queryOptions }),
       ])
@@ -51,13 +52,21 @@ export class ChallengeRequestRepository {
   }
 
   findRequestById(id) {
-    return this.#prisma.challengeRequest.findUnique({ where: { id } });
+    return this.#prisma.challengeRequest.findUnique({
+      where: { id },
+      include: {
+        user: { select: { nickname: true, eamail: true, status: true } },
+      },
+    });
   }
 
   updateRequestStatus(id, status, rejectionReason = null) {
     return this.#prisma.challengeRequest.update({
       where: { id },
-      data: { status, ...(reason && { rejection_reason: reason }) },
+      data: {
+        status,
+        ...(rejectionReason && { rejection_reason: rejectionReason }),
+      },
     });
   }
 
