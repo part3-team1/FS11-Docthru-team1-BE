@@ -6,7 +6,7 @@ export class UserRepository {
   }
 
   //페이지네이션 포함
-  findAllUsers({ skip = 0, take = 10, status } = {}) {
+  findAll({ skip = 0, take = 10, status } = {}) {
     return this.#prisma.user.findMany({
       where: { ...(status && { status }) },
       skip: Number(skip),
@@ -30,7 +30,7 @@ export class UserRepository {
     });
   }
 
-  findUserById(id) {
+  findById(id) {
     return this.#prisma.user.findUnique({
       where: { id },
       select: {
@@ -47,7 +47,7 @@ export class UserRepository {
     });
   }
 
-  findUserByEmail(email, { includePassword = false } = {}) {
+  findByEmail(email, { includePassword = false } = {}) {
     return this.#prisma.user.findFirst({
       where: { email, status: { not: 'WITHDRAWN' } },
       select: {
@@ -65,7 +65,7 @@ export class UserRepository {
     });
   }
 
-  createUser(data) {
+  create(data) {
     return this.#prisma.user.create({
       data: {
         email: data.email,
@@ -114,7 +114,7 @@ export class UserRepository {
   }
 
   //강제 정지 및 탈퇴
-  updateUserStatus(id, { status, isBanned }) {
+  updateStatus(id, { status, isBanned }) {
     return this.#prisma.user.update({
       where: { id },
       data: {

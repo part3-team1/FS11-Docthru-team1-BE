@@ -11,8 +11,21 @@ export class SocialAuthService {
     const profile = await this.#getSocialProfile(provider, code, state);
     const user = await this.#resolveUser({ provider, profile });
 
+    if (user.status === 'BANNED' || user.is_banned) {
+      throw new Error('운영 정책 위반으로 정지된 계정입니다.');
+    }
+
+    if (user.status === 'WITHDRAWN') {
+      throw new Error('탈퇴 처리된 계정입니다.');
+    }
+
     const updatedUser = await this.#checkGrade(user);
     const tokens = this.#tokenProvider.generateTokens(updatedUser);
+
+    await this.#userRepository.updateRefreshToken(
+      updatedUser.id,
+      tokens.refreshToken,
+    );
 
     return { user: updatedUser, tokens };
   }
@@ -35,18 +48,18 @@ export class SocialAuthService {
     const existingUser = await this.#userRepository.findByEmail(email);
 
     if (!existingUser) {
-      return this.#userRepository.createUser({
+      return this.#userRepository.create({
         email,
-        nickname: profile.nickname,
-        provider,
-        provider_id: profile.id,
+        nickname: profile.nickname || `User_${Date.now().toString().slice(-4)}`,
+        provider: provider.toUpperCase(),
+        provider_id: String(profile.id),
         grade: 'NORMAL',
       });
     }
 
     await this.#userRepository.connectSocialAccount(existingUser.id, {
-      provider,
-      provider_id: profile.id,
+      provider: provider.toUpperCase(),
+      provider_id: String(profile.id),
     });
 
     return existingUser;
@@ -71,6 +84,8 @@ export class SocialAuthService {
         grade: 'EXPERT',
       });
     }
+
+    return user;
   }
 
   async #getSocialProfile(provider, code, state) {

@@ -6,7 +6,7 @@ export class ChallengeRepository {
   }
 
   //페이지네이션, 필터링, 분류 포함
-  findAllchallenges({
+  findAll({
     skip = 0,
     take = 10,
     keyword,
@@ -43,7 +43,7 @@ export class ChallengeRepository {
       });
   }
 
-  findChallengeById(id) {
+  findById(id) {
     return this.#prisma.challenge.findUnique({
       where: { id },
       include: { request: true },
@@ -60,7 +60,7 @@ export class ChallengeRepository {
   }
 
   //챌린지 상세페이지 '작업 도전하기' 버튼 부분(참여 생성 + 인원 증가)
-  joinChallenge(userId, challengeId) {
+  join(userId, challengeId) {
     return this.#prisma.$transaction([
       this.#prisma.participation.create({
         data: { user_id: userId, challenge_id: challengeId },
@@ -73,7 +73,7 @@ export class ChallengeRepository {
   }
 
   //챌린지 나가기(포기 + 인원 감소)
-  leaveChallenge(userId, challengeId) {
+  leave(userId, challengeId) {
     return this.#prisma.$transaction([
       this.#prisma.participation.delete({
         where: {
@@ -88,7 +88,7 @@ export class ChallengeRepository {
   }
 
   //어드민 관련 (맨 아래 까지)
-  createChallenge(data) {
+  create(data) {
     return this.#prisma.challenge.create({
       data: {
         request_id: data.requestId,
@@ -105,7 +105,7 @@ export class ChallengeRepository {
     });
   }
 
-  updateChallenge(id, data) {
+  update(id, data) {
     const { documentType, ...rest } = data;
 
     return this.#prisma.challenge.update({
@@ -114,7 +114,7 @@ export class ChallengeRepository {
     });
   }
 
-  deleteChallenge(id) {
+  delete(id) {
     return this.#prisma.challenge.update({
       where: { id },
       data: { status: 'DELETED' },

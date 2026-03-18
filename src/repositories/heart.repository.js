@@ -5,7 +5,7 @@ export class HeartRepository {
     this.#prisma = prisma;
   }
 
-  createHeart(userId, submissionId) {
+  create(userId, submissionId) {
     return this.#prisma.$transaction([
       this.#prisma.heart.create({
         data: { user_id: userId, submission_id: submissionId },
@@ -17,7 +17,7 @@ export class HeartRepository {
     ]);
   }
 
-  deleteHeart(userId, submissionId) {
+  delete(userId, submissionId) {
     return this.#prisma.$transaction([
       this.#prisma.heart.delete({
         where: {
@@ -35,7 +35,7 @@ export class HeartRepository {
   }
 
   //중복 체크(유저 1명당 제출물에 1회 가능)
-  findHeart(userId, submissionId) {
+  checkDuplicate(userId, submissionId) {
     return this.#prisma.heart.findUnique({
       where: { user_id: userId, submission_id: submissionId },
     });

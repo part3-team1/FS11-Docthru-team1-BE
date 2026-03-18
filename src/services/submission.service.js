@@ -2,29 +2,42 @@ export class SubmissionService {
   #submissionRepository;
   #heartRepository;
   #userWorkspaceRepository;
+  #challengeRepository;
   #notificationRepository;
 
   constructor({
     submissionRepository,
     heartRepository,
     userWorkspaceRepository,
+    challengeRepository,
     notificationRepository,
   }) {
     this.#submissionRepository = submissionRepository;
     this.#heartRepository = heartRepository;
     this.#userWorkspaceRepository = userWorkspaceRepository;
+    this.#challengeRepository = challengeRepository;
     this.#notificationRepository = notificationRepository;
   }
 
   async submit(userId, challengeId, data) {
-    const submission = await this.#submissionRepository.createSubmission({
+    const challenge =
+      await this.#challengeRepository.findById(challengeId);
+    if (!challengeId) {
+      throw new Error('챌린지를 찾을 수 없습니다.');
+    }
+
+    if (new Date(challenge.due_date) < new Date()) {
+      throw new Error('마감된 챌린지에는 작업물을 제출할 수 없습니다.');
+    }
+
+    const submission = await this.#submissionRepository.create({
       userId,
       challengeId,
       title: data.title,
       content: data.content,
     });
 
-    await this.#userWorkspaceRepository.deleteUserWorkspaceByChallenge(
+    await this.#userWorkspaceRepository.deleteByChallenge(
       userId,
       challengeId,
     );
@@ -34,24 +47,29 @@ export class SubmissionService {
 
   async toggleHeart(userId, submissionId) {
     const submission =
-      await this.#submissionRepository.findSubmissionById(submissionId);
+      await this.#submissionRepository.findById(submissionId);
     if (!submission) throw new Error('작업물을 찾을 수 없습니다.');
 
-    const existingHeart = await this.#heartRepository.findHeart(
+    if (submission.user_id === userId) {
+      throw new Error('스스로 1등을 하는것 옳지 않습니다.');
+    }
+
+    const existingHeart = await this.#heartRepository.checkDuplicate(
       userId,
       submissionId,
     );
 
     if (existingHeart) {
-      await this.#heartRepository.deleteHeart(userId, submissionId);
+      await this.#heartRepository.delete(userId, submissionId);
       return { liked: false, heartCount: submission.heart_count - 1 };
     } else {
-      await this.#heartRepository.createHeart(userId, submissionId);
+      await this.#heartRepository.create(userId, submissionId);
     }
 
-    await this.#notificationRepository.createNotification({
+    await this.#notificationRepository.create({
       userId: submission.user_id,
       type: 'ACTIVITY',
+      message: submission.title,
     });
 
     return { liked: true, heartCount: submission.heart_count + 1 };

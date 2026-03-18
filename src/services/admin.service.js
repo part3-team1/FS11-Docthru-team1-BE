@@ -26,11 +26,10 @@ export class AdminService {
   }
 
   async approveRequest(requestId) {
-    const request =
-      await this.#challengeRequestRepository.findRequestById(requestId);
+    const request = await this.#challengeRequestRepository.findById(requestId);
     if (!request) throw new Error('리퀘스트를 찾을 수 없습니다.');
 
-    const challenge = await this.#challengeRepository.createChallenge({
+    const challenge = await this.#challengeRepository.create({
       requestId: request.id,
       title: request.title,
       doc_url: request.doc_url,
@@ -41,12 +40,9 @@ export class AdminService {
       max_participants: request.max_participants,
     });
 
-    await this.#challengeRequestRepository.updateRequestStatus(
-      requestId,
-      'APPROVED',
-    );
+    await this.#challengeRequestRepository.updateStatus(requestId, 'APPROVED');
 
-    await this.#notificationRepository.createNotification({
+    await this.#notificationRepository.create({
       userId: request.requested_by,
       type: 'STATUS',
       message: request.title,
@@ -56,17 +52,16 @@ export class AdminService {
   }
 
   async rejectRequest(requestId, reason) {
-    const request =
-      await this.#challengeRequestRepository.findRequestById(requestId);
+    const request = await this.#challengeRequestRepository.findById(requestId);
     if (!request) throw new Error('리퀘스트를 찾을 수 없습니다.');
 
-    await this.#challengeRequestRepository.updateRequestStatus(
+    await this.#challengeRequestRepository.updateStatus(
       requestId,
       'REJECTED',
       reason,
     );
 
-    await this.#notificationRepository.createNotification({
+    await this.#notificationRepository.create({
       userId: request.requested_by,
       type: 'STATUS',
       message: request.title,
@@ -76,15 +71,15 @@ export class AdminService {
 
   //유저 강제 정지
   async banUser(userId, reason) {
-    const user = await this.#userRepository.findUserById(userId);
+    const user = await this.#userRepository.findById(userId);
     if (!user) throw new Error('유저를 찾을 수 없습니다.');
 
-    await this.#userRepository.updateUserStatus(userId, {
+    await this.#userRepository.updateStatus(userId, {
       status: 'BANNED',
       isBanned: true,
     });
 
-    await this.#notificationRepository.createNotification({
+    await this.#notificationRepository.create({
       userId,
       type: 'ADMIN',
       message: '운영 정책 위반으로 계정이 정지되었습니다.',
@@ -94,18 +89,24 @@ export class AdminService {
 
   //신고 처리
   async handleReport(reportId, isApproved) {
-    const report = await this.#reportRepository.findReportById(reportId);
+    const report = await this.#reportRepository.findById(reportId);
     if (!report) throw new Error('신고 내역을 찾을 수 없습니다.');
 
-    await this.#reportRepository.updateReportStatus(reportId, isApproved);
+    await this.#reportRepository.updateStatus(reportId, isApproved);
     if (isApproved) {
       if (report.report_type === 'FEEDBACK') {
-        await this.#feedbackRepository.blockFeedback(report.target_id);
+        await this.#feedbackRepository.block(report.target_id);
+      }
+
+      if (report.report_type === 'SUBMISSION') {
+        await this.#submissionRepository.delete(report.target_id);
       }
 
       if (report.report_type === 'USER' && report.target_user_id) {
         await this.banUser(report.target_user_id, report.reason);
       }
     }
+
+    //신고 시 알람 필요한가?
   }
 }

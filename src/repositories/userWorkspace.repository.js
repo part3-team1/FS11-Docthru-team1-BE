@@ -7,7 +7,7 @@ export class UserWorkspaceRepository {
 
   //로컬스토리지 관련
 
-  saveUserWorkspace(userId, challengeId, data) {
+  save(userId, challengeId, data) {
     // //일단 예시로 작성해봤습니다! 주석 해제 후 확인해주세요!
     // const userWorkspaceData = {
     //   title: data.title || '제목 없음',
@@ -48,12 +48,12 @@ export class UserWorkspaceRepository {
     //서비스의 getLatestUserWorkspace에 활용
   }
 
-  deleteUserWorkspace(id) {
+  delete(id) {
     //모달에서 직접 유저가 삭제할 때?
   }
 
   //최종제출 완료 후 임시저장에서 비워질 때
-  deleteUserWorkspaceByChallenge(userId, challengeId) {
+  deleteByChallenge(userId, challengeId) {
     return this.#prisma.userWorkspace.delelte({
       where: {
         user_id_challenge_id: { user_id: userId, challenge_id: challengeId },

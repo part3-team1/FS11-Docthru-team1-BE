@@ -5,7 +5,7 @@ export class ReportRepository {
     this.#prisma = prisma;
   }
 
-  createReport(data) {
+  create(data) {
     return this.#prisma.report.create({
       data: {
         reporter_id: data.userId,
@@ -45,7 +45,7 @@ export class ReportRepository {
       });
   }
 
-  findReportById(id) {
+  findById(id) {
     return this.#prisma.report.findUnique({
       where: { id },
       include: {
@@ -55,7 +55,7 @@ export class ReportRepository {
     });
   }
 
-  updateReportStatus(id, isApproved) {
+  updateStatus(id, isApproved) {
     return this.#prisma.report.update({
       where: { id },
       data: {
@@ -66,7 +66,7 @@ export class ReportRepository {
   }
 
   //중복신고 방지
-  checkDuplicateReport(reporterId, targetId) {
+  checkDuplicate(reporterId, targetId) {
     return this.#prisma.report.findFirst({
       where: {
         reporter_id: reporterId,

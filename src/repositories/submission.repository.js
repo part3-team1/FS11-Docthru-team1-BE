@@ -39,7 +39,7 @@ export class SubmissionRepository {
     });
   }
 
-  findSubmissionById(id) {
+  findById(id) {
     return this.#prisma.submission.findUnique({
       where: { id },
       include: {
@@ -49,7 +49,7 @@ export class SubmissionRepository {
     });
   }
 
-  createSubmission(data) {
+  create(data) {
     return this.#prisma.submission.create({
       data: {
         challenge_id: data.challengeId,
@@ -60,14 +60,14 @@ export class SubmissionRepository {
     });
   }
 
-  updateSubmission(id, data) {
+  update(id, data) {
     return this.#prisma.submission.update({
       where: { id },
       data: { title: data.title, content: data.content },
     });
   }
 
-  deleteSubmission(id) {
+  delete(id) {
     return this.#prisma.submission.delete({
       where: { id },
     });

@@ -5,7 +5,7 @@ export class ChallengeRequestRepository {
     this.#prisma = prisma;
   }
 
-  createRequest(data) {
+  create(data) {
     return this.#prisma.challengeRequest.create({
       data: {
         requested_by: data.userId,
@@ -22,7 +22,7 @@ export class ChallengeRequestRepository {
   }
 
   //어드민 관련 (맨 아래 까지)
-  findAllRequests({
+  findAll({
     skip = 0,
     take = 10,
     keyword,
@@ -51,7 +51,7 @@ export class ChallengeRequestRepository {
       });
   }
 
-  findRequestById(id) {
+  findById(id) {
     return this.#prisma.challengeRequest.findUnique({
       where: { id },
       include: {
@@ -60,7 +60,7 @@ export class ChallengeRequestRepository {
     });
   }
 
-  updateRequestStatus(id, status, rejectionReason = null) {
+  updateStatus(id, status, rejectionReason = null) {
     return this.#prisma.challengeRequest.update({
       where: { id },
       data: {
@@ -70,7 +70,7 @@ export class ChallengeRequestRepository {
     });
   }
 
-  deleteRequest(id) {
+  delete(id) {
     return this.#prisma.challengeRequest.delete({ where: { id } });
   }
 }

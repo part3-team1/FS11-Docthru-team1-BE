@@ -22,7 +22,7 @@ export class EditRequestRepository {
   //어드민 관련 (맨 아래 까지)
 
   //페이지네이션 포함
-  findAllEditRequests({ skip = 0, take = 10, status } = {}) {
+  findAll({ skip = 0, take = 10, status } = {}) {
     const queryOptions = { ...(status && { status }) };
 
     return this.#prisma

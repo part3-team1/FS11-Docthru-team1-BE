@@ -5,7 +5,7 @@ export class NotificationRepository {
     this.#prisma = prisma;
   }
 
-  createNotification(data) {
+  create(data) {
     return this.#prisma.notification.create({
       data: {
         user_id: data.userId,

@@ -27,7 +27,7 @@ export class FeedbackRepository {
       });
   }
 
-  createFeedback(data) {
+  create(data) {
     return this.#prisma.feedback.create({
       data: {
         submission_id: data.submissionId,
@@ -39,7 +39,7 @@ export class FeedbackRepository {
   }
 
   //수정 및 삭제 기능 없음
-  // updateFeedback(id, content) {
+  // update(id, content) {
   //   return this.#prisma.feedback.update({ where: { id }, data: { content } });
   // }
 
@@ -47,7 +47,7 @@ export class FeedbackRepository {
   //   return this.#prisma.feedback.delete({ where: { id } });
   // }
 
-  blockFeedback(id) {
+  block(id) {
     return this.#prisma.feedback.update({
       where: { id },
       data: { is_blocked: true },
