@@ -64,7 +64,7 @@ export class AuthService {
 
     await this.#userRepository.updateRefreshToken(
       finalUser.id,
-      tokens.refreshToken,
+      tokens.refresh_token,
     );
 
     return { user: finalUser, tokens };
@@ -92,7 +92,7 @@ export class AuthService {
       throw new Error('유효하지 않은 토큰입니다.');
     }
 
-    const user = await this.#userRepository.findById(payload.userId);
+    const user = await this.#userRepository.findById(payload.user_id);
     if (!user) {
       throw new Error('계정을 찾을 수 없습니다.');
     }
@@ -109,14 +109,14 @@ export class AuthService {
 
     await this.#userRepository.updateRefreshToken(
       finalUser.id,
-      tokens.refreshToken,
+      tokens.refresh_token,
     );
 
     return { user: finalUser, tokens };
   }
 
-  async getMe(userId) {
-    const user = await this.#userRepository.findById(userId);
+  async getMe(user_id) {
+    const user = await this.#userRepository.findById(user_id);
     if (!user) {
       throw new Error('계정을 찾을 수 없습니다.');
     }

@@ -4,10 +4,10 @@ export class SocialAuthService {
 
   constructor({ userRepository, tokenProvider }) {
     this.#userRepository = userRepository;
-    this.#tokenProvider - tokenProvider;
+    this.#tokenProvider = tokenProvider;
   }
 
-  async loginOrSingUp({ provider, code, state }) {
+  async loginOrSignUp({ provider, code, state }) {
     const profile = await this.#getSocialProfile(provider, code, state);
     const user = await this.#resolveUser({ provider, profile });
 
@@ -24,7 +24,7 @@ export class SocialAuthService {
 
     await this.#userRepository.updateRefreshToken(
       updatedUser.id,
-      tokens.refreshToken,
+      tokens.refresh_token,
     );
 
     return { user: updatedUser, tokens };
@@ -113,7 +113,7 @@ export class SocialAuthService {
     //구현 예정
   }
 
-  async #requestSocialJson(url, options, deffaltErrorMessage) {
+  async #requestSocialJson(url, options, defaultErrorMessage) {
     //구현 예정
   }
 }

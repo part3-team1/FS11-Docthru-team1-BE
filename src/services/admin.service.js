@@ -27,8 +27,8 @@ export class AdminService {
     this.#submissionRepository = submissionRepository;
   }
 
-  async approveRequest(requestId) {
-    const request = await this.#challengeRequestRepository.findById(requestId);
+  async approveRequest(request_id) {
+    const request = await this.#challengeRequestRepository.findById(request_id);
     if (!request) throw new Error('리퀘스트를 찾을 수 없습니다.');
 
     const challenge = await this.#challengeRepository.create({
@@ -42,7 +42,7 @@ export class AdminService {
       max_participants: request.max_participants,
     });
 
-    await this.#challengeRequestRepository.updateStatus(requestId, 'APPROVED');
+    await this.#challengeRequestRepository.updateStatus(request_id, 'APPROVED');
 
     await this.#notificationRepository.create({
       userId: request.requested_by,
@@ -53,12 +53,12 @@ export class AdminService {
     return challenge;
   }
 
-  async rejectRequest(requestId, reason) {
-    const request = await this.#challengeRequestRepository.findById(requestId);
+  async rejectRequest(request_id, reason) {
+    const request = await this.#challengeRequestRepository.findById(request_id);
     if (!request) throw new Error('리퀘스트를 찾을 수 없습니다.');
 
     await this.#challengeRequestRepository.updateStatus(
-      requestId,
+      request_id,
       'REJECTED',
       reason,
     );
@@ -72,20 +72,20 @@ export class AdminService {
   }
 
   //유저 강제 정지
-  async banUser(userId, reason) {
-    const user = await this.#userRepository.findById(userId);
+  async banUser(user_id, reason) {
+    const user = await this.#userRepository.findById(user_id);
     if (!user) throw new Error('유저를 찾을 수 없습니다.');
 
     if (user.role === 'MASTER')
       throw new Error('정지/ 차단할 수 없는 계정입니다.');
 
-    await this.#userRepository.updateStatus(userId, {
+    await this.#userRepository.updateStatus(user_id, {
       status: 'BANNED',
-      isBanned: true,
+      is_banned: true,
     });
 
     await this.#notificationRepository.create({
-      userId,
+      user_id,
       type: 'ADMIN_ACTION',
       message: NOTIFICATION_MESSAGES.USER_BANNED,
       reason,
@@ -93,12 +93,12 @@ export class AdminService {
   }
 
   //신고 처리
-  async handleReport(reportId, isApproved) {
-    const report = await this.#reportRepository.findById(reportId);
+  async handleReport(report_id, is_approved) {
+    const report = await this.#reportRepository.findById(report_id);
     if (!report) throw new Error('신고 내역을 찾을 수 없습니다.');
 
-    await this.#reportRepository.updateStatus(reportId, isApproved);
-    if (isApproved) {
+    await this.#reportRepository.updateStatus(report_id, is_approved);
+    if (is_approved) {
       if (report.report_type === 'FEEDBACK') {
         await this.#feedbackRepository.block(report.target_id);
 

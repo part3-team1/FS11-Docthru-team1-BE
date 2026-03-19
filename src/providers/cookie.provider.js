@@ -6,7 +6,7 @@ import {
 
 export class CookieProvider {
   setAuthCookies(res, tokens) {
-    const { accessToken, refreshToken } = tokens;
+    const { access_token, refresh_token } = tokens;
 
     const commonOptions = {
       httpOnly: true,
@@ -15,12 +15,12 @@ export class CookieProvider {
       path: '/',
     };
 
-    res.cookie('accessToken', accessToken, {
+    res.cookie('accessToken', access_token, {
       ...commonOptions,
       maxAge: ACCESS_TOKEN_MAX_AGE,
     });
 
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refreshToken', refresh_token, {
       ...commonOptions,
       maxAge: REFRESH_TOKEN_MAX_AGE,
     });

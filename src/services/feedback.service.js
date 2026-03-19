@@ -1,3 +1,5 @@
+import { NOTIFICATION_MESSAGES } from '#constants/message.js';
+
 export class FeedbackService {
   #feedbackRepository;
   #submissionRepository;
@@ -16,8 +18,8 @@ export class FeedbackService {
     this.#notificationRepository = notificationRepository;
   }
 
-  async createFeedback(userId, submissionId, content) {
-    const submission = await this.#submissionRepository.findById(submissionId);
+  async createFeedback(user_id, submission_id, content) {
+    const submission = await this.#submissionRepository.findById(submission_id);
     if (!submission) throw new Error('작업물을 찾을 수 없습니다.');
 
     const challenge = await this.#challengeRepository.findById(
@@ -27,13 +29,13 @@ export class FeedbackService {
       throw new Error('이미 완료된 챌린지입니다.');
 
     const feedback = await this.#feedbackRepository.create({
-      userId,
-      submissionId,
+      user_id,
+      submission_id,
       content,
     });
 
     await this.#notificationRepository.create({
-      userId: submission.user_id,
+      user_id: submission.user_id,
       type: 'FEEDBACK_CREATED',
       message: submission.title,
     });
@@ -41,8 +43,8 @@ export class FeedbackService {
     return feedback;
   }
 
-  async updatedFeedback(userId, feedbackId, content, userRole) {
-    const feedback = await this.#feedbackRepository.findById(feedbackId);
+  async updateFeedback(user_id, feedback_id, content, userRole) {
+    const feedback = await this.#feedbackRepository.findById(feedback_id);
     if (!feedback) throw new Error('댓글을 찾을 수 없습니다.');
 
     const submission = await this.#submissionRepository.findById(
@@ -55,21 +57,22 @@ export class FeedbackService {
       throw new Error('이미 완료된 챌린지입니다.');
 
     if (
-      feedback.user_id !== userId &&
+      feedback.user_id !== user_id &&
       userRole !== 'ADMIN' &&
       userRole !== 'MASTER'
     ) {
       throw new Error('수정 권한이 없습니다.');
     }
 
-    const updatedFeedback = await this.#feedbackRepository.update(feedbackId, {
+    const updatedFeedback = await this.#feedbackRepository.update(feedback_id, {
       content,
     });
 
-    if (feedback.user_id !== userId && userRole === 'ADMIN') {
+    if (feedback.user_id !== user_id && userRole === 'ADMIN') {
       await this.#notificationRepository.create({
         userId: feedback.user_id,
         type: 'FEEDBACK_UPDATED',
+        message: NOTIFICATION_MESSAGES.FEEDBACK_UPDATED,
       });
     }
 

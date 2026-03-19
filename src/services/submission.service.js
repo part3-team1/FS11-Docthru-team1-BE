@@ -1,3 +1,5 @@
+import { NOTIFICATION_MESSAGES } from '#constants/message.js';
+
 export class SubmissionService {
   #submissionRepository;
   #heartRepository;
@@ -19,8 +21,8 @@ export class SubmissionService {
     this.#notificationRepository = notificationRepository;
   }
 
-  async submit(userId, challengeId, data) {
-    const challenge = await this.#challengeRepository.findById(challengeId);
+  async submit(user_id, challenge_id, data) {
+    const challenge = await this.#challengeRepository.findById(challenge_id);
     if (!challenge) {
       throw new Error('챌린지를 찾을 수 없습니다.');
     }
@@ -30,49 +32,52 @@ export class SubmissionService {
     }
 
     const submission = await this.#submissionRepository.create({
-      userId,
-      challengeId,
+      user_id,
+      challenge_id,
       title: data.title,
       content: data.content,
     });
 
     await this.#notificationRepository.create({
-      userId: challenge.request.requested_by,
+      user_id: challenge.request.requested_by,
       type: 'SUBMISSION_CREATED',
-      message: challenge.title,
+      message: NOTIFICATION_MESSAGES.SUBMISSION_CREATED,
     });
 
-    await this.#userWorkspaceRepository.deleteByChallenge(userId, challengeId);
+    await this.#userWorkspaceRepository.deleteByChallenge(
+      user_id,
+      challenge_id,
+    );
 
     return submission;
   }
 
-  async toggleHeart(userId, submissionId) {
-    const submission = await this.#submissionRepository.findById(submissionId);
+  async toggleHeart(user_id, submission_id) {
+    const submission = await this.#submissionRepository.findById(submission_id);
     if (!submission) throw new Error('작업물을 찾을 수 없습니다.');
 
-    if (submission.user_id === userId) {
+    if (submission.user_id === user_id) {
       throw new Error('스스로 1등을 하는것은 옳지 않습니다.');
     }
 
     const existingHeart = await this.#heartRepository.checkDuplicate(
-      userId,
-      submissionId,
+      user_id,
+      submission_id,
     );
 
     if (existingHeart) {
-      await this.#heartRepository.delete(userId, submissionId);
-      return { liked: false, heartCount: submission.heart_count - 1 };
+      await this.#heartRepository.delete(user_id, submission_id);
+      return { liked: false, heart_count: submission.heart_count - 1 };
     } else {
-      await this.#heartRepository.create(userId, submissionId);
+      await this.#heartRepository.create(user_id, submission_id);
     }
 
     await this.#notificationRepository.create({
-      userId: submission.user_id,
+      user_id: submission.user_id,
       type: 'SUBMISSION_UPDATED',
-      message: submission.title,
+      message: NOTIFICATION_MESSAGES.HEART_TOGGLED,
     });
 
-    return { liked: true, heartCount: submission.heart_count + 1 };
+    return { liked: true, heart_count: submission.heart_count + 1 };
   }
 }

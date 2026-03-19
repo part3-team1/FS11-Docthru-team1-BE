@@ -1,3 +1,5 @@
+import { NOTIFICATION_MESSAGES } from '#constants/message.js';
+
 export class ChallengeService {
   #challengeRepository;
   #notificationRepository;
@@ -14,9 +16,8 @@ export class ChallengeService {
     return challenge;
   }
 
-  async join(userId, challengeId) {
-    const challenge =
-      await this.#challengeRepository.findById(challengeId);
+  async join(user_id, challenge_id) {
+    const challenge = await this.#challengeRepository.findById(challenge_id);
     if (!challenge) throw new Error('챌린지를 찾을 수 없습니다.');
 
     if (challenge.status !== 'OPENED')
@@ -27,30 +28,26 @@ export class ChallengeService {
       throw new Error('챌린지 인원이 초과되었습니다.');
 
     const isAlreadyJoined = await this.#challengeRepository.isParticipating(
-      userId,
-      challengeId,
+      user_id,
+      challenge_id,
     );
     if (isAlreadyJoined) {
       throw new Error('이미 참여중인 챌린지입니다.');
     }
 
-    const result = await this.#challengeRepository.join(
-      userId,
-      challengeId,
-    );
+    const result = await this.#challengeRepository.join(user_id, challenge_id);
 
     await this.#notificationRepository.create({
-      userId: challenge.request.requested_by,
+      user_id: challenge.request.requested_by,
       type: 'CHALLENGE_PARTICIPATED',
-      message: challenge.title,
+      message: NOTIFICATION_MESSAGES.CHALLENGE_PARTICIPATED,
     });
 
     return result;
   }
 
-  async leave(userId, challengeId) {
-    const challenge =
-      await this.#challengeRepository.findById(challengeId);
+  async leave(user_id, challenge_id) {
+    const challenge = await this.#challengeRepository.findById(challenge_id);
     if (!challenge) throw new Error('챌린지를 찾을 수 없습니다.');
 
     if (new Date(challenge.due_date) < new Date()) {
@@ -58,13 +55,13 @@ export class ChallengeService {
     }
 
     const isParticipating = await this.#challengeRepository.isParticipating(
-      userId,
-      challengeId,
+      user_id,
+      challenge_id,
     );
     if (!isParticipating) {
       throw new Error('참여 중인 챌린지가 아닙니다.');
     }
 
-    return await this.#challengeRepository.leave(userId, challengeId);
+    return await this.#challengeRepository.leave(user_id, challenge_id);
   }
 }

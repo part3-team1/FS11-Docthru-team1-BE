@@ -7,17 +7,17 @@ export class UserWorkspaceService {
 
   //메소드 이름은 원하시는대로 변경하셔도 되고, 필요하시면 더 추가하셔도 됩니다!
 
-  async getListUserWorkspace(userId) {
+  async getListUserWorkspace(user_id, challenge_id) {
     // //모달 내 목록 조회 시 (예시입니다. 주석 해제 후 확인해주세요!)
     // const list = await this.#userWorkspaceRepository.findAllByUserId(userId);
     // return { totalCount: list.length, items: list };
   }
 
-  async getLatestUserWorkspace(userId, challengeId) {
+  async getLatestUserWorkspace(user_id, challenge_id) {
     //페이지 진입 시 '이전 작업물을 불러오시겠어요?' 모달에 사용
   }
 
-  async saveUserWorkspace(userId, challengeId, data) {
+  async saveUserWorkspace(user_id, challenge_id, data) {
     //임시 저장 시
   }
 
