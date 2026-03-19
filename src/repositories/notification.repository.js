@@ -8,18 +8,18 @@ export class NotificationRepository {
   create(data) {
     return this.#prisma.notification.create({
       data: {
-        user_id: data.userId,
+        user_id: data.user_id,
         type: data.type,
         message: data.message,
         reason: data.reason,
-        is_read: false,
       },
     });
   }
 
-  findAllByUserId(userId, { take = 10 } = {}) {
+  findAllByUserId(user_id, { skip = 0, take = 10 } = {}) {
     return this.#prisma.notification.findMany({
-      where: { user_id: userId },
+      where: { user_id },
+      skip: Number(skip),
       take: Number(take),
       orderBy: { created_at: 'desc' },
       select: {

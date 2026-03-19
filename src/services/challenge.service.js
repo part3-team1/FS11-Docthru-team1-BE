@@ -41,7 +41,7 @@ export class ChallengeService {
 
     await this.#notificationRepository.create({
       userId: challenge.request.requested_by,
-      type: 'ACTIVITY',
+      type: 'CHALLENGE_PARTICIPATED',
       message: challenge.title,
     });
 

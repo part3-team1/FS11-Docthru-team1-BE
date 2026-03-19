@@ -1,3 +1,5 @@
+import { NOTIFICATION_MESSAGES } from '../common/constants/message.js';
+
 export class AdminService {
   #challengeRepository;
   #challengeRequestRepository;
@@ -44,8 +46,8 @@ export class AdminService {
 
     await this.#notificationRepository.create({
       userId: request.requested_by,
-      type: 'STATUS',
-      message: request.title,
+      type: 'CHALLENGE_APPROVED',
+      message: NOTIFICATION_MESSAGES.CHALLENGE_APPROVED(request.title),
     });
 
     return challenge;
@@ -63,8 +65,8 @@ export class AdminService {
 
     await this.#notificationRepository.create({
       userId: request.requested_by,
-      type: 'STATUS',
-      message: request.title,
+      type: 'CHALLENGE_REJECTED',
+      message: NOTIFICATION_MESSAGES.CHALLENGE_REJECTED(request.title),
       reason,
     });
   }
@@ -74,6 +76,9 @@ export class AdminService {
     const user = await this.#userRepository.findById(userId);
     if (!user) throw new Error('유저를 찾을 수 없습니다.');
 
+    if (user.role === 'MASTER')
+      throw new Error('정지/ 차단할 수 없는 계정입니다.');
+
     await this.#userRepository.updateStatus(userId, {
       status: 'BANNED',
       isBanned: true,
@@ -81,8 +86,8 @@ export class AdminService {
 
     await this.#notificationRepository.create({
       userId,
-      type: 'ADMIN',
-      message: '운영 정책 위반으로 계정이 정지되었습니다.',
+      type: 'ADMIN_ACTION',
+      message: NOTIFICATION_MESSAGES.USER_BANNED,
       reason,
     });
   }
@@ -96,17 +101,39 @@ export class AdminService {
     if (isApproved) {
       if (report.report_type === 'FEEDBACK') {
         await this.#feedbackRepository.block(report.target_id);
+
+        if (report.target_user_id) {
+          await this.#notificationRepository.create({
+            userId: report.target_user_id,
+            type: 'ADMIN_ACTION',
+            message: NOTIFICATION_MESSAGES.FEEDBACK_BANNED,
+            reason: report.reason,
+          });
+        }
       }
 
       if (report.report_type === 'SUBMISSION') {
         await this.#submissionRepository.delete(report.target_id);
+
+        if (report.target_user_id) {
+          await this.#notificationRepository.create({
+            userId: report.target_user_id,
+            type: 'ADMIN_ACTION',
+            message: NOTIFICATION_MESSAGES.SUBMISSION_BANNED,
+            reason: report.reason,
+          });
+        }
       }
 
       if (report.report_type === 'USER' && report.target_user_id) {
         await this.banUser(report.target_user_id, report.reason);
       }
-    }
 
-    //신고 시 알람 필요한가?
+      await this.#notificationRepository.create({
+        userId: report.reporter_id,
+        type: 'ADMIN_ACTION',
+        message: NOTIFICATION_MESSAGES.REPORT_PROCESSED,
+      });
+    }
   }
 }

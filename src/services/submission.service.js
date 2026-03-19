@@ -20,9 +20,8 @@ export class SubmissionService {
   }
 
   async submit(userId, challengeId, data) {
-    const challenge =
-      await this.#challengeRepository.findById(challengeId);
-    if (!challengeId) {
+    const challenge = await this.#challengeRepository.findById(challengeId);
+    if (!challenge) {
       throw new Error('챌린지를 찾을 수 없습니다.');
     }
 
@@ -37,21 +36,23 @@ export class SubmissionService {
       content: data.content,
     });
 
-    await this.#userWorkspaceRepository.deleteByChallenge(
-      userId,
-      challengeId,
-    );
+    await this.#notificationRepository.create({
+      userId: challenge.request.requested_by,
+      type: 'SUBMISSION_CREATED',
+      message: challenge.title,
+    });
+
+    await this.#userWorkspaceRepository.deleteByChallenge(userId, challengeId);
 
     return submission;
   }
 
   async toggleHeart(userId, submissionId) {
-    const submission =
-      await this.#submissionRepository.findById(submissionId);
+    const submission = await this.#submissionRepository.findById(submissionId);
     if (!submission) throw new Error('작업물을 찾을 수 없습니다.');
 
     if (submission.user_id === userId) {
-      throw new Error('스스로 1등을 하는것 옳지 않습니다.');
+      throw new Error('스스로 1등을 하는것은 옳지 않습니다.');
     }
 
     const existingHeart = await this.#heartRepository.checkDuplicate(
@@ -68,7 +69,7 @@ export class SubmissionService {
 
     await this.#notificationRepository.create({
       userId: submission.user_id,
-      type: 'ACTIVITY',
+      type: 'SUBMISSION_UPDATED',
       message: submission.title,
     });
 

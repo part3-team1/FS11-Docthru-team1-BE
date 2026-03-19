@@ -1,4 +1,4 @@
-import { email } from 'zod';
+import { validateSort } from '#utils/sort.util.js';
 
 export class EditRequestRepository {
   #prisma;
@@ -7,13 +7,13 @@ export class EditRequestRepository {
     this.#prisma = prisma;
   }
 
-  createEditRequest(data) {
+  create(data) {
     return this.#prisma.editRequest.create({
       data: {
-        challenge_id: data.challengeId,
-        user_id: data.userId,
+        challenge_id: data.challenge_id,
+        user_id: data.user_id,
         reason: data.reason,
-        change_content: data.changeContent,
+        change_content: data.change_content,
         status: 'PENDING',
       },
     });
@@ -23,6 +23,13 @@ export class EditRequestRepository {
 
   //페이지네이션 포함
   findAll({ skip = 0, take = 10, status } = {}) {
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+      sortBy,
+      sortOrder,
+      allowedFields: ['created_at', 'status'],
+      defaultField: 'created_at',
+    });
+
     const queryOptions = { ...(status && { status }) };
 
     return this.#prisma
@@ -31,13 +38,13 @@ export class EditRequestRepository {
           where: { status },
           skip: Number(skip),
           take: Number(take),
-          orderBy: { created_at: 'desc' },
+          orderBy: { [safeSortBy]: safeSortOrder },
           include: {
             user: { select: { nickname: true, status: true } },
             challenge: { select: { id: true, title: true } },
           },
         }),
-        this.#prisma.editRequest.count({ where: { status } }),
+        this.#prisma.editRequest.count({ where: { queryOptions } }),
       ])
       .then(([requests, totalCount]) => {
         return { requests, totalCount };

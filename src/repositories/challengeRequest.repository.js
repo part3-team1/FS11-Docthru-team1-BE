@@ -1,3 +1,5 @@
+import { validateSort } from '#utils/sort.util.js';
+
 export class ChallengeRequestRepository {
   #prisma;
 
@@ -8,14 +10,14 @@ export class ChallengeRequestRepository {
   create(data) {
     return this.#prisma.challengeRequest.create({
       data: {
-        requested_by: data.userId,
+        requested_by: data.user_id,
         title: data.title,
-        doc_url: data.docUrl,
+        doc_url: data.doc_url,
         description: data.description,
         category: data.category,
-        document_type: data.documentType,
-        due_date: new Date(data.dueDate),
-        max_participants: Number(data.maxParticipants),
+        document_type: data.document_type,
+        due_date: new Date(data.due_date),
+        max_participants: Number(data.max_participants),
         status: 'PENDING',
       },
     });
@@ -30,6 +32,13 @@ export class ChallengeRequestRepository {
     sortBy = 'created_at',
     sortOrder = 'desc',
   } = {}) {
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+      sortBy,
+      sortOrder,
+      allowedFields: ['created_at', 'due_date', 'status', 'title'],
+      defaultField: 'created_at',
+    });
+
     const queryOptions = {
       ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }),
       ...(status && { status }),
@@ -41,7 +50,7 @@ export class ChallengeRequestRepository {
           where: queryOptions,
           skip: Number(skip),
           take: Number(take),
-          orderBy: { [sortBy]: sortOrder },
+          orderBy: { [safeSortBy]: safeSortOrder },
           include: { user: { select: { nickname: true, status: true } } },
         }),
         this.#prisma.challengeRequest.count({ where: queryOptions }),
@@ -55,17 +64,17 @@ export class ChallengeRequestRepository {
     return this.#prisma.challengeRequest.findUnique({
       where: { id },
       include: {
-        user: { select: { nickname: true, eamail: true, status: true } },
+        user: { select: { nickname: true, email: true, status: true } },
       },
     });
   }
 
-  updateStatus(id, status, rejectionReason = null) {
+  updateStatus(id, status, rejection_reason = null) {
     return this.#prisma.challengeRequest.update({
       where: { id },
       data: {
         status,
-        ...(rejectionReason && { rejection_reason: rejectionReason }),
+        ...(rejection_reason && { rejection_reason }),
       },
     });
   }

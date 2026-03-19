@@ -7,3 +7,4 @@ export * from './editRequest.repository.js';
 export * from './feedback.repository.js';
 export * from './notification.repository.js';
 export * from './challengeRequest.repository.js';
+export * from './report.repository.js';

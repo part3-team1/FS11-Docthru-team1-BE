@@ -9,14 +9,15 @@
     "#config": "./src/config/config.js",
     "#db/*": "./src/db/*",
     "#docs/*": "./src/docs/*",
-    "#repository": "./src/repository/*",
-    "#constants": "./src/common/constants/*",
-    "#exceptions": "./src/common/exceptions/*",
-    "#controllers": "./src/controllers/*",
-    "#services": "./src/services/*",
-    "#middlewares": "./src/middlewares/*",
-    "#providers": "./src/providers/*",
-    "#routes": "./src/routes/*"
+    "#repository/*": "./src/repository/*",
+    "#constants/*": "./src/common/constants/*",
+    "#exceptions/*": "./src/common/exceptions/*",
+    "#controllers/*": "./src/controllers/*",
+    "#services/*": "./src/services/*",
+    "#middlewares/*": "./src/middlewares/*",
+    "#providers/*": "./src/providers/*",
+    "#routes/*": "./src/routes/*",
+    "#utils/*": "./src/utils/*"
   },
   "scripts": {
     "dev": "nodemon --env-file=./env/.env.development ./src/main.js",

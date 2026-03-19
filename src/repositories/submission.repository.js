@@ -1,3 +1,5 @@
+import { validateSort } from '#utils/sort.util.js';
+
 export class SubmissionRepository {
   #prisma;
 
@@ -6,21 +8,31 @@ export class SubmissionRepository {
   }
 
   //페이지네이션 포함
-  findAllByChallengeId(challengeId, { skip = 0, take = 5 } = {}) {
+  findAllByChallengeId(
+    challenge_id,
+    { skip = 0, take = 5, sortBy, sortOrder } = {},
+  ) {
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+      sortBy,
+      sortOrder,
+      allowedFields: ['heart_count', 'created_at'],
+      defaultField: 'heart_count',
+    });
+
     return this.#prisma
       .$transaction([
         this.#prisma.submission.findMany({
-          where: { challenge_id: challengeId },
+          where: { challenge_id },
           skip: Number(skip),
           take: Number(take),
-          orderBy: [{ heart_count: 'desc' }, { created_at: 'desc' }],
+          orderBy: [{ [safeSortBy]: safeSortOrder }, { created_at: 'desc' }],
           include: {
             user: {
               select: { nickname: true, grade: true, status: true },
             },
           },
         }),
-        this.#prisma.submission.count({ where: { challenge_id: challengeId } }),
+        this.#prisma.submission.count({ where: { challenge_id } }),
       ])
       .then(([submissions, totalCount]) => {
         return { submissions, totalCount };
@@ -28,11 +40,15 @@ export class SubmissionRepository {
   }
 
   //상위 5위 조회 시
-  findTopRankings(challengeId, limit = 5) {
+  findTopRankings(challenge_id, limit = 5) {
     return this.#prisma.submission.findMany({
-      where: { challenge_id: challengeId },
+      where: { challenge_id },
       take: Number(limit),
-      orderBy: [{ is_best: 'desc' }, { heart_count: 'desc' }],
+      orderBy: [
+        { is_best: 'desc' },
+        { heart_count: 'desc' },
+        { created_at: 'desc' },
+      ],
       include: {
         user: { select: { nickname: true, grade: true, status: true } },
       },
@@ -44,7 +60,7 @@ export class SubmissionRepository {
       where: { id },
       include: {
         user: { select: { nickname: true, grade: true, status: true } },
-        challenge: { select: { title: true, doc_url: true } },
+        challenge: { select: { title: true, doc_url: true, status: true } },
       },
     });
   }
@@ -52,8 +68,8 @@ export class SubmissionRepository {
   create(data) {
     return this.#prisma.submission.create({
       data: {
-        challenge_id: data.challengeId,
-        user_id: data.userId,
+        challenge_id: data.challenge_id,
+        user_id: data.user_id,
         title: data.title,
         content: data.content,
       },
@@ -74,10 +90,10 @@ export class SubmissionRepository {
   }
 
   //어드민 관련 (1등 왕관 표시용)
-  updateBestStatus(id, isBest) {
+  updateBestStatus(id, is_best) {
     return this.#prisma.submission.update({
       where: { id },
-      data: { is_best: isBest },
+      data: { is_best },
     });
   }
 }

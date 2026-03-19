@@ -1,3 +1,5 @@
+import { validateSort } from '#utils/sort.util.js';
+
 export class UserRepository {
   #prisma;
 
@@ -6,13 +8,25 @@ export class UserRepository {
   }
 
   //페이지네이션 포함
-  findAll({ skip = 0, take = 10, status } = {}) {
+  findAll({ skip = 0, take = 10, status, sortBy, sortOrder } = {}) {
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+      sortBy,
+      sortOrder,
+      allowedFields: [
+        'created_at',
+        'nickname',
+        'participation_count',
+        'best_selection_count',
+      ],
+      defaultField: 'created_at',
+    });
+
     return this.#prisma.user.findMany({
       where: { ...(status && { status }) },
       skip: Number(skip),
       take: Number(take),
       orderBy: {
-        created_at: 'desc',
+        [safeSortBy]: safeSortOrder,
       },
       select: {
         id: true,
@@ -43,6 +57,7 @@ export class UserRepository {
         is_banned: true,
         participation_count: true,
         best_selection_count: true,
+        refresh_token: true,
       },
     });
   }
@@ -65,13 +80,21 @@ export class UserRepository {
     });
   }
 
+  findByNickname(nickname) {
+    return this.#prisma.user.findFirst({
+      where: { nickname, status: { not: 'WITHDRAWN' } },
+      select: { id: true, nickname: true },
+    });
+  }
+
   create(data) {
     return this.#prisma.user.create({
       data: {
         email: data.email,
-        password_hash: data.password,
+        password_hash: data.password_hash,
         nickname: data.nickname,
         provider: data.provider || 'LOCAL',
+        provider_id: data.provider_id || null,
         grade: 'NORMAL',
         status: 'ACTIVE',
       },
@@ -114,40 +137,40 @@ export class UserRepository {
   }
 
   //강제 정지 및 탈퇴
-  updateStatus(id, { status, isBanned }) {
+  updateStatus(id, { status, is_banned }) {
     return this.#prisma.user.update({
       where: { id },
       data: {
         status,
-        is_banned: isBanned,
-        ...(isBanned && { refresh_token: null }), //접속 차단
+        is_banned,
+        ...(is_banned && { refresh_token: null }), //접속 차단
       },
     });
   }
 
   //리프레시 토큰 저장용
-  updateRefreshToken(id, refreshToken) {
+  updateRefreshToken(id, refresh_token) {
     return this.#prisma.user.update({
       where: { id },
-      data: { refresh_token: refreshToken },
+      data: { refresh_token },
     });
   }
 
   //소셜로그인 관련
-  findBySocialAccount(provider, providerId) {
+  findBySocialAccount(provider, provider_id) {
     return this.#prisma.user.findFirst({
       where: {
-        provider: provider,
-        provider_id: providerId,
+        provider,
+        provider_id,
         status: { not: 'WITHDRAWN' },
       },
     });
   }
 
-  connectSocialAccount(userId, { provider, providerId }) {
+  connectSocialAccount(userId, { provider, provider_id }) {
     return this.#prisma.user.update({
       where: { id: userId },
-      data: { provider: provider, provider_id: providerId },
+      data: { provider, provider_id },
     });
   }
 
@@ -157,7 +180,7 @@ export class UserRepository {
         email: data.email,
         nickname: data.name,
         provider: data.provider,
-        provider_id: data.providerId,
+        provider_id: data.provider_id,
         grade: 'NORMAL',
         status: 'ACTIVE',
       },

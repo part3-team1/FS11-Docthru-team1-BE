@@ -10,19 +10,26 @@ export class AuthService {
   }
 
   async signup({ email, password, nickname }) {
-    const existingUser = await this.#userRepository.findByEmail(email);
+    const [existingEmail, existingNickname] = await Promise.all([
+      this.#userRepository.findByEmail(email),
+      this.#userRepository.findByNickname(nickname),
+    ]);
 
-    if (existingUser) {
+    if (existingEmail) {
       throw new Error('이미 사용 중인 이메일입니다.');
+    }
+    if (existingNickname) {
+      throw new Error('이미 사용 중인 닉네임입니다.');
     }
 
     const hashed = await this.#passwordProvider.hash(password);
 
     const user = await this.#userRepository.create({
       email,
-      password: hashed,
+      password_hash: hashed,
       nickname,
       grade: 'NORMAL',
+      status: 'ACTIVE',
     });
 
     return user;
@@ -38,6 +45,9 @@ export class AuthService {
 
     if (authUser.status === 'BANNED' || authUser.is_banned) {
       throw new Error('운영 정책 위반으로 정지된 계정입니다.');
+    }
+    if (authUser.status === 'WITHDRAWN') {
+      throw new Error('탈퇴한 계정입니다.');
     }
 
     const isPasswordValid = await this.#passwordProvider.compare(
@@ -68,9 +78,11 @@ export class AuthService {
     const maskedEmail = `withdrawn_${timestamp}_${user.email}`;
     const maskedNickname = `(탈퇴한 사용자_${timestamp.toString().slice(-4)})`;
 
-    return await this.#userRepository.deleteUser(userId, {
+    return await this.#userRepository.updateUser(userId, {
       email: maskedEmail,
       nickname: maskedNickname,
+      status: 'WITHDRAWN',
+      deleted_at: new Date(),
     });
   }
 
@@ -82,16 +94,25 @@ export class AuthService {
 
     const user = await this.#userRepository.findById(payload.userId);
     if (!user) {
-      throw new Error('게정을 찾을 수 없습니다.');
+      throw new Error('계정을 찾을 수 없습니다.');
     }
-    if (user.status === 'BANNED' || user.status === 'WITHDRAWN') {
-      throw new Error('사용할 수 없는 계정입니다');
+    if (user.status !== 'ACTIVE' || user.is_banned) {
+      throw new Error('사용 권한이 없는 계정입니다');
     }
 
-    const tokens = this.#tokenProvider.generateTokens(user);
-    await this.#userRepository.updateRefreshToken(user.id, tokens.refreshToken);
+    if (user.refresh_token !== refreshToken) {
+      throw new Error('보안 인증에 실패하였습니다.');
+    }
 
-    return { user, tokens };
+    const finalUser = await this.#checkGrade(user);
+    const tokens = this.#tokenProvider.generateTokens(finalUser);
+
+    await this.#userRepository.updateRefreshToken(
+      finalUser.id,
+      tokens.refreshToken,
+    );
+
+    return { user: finalUser, tokens };
   }
 
   async getMe(userId) {
@@ -104,11 +125,9 @@ export class AuthService {
   }
 
   async #checkGrade(user) {
-    if (
-      user.grade === 'NORMAL' &&
-      user.participation_count >= 5 &&
-      user.best_selection_count >= 5
-    ) {
+    if (user.grade !== 'NORMAL') return user;
+
+    if (user.participation_count >= 5 && user.best_selection_count >= 5) {
       return await this.#userRepository.updateUser(user.id, {
         grade: 'EXPERT',
       });

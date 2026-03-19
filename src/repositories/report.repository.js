@@ -8,20 +8,34 @@ export class ReportRepository {
   create(data) {
     return this.#prisma.report.create({
       data: {
-        reporter_id: data.userId,
-        target_user_id: data.targetUserId,
-        target_id: data.targetId,
-        target_type: data.targetType,
+        reporter_id: data.user_id,
+        target_user_id: data.target_user_id,
+        target_id: data.target_id,
+        report_type: data.report_type,
         reason: data.reason,
       },
     });
   }
 
   //어드민 or 마스터 관련, 페이지네이션 포함
-  findAllReporter({ skip = 0, take = 10, targetType, isResolved } = {}) {
+  findAll({
+    skip = 0,
+    take = 10,
+    sortBy,
+    sortOrder,
+    report_type,
+    is_resolved,
+  } = {}) {
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+      sortBy,
+      sortOrder,
+      allowedFields: ['created_at', 'is_resolved'],
+      defaultField: 'created_at',
+    });
+
     const queryOptions = {
-      ...(targetType && { target_type: targetType }),
-      ...(isResolved !== undefined && { is_resolved: isResolved }),
+      ...(report_type && { report_type }),
+      ...(is_resolved !== undefined && { is_resolved }),
     };
 
     return this.#prisma
@@ -30,7 +44,7 @@ export class ReportRepository {
           where: queryOptions,
           skip: Number(skip),
           take: Number(take),
-          orderBy: { created_at: 'desc' },
+          orderBy: { [safeSortBy]: safeSortOrder },
           include: {
             reporter: { select: { nickname: true } },
             target_user: { select: { nickname: true, status: true } },
@@ -55,22 +69,22 @@ export class ReportRepository {
     });
   }
 
-  updateStatus(id, isApproved) {
+  updateStatus(id, is_approved) {
     return this.#prisma.report.update({
       where: { id },
       data: {
         is_resolved: true,
-        is_approved: isApproved,
+        is_approved,
       },
     });
   }
 
   //중복신고 방지
-  checkDuplicate(reporterId, targetId) {
+  checkDuplicate(reporter_id, target_id) {
     return this.#prisma.report.findFirst({
       where: {
-        reporter_id: reporterId,
-        target_id: targetId,
+        reporter_id,
+        target_id,
       },
     });
   }
