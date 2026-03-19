@@ -1,3 +1,4 @@
+import { validateSort } from '#utils/sort.util.js';
 export class ReportRepository {
   #prisma;
 

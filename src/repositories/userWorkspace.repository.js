@@ -15,8 +15,10 @@ export class UserWorkspaceRepository {
     //   description: data.description,
     //   category: data.category,
     //   document_type: data.document_type,
-    //   due_date: new Date(data.due_date),
-    //   max_participants: Number(data.max_participants),
+    //   ...(due_date && { due_date: new Date(data.due_date) }),
+    //   ...(max_participants && {
+    //     max_participants: Number(data.max_participants),
+    //   }),
     // };
     // return this.#prisma.userWorkspace.upsert({
     //   where: {
@@ -54,7 +56,7 @@ export class UserWorkspaceRepository {
 
   //최종제출 완료 후 임시저장에서 비워질 때
   deleteByChallenge(user_id, challenge_id) {
-    return this.#prisma.userWorkspace.delelte({
+    return this.#prisma.userWorkspace.delete({
       where: {
         user_id_challenge_id: { user_id, challenge_id },
       },
