@@ -36,3 +36,20 @@ export const ERROR_MESSAGE = {
   CONFLICT: '이미 존재하는 리소스입니다.',
   INTERNAL_SERVER_ERROR: '서버 오류가 발생했습니다.',
 };
+
+export const VALIDATION_ERROR = {
+  MIN_NICKNAME: '닉네임은 최소 2자 이상이어야 합니다.',
+  MAX_NICKNAME: '닉네임은 최대 8자까지 가능합니다.',
+  MIN_PASSWORD: '비밀번호는 최소 8자 이상이어야 합니다.',
+  MAX_PASSWORD: '비밀번호는 최대 12자까지 가능합니다.',
+  REGEX_PASSWORD:
+    '비밀번호는 영문, 숫자 및 허용된 특수문자(~!@#$%^&*)만 가능합니다.',
+  MIN_TITLE: '제목은 최소 10자 이상이어야 합니다.',
+  MAX_TITLE: '제목은 최대 50자까지 가능합니다.',
+  MAX_DESCRIPTION: '소개는 최대 150자까지 가능합니다.',
+  MAX_PARTICIPANTS: '참여인원은 최소 5명 이상이어야 합니다.',
+  MIN_PARTICIPANTS: '참여인원은 최대 20명까지 참여가 가능합니다.',
+  MAX_FEEDBACK: '댓글은 최대 500자까지 가능합니다.',
+  INVALID_ID: '유효하지 않은 아이디 형식입니다.',
+  INVALID_REPORT_REASON: '유효하지 않은 신고 사유입니다.',
+};

@@ -5,17 +5,17 @@ export const cors = (req, res, next) => {
   const isAllowed = !isProduction || (origin && corsOrigins.includes(origin));
 
   if (isAllowed && origin) {
-    res.header('Access_Control_Allow_Origin', origin);
-    res.header('Access_Control_Allow_Credentials', 'true');
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
   } else if (!isProduction) {
-    res.header('Access_Control_Allow_Origin', '*');
+    res.header('Access-Control-Allow-Origin', '*');
   }
 
   res.header(
-    'Access_Control_Allow_Methods',
+    'Access-Control-Allow-Methods',
     'GET, POST, PUT,PATCH,DELETE,OPTIONS',
   );
-  res.header('Access_Control_Allow_Headers', 'Content-Type,Authorization');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
