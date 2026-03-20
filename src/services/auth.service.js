@@ -1,3 +1,5 @@
+import { UP_GRADE_CONDITION } from '#constants/count.js';
+
 export class AuthService {
   #userRepository;
   #passwordProvider;
@@ -122,7 +124,10 @@ export class AuthService {
   async #checkGrade(user) {
     if (user.grade !== 'NORMAL') return user;
 
-    if (user.participation_count >= 5 && user.best_selection_count >= 5) {
+    if (
+      user.participation_count >= UP_GRADE_CONDITION.PRTICIPATION_COUNT &&
+      user.best_selection_count >= UP_GRADE_CONDITION.BEST_SELECTION_COUNT
+    ) {
       await this.#userRepository.updateUser(user.id, {
         grade: 'EXPERT',
       });

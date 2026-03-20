@@ -54,4 +54,10 @@ export class NotificationRepository {
       where: { user_id, is_read: false },
     });
   }
+
+  delete(id) {
+    return this.#prisma.notification.delete({
+      where: { id },
+    });
+  }
 }

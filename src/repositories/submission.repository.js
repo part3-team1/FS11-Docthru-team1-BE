@@ -48,7 +48,7 @@ export class SubmissionRepository {
   //마이페이지용 내 작업물 모아보기
   findAllByUserId(user_id, { skip = 0, take = 10 } = {}) {
     return this.#prisma
-      .$transaaction([
+      .$transaction([
         this.#prisma.submission.findMany({
           where: { user_id, is_deleted: false },
           skip: Number(skip),
@@ -62,7 +62,7 @@ export class SubmissionRepository {
           where: { user_id, is_deleted: false },
         }),
       ])
-      .then((submissions, totalCount) => {
+      .then(([submissions, totalCount]) => {
         return { submissions, totalCount };
       });
   }
@@ -112,8 +112,9 @@ export class SubmissionRepository {
   }
 
   delete(id) {
-    return this.#prisma.submission.delete({
+    return this.#prisma.submission.update({
       where: { id },
+      data: { is_deleted: true },
     });
   }
 
@@ -126,7 +127,7 @@ export class SubmissionRepository {
   }
 
   //자동차단용
-  updateBlockStatus(is, is_blocked) {
+  updateBlockStatus(id, is_blocked) {
     return this.#prisma.submission.update({
       where: { id },
       data: { is_blocked },
