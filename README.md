@@ -22,8 +22,8 @@ pnpm install
 ### 2. 데이터베이스 동기화
 
 ```bash
-pnpm run prisma:generate
 pnpm run prisma:push
+pnpm run prisma:generate
 ```
 
 ### 3. 서버실행
