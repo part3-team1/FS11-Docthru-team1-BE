@@ -1,3 +1,4 @@
+//임시! 변경 예정!
 export const validate = (schema) => (req, res, next) => {
   try {
     const validatedData = schema.parse(req.body);
