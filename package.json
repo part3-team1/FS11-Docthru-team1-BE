@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "imports": {
-    "#generated/*": "./generated/*",
+    "#generated/*": "./src/generated*",
     "#config": "./src/config/config.js",
     "#db/*": "./src/db/*",
     "#docs/*": "./src/docs/*",
