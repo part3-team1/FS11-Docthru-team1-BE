@@ -17,7 +17,6 @@ export class ChallengeRepository {
     status,
     sortBy,
     sortOrder,
-    ...rest
   } = {}) {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
@@ -35,7 +34,6 @@ export class ChallengeRepository {
       ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }),
       ...(category && { category }),
       ...(document_type && { document_type }),
-      ...rest,
       status: status ? status : { not: 'DELETED' },
     };
 

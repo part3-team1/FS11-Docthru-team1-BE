@@ -13,7 +13,7 @@ enum UserStatus {
 }
 
 enum ReportType {
-  USER
+  CHALLENGE
   SUBMISSION
   FEEDBACK
 }
@@ -59,6 +59,7 @@ enum NotificationType {
   FEEDBACK_CREATED
   FEEDBACK_UPDATED
   ADMIN_ACTION
+  AUTO_BLOCKED
 }
 
 model User {
@@ -84,7 +85,7 @@ model User {
   feedbacks          Feedback[]
   hearts             Heart[]
   notifications      Notification[]
-  workspaces         UserWorkspace[]
+  drafts             Draft[]
   edit_requests      EditRequest[]
   reports_made       Report[]           @relation("Reporter")
   reports_received   Report[]           @relation("TargetUser")
@@ -130,31 +131,26 @@ model Challenge {
   participations Participation[]
   submissions    Submission[]
   edit_requests  EditRequest[]
-  workspaces     UserWorkspace[]
+  drafts         Draft[]
 
   @@map("challenges")
 }
 
-model UserWorkspace {
-  id               String   @id @default(cuid())
-  user_id          String
-  challenge_id     String
-  title            String
-  doc_url          String
-  description      String?  @db.Text
-  category         String
-  document_type    String
-  due_date         DateTime
-  max_participants Int
-  updated_at       DateTime @updatedAt
+model Draft {
+  id           String   @id @default(cuid())
+  user_id      String
+  challenge_id String
+  title        String
+  content      Json
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
   user      User      @relation(fields: [user_id], references: [id])
   challenge Challenge @relation(fields: [challenge_id], references: [id])
 
-  @@unique([user_id, challenge_id])
   @@index([user_id])
   @@index([challenge_id])
-  @@map("user_workspaces")
+  @@map("drafts")
 }
 
 model EditRequest {
@@ -193,9 +189,11 @@ model Submission {
   challenge_id String
   user_id      String
   title        String
-  content      String   @db.Text
+  content      Json
   heart_count  Int      @default(0)
   is_best      Boolean  @default(false)
+  is_blocked   Boolean  @default(false)
+  is_deleted   Boolean  @default(false)
   created_at   DateTime @default(now())
 
   challenge Challenge  @relation(fields: [challenge_id], references: [id])
@@ -259,8 +257,6 @@ model Report {
   target_id      String
   report_type    ReportType
   reason         String     @db.VarChar(100)
-  is_resolved    Boolean    @default(false)
-  is_approved    Boolean?
   created_at     DateTime   @default(now())
 
   reporter    User  @relation("Reporter", fields: [reporter_id], references: [id])

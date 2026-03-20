@@ -58,6 +58,7 @@ export class UserRepository {
         participation_count: true,
         best_selection_count: true,
         refresh_token: true,
+        created_at: true,
       },
     });
   }
@@ -136,6 +137,14 @@ export class UserRepository {
     });
   }
 
+  //마스터의 어드민 승격용
+  updateRole(id, role) {
+    return this.#prisma.user.update({
+      where: { id },
+      data: { role },
+    });
+  }
+
   //강제 정지 및 탈퇴
   updateStatus(id, { status, is_banned }) {
     return this.#prisma.user.update({
@@ -161,7 +170,7 @@ export class UserRepository {
     return this.#prisma.user.findFirst({
       where: {
         provider,
-        provider_id,
+        provider_id: String(provider_id),
         status: { not: 'WITHDRAWN' },
       },
     });
@@ -170,17 +179,17 @@ export class UserRepository {
   connectSocialAccount(userId, { provider, provider_id }) {
     return this.#prisma.user.update({
       where: { id: userId },
-      data: { provider, provider_id },
+      data: { provider, provider_id: String(provider_id) },
     });
   }
 
-  creatWithSocialAccount(data) {
+  createWithSocialAccount(data) {
     return this.#prisma.user.create({
       data: {
         email: data.email,
-        nickname: data.name,
+        nickname: data.nickname || data.name,
         provider: data.provider,
-        provider_id: data.provider_id,
+        provider_id: String(data.provider_id),
         grade: 'NORMAL',
         status: 'ACTIVE',
       },

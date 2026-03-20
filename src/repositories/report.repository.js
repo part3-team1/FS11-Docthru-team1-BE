@@ -19,24 +19,16 @@ export class ReportRepository {
   }
 
   //어드민 or 마스터 관련, 페이지네이션 포함
-  findAll({
-    skip = 0,
-    take = 10,
-    sortBy,
-    sortOrder,
-    report_type,
-    is_resolved,
-  } = {}) {
+  findAll({ skip = 0, take = 10, sortBy, sortOrder, report_type } = {}) {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
       sortOrder,
-      allowedFields: ['created_at', 'is_resolved'],
+      allowedFields: ['created_at'],
       defaultField: 'created_at',
     });
 
     const queryOptions = {
       ...(report_type && { report_type }),
-      ...(is_resolved !== undefined && { is_resolved }),
     };
 
     return this.#prisma
@@ -70,13 +62,10 @@ export class ReportRepository {
     });
   }
 
-  updateStatus(id, is_approved) {
-    return this.#prisma.report.update({
-      where: { id },
-      data: {
-        is_resolved: true,
-        is_approved,
-      },
+  //신고 누적 카운트
+  countByTarget(target_id) {
+    return this.#prisma.report.count({
+      where: { target_id },
     });
   }
 

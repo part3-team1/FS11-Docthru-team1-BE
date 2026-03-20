@@ -22,7 +22,7 @@ export class EditRequestRepository {
   //어드민 관련 (맨 아래 까지)
 
   //페이지네이션 포함
-  findAll({ skip = 0, take = 10, status } = {}) {
+  findAll({ skip = 0, take = 10, sortBy, sortOrder, status } = {}) {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
       sortOrder,
@@ -35,7 +35,7 @@ export class EditRequestRepository {
     return this.#prisma
       .$transaction([
         this.#prisma.editRequest.findMany({
-          where: { status },
+          where: queryOptions,
           skip: Number(skip),
           take: Number(take),
           orderBy: { [safeSortBy]: safeSortOrder },
@@ -44,7 +44,7 @@ export class EditRequestRepository {
             challenge: { select: { id: true, title: true } },
           },
         }),
-        this.#prisma.editRequest.count({ where: { queryOptions } }),
+        this.#prisma.editRequest.count({ where: queryOptions }),
       ])
       .then(([requests, totalCount]) => {
         return { requests, totalCount };

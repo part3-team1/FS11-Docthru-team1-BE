@@ -70,7 +70,7 @@ export class FeedbackService {
 
     if (feedback.user_id !== user_id && userRole === 'ADMIN') {
       await this.#notificationRepository.create({
-        userId: feedback.user_id,
+        user_id: feedback.user_id,
         type: 'FEEDBACK_UPDATED',
         message: NOTIFICATION_MESSAGES.FEEDBACK_UPDATED,
       });

@@ -19,10 +19,12 @@ export class FeedbackRepository {
       defaultField: 'created_at',
     });
 
+    const whereCondition = { submission_id, is_blocked: false };
+
     return this.#prisma
       .$transaction([
         this.#prisma.feedback.findMany({
-          where: { submission_id },
+          where: whereCondition,
           skip: Number(skip),
           take: Number(take),
           orderBy: { [safeSortBy]: safeSortOrder },
@@ -31,7 +33,7 @@ export class FeedbackRepository {
           },
         }),
         this.#prisma.feedback.count({
-          where: { submission_id },
+          where: whereCondition,
         }),
       ])
       .then(([feedbacks, totalCount]) => {
@@ -60,7 +62,7 @@ export class FeedbackRepository {
     return this.#prisma.feedback.update({ where: { id }, data: { content } });
   }
 
-  deleteFeedback(id) {
+  delete(id) {
     return this.#prisma.feedback.delete({ where: { id } });
   }
 
