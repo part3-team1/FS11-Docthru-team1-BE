@@ -38,7 +38,7 @@ export class EditRequestService {
     await this.#notificationRepository.create({
       user_id: challenge.request.requested_by,
       type: 'ADMIN_ACTION',
-      message: NOTIFICATION_MESSAGES.EDITREQUEST_APPROVED,
+      message: NOTIFICATION_MESSAGES.EDITREQUEST_APPROVED(challenge.title),
       reason: reason,
     });
 

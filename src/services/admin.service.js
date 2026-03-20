@@ -5,7 +5,6 @@ export class AdminService {
   #challengeRequestRepository;
   #notificationRepository;
   #userRepository;
-  #reportRepository;
   #feedbackRepository;
   #submissionRepository;
 
@@ -14,7 +13,6 @@ export class AdminService {
     challengeRequestRepository,
     notificationRepository,
     userRepository,
-    reportRepository,
     feedbackRepository,
     submissionRepository,
   }) {
@@ -22,7 +20,6 @@ export class AdminService {
     this.#challengeRequestRepository = challengeRequestRepository;
     this.#notificationRepository = notificationRepository;
     this.#userRepository = userRepository;
-    this.#reportRepository = reportRepository;
     this.#feedbackRepository = feedbackRepository;
     this.#submissionRepository = submissionRepository;
   }
@@ -32,7 +29,7 @@ export class AdminService {
     if (!request) throw new Error('리퀘스트를 찾을 수 없습니다.');
 
     const challenge = await this.#challengeRepository.create({
-      requestId: request.id,
+      request_id: request.id,
       title: request.title,
       doc_url: request.doc_url,
       description: request.description,
@@ -45,7 +42,7 @@ export class AdminService {
     await this.#challengeRequestRepository.updateStatus(request_id, 'APPROVED');
 
     await this.#notificationRepository.create({
-      userId: request.requested_by,
+      user_id: request.requested_by,
       type: 'CHALLENGE_APPROVED',
       message: NOTIFICATION_MESSAGES.CHALLENGE_APPROVED(request.title),
     });
@@ -64,7 +61,7 @@ export class AdminService {
     );
 
     await this.#notificationRepository.create({
-      userId: request.requested_by,
+      user_id: request.requested_by,
       type: 'CHALLENGE_REJECTED',
       message: NOTIFICATION_MESSAGES.CHALLENGE_REJECTED(request.title),
       reason,
@@ -92,48 +89,33 @@ export class AdminService {
     });
   }
 
-  //신고 처리
-  async handleReport(report_id, is_approved) {
-    const report = await this.#reportRepository.findById(report_id);
-    if (!report) throw new Error('신고 내역을 찾을 수 없습니다.');
+  //어드민의 수동 삭제
+  async adminDeleteSubmission(submission_id, reason) {
+    const submission = await this.#submissionRepository.findById(submission_id);
+    if (!submission) throw new Error('작업물을 찾을 수 없습니다.');
 
-    await this.#reportRepository.updateStatus(report_id, is_approved);
-    if (is_approved) {
-      if (report.report_type === 'FEEDBACK') {
-        await this.#feedbackRepository.block(report.target_id);
+    await this.#notificationRepository.create({
+      user_id: submission.user_id,
+      type: 'ADMIN_ACTION',
+      message: NOTIFICATION_MESSAGES.SUBMISSION_BANNED(submission.title),
+      reason,
+    });
 
-        if (report.target_user_id) {
-          await this.#notificationRepository.create({
-            userId: report.target_user_id,
-            type: 'ADMIN_ACTION',
-            message: NOTIFICATION_MESSAGES.FEEDBACK_BANNED,
-            reason: report.reason,
-          });
-        }
-      }
+    await this.#submissionRepository.delete(submission_id);
+  }
 
-      if (report.report_type === 'SUBMISSION') {
-        await this.#submissionRepository.delete(report.target_id);
+  //어드민의 수동 댓글 차단
+  async adminBlockFeedback(feedback_id, reason) {
+    const feedback = await this.#feedbackRepository.findById(feedback_id);
+    if (!feedback) throw new Error('댓글을 찾을 수 없습니다.');
 
-        if (report.target_user_id) {
-          await this.#notificationRepository.create({
-            userId: report.target_user_id,
-            type: 'ADMIN_ACTION',
-            message: NOTIFICATION_MESSAGES.SUBMISSION_BANNED,
-            reason: report.reason,
-          });
-        }
-      }
+    await this.#feedbackRepository.block(feedback_id, true);
 
-      if (report.report_type === 'USER' && report.target_user_id) {
-        await this.banUser(report.target_user_id, report.reason);
-      }
-
-      await this.#notificationRepository.create({
-        userId: report.reporter_id,
-        type: 'ADMIN_ACTION',
-        message: NOTIFICATION_MESSAGES.REPORT_PROCESSED,
-      });
-    }
+    await this.#notificationRepository.create({
+      user_id: feedback.user_id,
+      type: 'ADMIN_ACTION',
+      message: NOTIFICATION_MESSAGES.FEEDBACK_BANNED,
+      reason,
+    });
   }
 }

@@ -28,8 +28,6 @@ export class AuthService {
       email,
       password_hash: hashed,
       nickname,
-      grade: 'NORMAL',
-      status: 'ACTIVE',
     });
 
     return user;
@@ -45,9 +43,6 @@ export class AuthService {
 
     if (authUser.status === 'BANNED' || authUser.is_banned) {
       throw new Error('운영 정책 위반으로 정지된 계정입니다.');
-    }
-    if (authUser.status === 'WITHDRAWN') {
-      throw new Error('탈퇴한 계정입니다.');
     }
 
     const isPasswordValid = await this.#passwordProvider.compare(
@@ -67,6 +62,7 @@ export class AuthService {
       tokens.refresh_token,
     );
 
+    delete finalUser.password_hash;
     return { user: finalUser, tokens };
   }
 
@@ -78,10 +74,9 @@ export class AuthService {
     const maskedEmail = `withdrawn_${timestamp}_${user.email}`;
     const maskedNickname = `(탈퇴한 사용자_${timestamp.toString().slice(-4)})`;
 
-    return await this.#userRepository.updateUser(userId, {
+    return await this.#userRepository.deleteUser(userId, {
       email: maskedEmail,
       nickname: maskedNickname,
-      status: 'WITHDRAWN',
       deleted_at: new Date(),
     });
   }
@@ -128,9 +123,11 @@ export class AuthService {
     if (user.grade !== 'NORMAL') return user;
 
     if (user.participation_count >= 5 && user.best_selection_count >= 5) {
-      return await this.#userRepository.updateUser(user.id, {
+      await this.#userRepository.updateUser(user.id, {
         grade: 'EXPERT',
       });
+
+      return { ...user, grade: 'EXPERT' };
     }
 
     return user;

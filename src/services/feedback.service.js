@@ -37,7 +37,7 @@ export class FeedbackService {
     await this.#notificationRepository.create({
       user_id: submission.user_id,
       type: 'FEEDBACK_CREATED',
-      message: submission.title,
+      message: NOTIFICATION_MESSAGES.FEEDBACK_ADDED(challenge.title),
     });
 
     return feedback;
@@ -64,15 +64,19 @@ export class FeedbackService {
       throw new Error('수정 권한이 없습니다.');
     }
 
-    const updatedFeedback = await this.#feedbackRepository.update(feedback_id, {
+    const updatedFeedback = await this.#feedbackRepository.update(
+      feedback_id,
       content,
-    });
+    );
 
-    if (feedback.user_id !== user_id && userRole === 'ADMIN') {
+    if (
+      feedback.user_id !== user_id &&
+      (userRole === 'ADMIN' || userRole === 'MASTER')
+    ) {
       await this.#notificationRepository.create({
         user_id: feedback.user_id,
         type: 'FEEDBACK_UPDATED',
-        message: NOTIFICATION_MESSAGES.FEEDBACK_UPDATED,
+        message: NOTIFICATION_MESSAGES.FEEDBACK_MODIFIED(challenge.title),
       });
     }
 

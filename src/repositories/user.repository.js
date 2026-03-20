@@ -124,12 +124,12 @@ export class UserRepository {
   }
 
   //자진 탈퇴
-  deleteUser(id, { nickname, email }) {
+  deleteUser(id, { nickname, email, deleted_at }) {
     return this.#prisma.user.update({
       where: { id },
       data: {
         status: 'WITHDRAWN',
-        deleted_at: new Date(),
+        deleted_at,
         nickname, //'탈퇴한 사용자'로 변경
         email,
         refresh_token: null, //강제 로그아웃

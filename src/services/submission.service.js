@@ -3,20 +3,20 @@ import { NOTIFICATION_MESSAGES } from '#constants/message.js';
 export class SubmissionService {
   #submissionRepository;
   #heartRepository;
-  #userWorkspaceRepository;
+  #draftRepository;
   #challengeRepository;
   #notificationRepository;
 
   constructor({
     submissionRepository,
     heartRepository,
-    userWorkspaceRepository,
+    draftRepository,
     challengeRepository,
     notificationRepository,
   }) {
     this.#submissionRepository = submissionRepository;
     this.#heartRepository = heartRepository;
-    this.#userWorkspaceRepository = userWorkspaceRepository;
+    this.#draftRepository = draftRepository;
     this.#challengeRepository = challengeRepository;
     this.#notificationRepository = notificationRepository;
   }
@@ -41,13 +41,10 @@ export class SubmissionService {
     await this.#notificationRepository.create({
       user_id: challenge.request.requested_by,
       type: 'SUBMISSION_CREATED',
-      message: NOTIFICATION_MESSAGES.SUBMISSION_CREATED,
+      message: NOTIFICATION_MESSAGES.SUBMISSION_ADDED(challenge.title),
     });
 
-    await this.#userWorkspaceRepository.deleteByChallenge(
-      user_id,
-      challenge_id,
-    );
+    await this.#draftRepository.deleteByChallenge(user_id, challenge_id);
 
     return submission;
   }

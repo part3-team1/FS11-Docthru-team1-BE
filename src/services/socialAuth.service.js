@@ -80,9 +80,9 @@ export class SocialAuthService {
       user.participation_count >= 5 &&
       user.best_selection_count >= 5
     ) {
-      return await this.#userRepository.updateUser(user.id, {
-        grade: 'EXPERT',
-      });
+      await this.#userRepository.updateUser(...user, { grade: 'EXPERT' });
+
+      return { ...user, grad: 'EXPERT' };
     }
 
     return user;
