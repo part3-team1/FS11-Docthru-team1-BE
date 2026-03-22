@@ -1,4 +1,10 @@
 import { BAN_COUNT } from '#constants/count.js';
+import { ERROR_MESSAGE } from '#constants/error.js';
+import {
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '#exceptions';
 
 export class ReportService {
   #reportRepository;
@@ -26,7 +32,7 @@ export class ReportService {
       target_id,
     );
     if (isDuplicate) {
-      throw new Error('이미 신고한 내역이 있습니다.');
+      throw new ConflictException(ERROR_MESSAGE.REPORT_ALREADY_EXISTS);
     }
 
     const repoMap = {
@@ -37,12 +43,12 @@ export class ReportService {
 
     const targetRepo = repoMap[report_type];
     if (!targetRepo) {
-      throw new Error('유효하지 않은 신고 대상입니다.');
+      throw new BadRequestException(ERROR_MESSAGE.INVALID_REPORT_TARGET_TYPE);
     }
 
     const targetData = await targetRepo.findById(target_id);
     if (!targetData) {
-      throw new Error('신고 대상을 찾을 수 없습니다.');
+      throw new NotFoundException(ERROR_MESSAGE.REPORT_TARGET_NOT_FOUND);
     }
 
     const target_user_id =

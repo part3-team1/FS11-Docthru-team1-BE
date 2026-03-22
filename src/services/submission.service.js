@@ -1,4 +1,6 @@
 import { NOTIFICATION_MESSAGES } from '#constants/message.js';
+import { ERROR_MESSAGE } from '#constants/error.js';
+import { NotFoundException, BadRequestException } from '#exceptions';
 
 export class SubmissionService {
   #submissionRepository;
@@ -24,11 +26,11 @@ export class SubmissionService {
   async submit(user_id, challenge_id, data) {
     const challenge = await this.#challengeRepository.findById(challenge_id);
     if (!challenge) {
-      throw new Error('챌린지를 찾을 수 없습니다.');
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
     }
 
     if (new Date(challenge.due_date) < new Date()) {
-      throw new Error('마감된 챌린지에는 작업물을 제출할 수 없습니다.');
+      throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_ALREADY_CLOSED);
     }
 
     const submission = await this.#submissionRepository.create({
@@ -51,10 +53,11 @@ export class SubmissionService {
 
   async toggleHeart(user_id, submission_id) {
     const submission = await this.#submissionRepository.findById(submission_id);
-    if (!submission) throw new Error('작업물을 찾을 수 없습니다.');
+    if (!submission)
+      throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
 
     if (submission.user_id === user_id) {
-      throw new Error('스스로 1등을 하는것은 옳지 않습니다.');
+      throw new BadRequestException(ERROR_MESSAGE.CANNOT_LIKE_OWN_SUBMISSION);
     }
 
     const existingHeart = await this.#heartRepository.checkDuplicate(

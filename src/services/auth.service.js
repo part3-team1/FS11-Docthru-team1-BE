@@ -1,4 +1,11 @@
 import { UP_GRADE_CONDITION } from '#constants/count.js';
+import { ERROR_MESSAGE } from '#constants/error.js';
+import {
+  UnauthorizedException,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '#exceptions';
 
 export class AuthService {
   #userRepository;
@@ -18,10 +25,10 @@ export class AuthService {
     ]);
 
     if (existingEmail) {
-      throw new Error('이미 사용 중인 이메일입니다.');
+      throw new ConflictException(ERROR_MESSAGE.DUPLICATE_EMAIL);
     }
     if (existingNickname) {
-      throw new Error('이미 사용 중인 닉네임입니다.');
+      throw new ConflictException(ERROR_MESSAGE.DUPLICATE_NICKNAME);
     }
 
     const hashed = await this.#passwordProvider.hash(password);
@@ -40,11 +47,11 @@ export class AuthService {
       includePassword: true,
     });
     if (!authUser) {
-      throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new UnauthorizedException(ERROR_MESSAGE.INVALID_LOGIN);
     }
 
     if (authUser.status === 'BANNED' || authUser.is_banned) {
-      throw new Error('운영 정책 위반으로 정지된 계정입니다.');
+      throw new ForbiddenException(ERROR_MESSAGE.USER_BANNED);
     }
 
     const isPasswordValid = await this.#passwordProvider.compare(
@@ -53,7 +60,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new UnauthorizedException(ERROR_MESSAGE.INVALID_LOGIN);
     }
 
     const finalUser = await this.#checkGrade(authUser);
@@ -70,7 +77,7 @@ export class AuthService {
 
   async withdraw(userId) {
     const user = await this.#userRepository.findById(userId);
-    if (!user) throw new Error('계정을 찾을 수 없습니다.');
+    if (!user) throw new NotFoundException(ERROR_MESSAGE.ACCOUNT_NOT_FOUND);
 
     const timestamp = Date.now();
     const maskedEmail = `withdrawn_${timestamp}_${user.email}`;
@@ -86,19 +93,19 @@ export class AuthService {
   async refreshTokens(refreshToken) {
     const payload = this.#tokenProvider.verifyRefreshToken(refreshToken);
     if (!payload) {
-      throw new Error('유효하지 않은 토큰입니다.');
+      throw new UnauthorizedException(ERROR_MESSAGE.INVALID_TOKEN);
     }
 
     const user = await this.#userRepository.findById(payload.user_id);
     if (!user) {
-      throw new Error('계정을 찾을 수 없습니다.');
+      throw new NotFoundException(ERROR_MESSAGE.ACCOUNT_NOT_FOUND);
     }
     if (user.status !== 'ACTIVE' || user.is_banned) {
-      throw new Error('사용 권한이 없는 계정입니다');
+      throw new ForbiddenException(ERROR_MESSAGE.INACTIVE_ACCOUNT);
     }
 
     if (user.refresh_token !== refreshToken) {
-      throw new Error('보안 인증에 실패하였습니다.');
+      throw new UnauthorizedException(ERROR_MESSAGE.TOKEN_MISMATCH);
     }
 
     const finalUser = await this.#checkGrade(user);
@@ -115,7 +122,7 @@ export class AuthService {
   async getMe(user_id) {
     const user = await this.#userRepository.findById(user_id);
     if (!user) {
-      throw new Error('계정을 찾을 수 없습니다.');
+      throw new NotFoundException(ERROR_MESSAGE.ACCOUNT_NOT_FOUND);
     }
 
     return user;

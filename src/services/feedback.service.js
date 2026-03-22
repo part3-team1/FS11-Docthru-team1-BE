@@ -1,4 +1,10 @@
+import { ERROR_MESSAGE } from '#constants/error.js';
 import { NOTIFICATION_MESSAGES } from '#constants/message.js';
+import {
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '#exceptions';
 
 export class FeedbackService {
   #feedbackRepository;
@@ -20,13 +26,14 @@ export class FeedbackService {
 
   async createFeedback(user_id, submission_id, content) {
     const submission = await this.#submissionRepository.findById(submission_id);
-    if (!submission) throw new Error('작업물을 찾을 수 없습니다.');
+    if (!submission)
+      throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
 
     const challenge = await this.#challengeRepository.findById(
       submission.challenge_id,
     );
     if (challenge.status === 'CLOSED')
-      throw new Error('이미 완료된 챌린지입니다.');
+      throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_ALREADY_FINISHED);
 
     const feedback = await this.#feedbackRepository.create({
       user_id,
@@ -45,7 +52,8 @@ export class FeedbackService {
 
   async updateFeedback(user_id, feedback_id, content, userRole) {
     const feedback = await this.#feedbackRepository.findById(feedback_id);
-    if (!feedback) throw new Error('댓글을 찾을 수 없습니다.');
+    if (!feedback)
+      throw new NotFoundException(ERROR_MESSAGE.FEEDBACK_NOT_FOUND);
 
     const submission = await this.#submissionRepository.findById(
       feedback.submission_id,
@@ -54,14 +62,12 @@ export class FeedbackService {
       submission.challenge_id,
     );
     if (challenge.status === 'CLOSED')
-      throw new Error('이미 완료된 챌린지입니다.');
+      throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_ALREADY_FINISHED);
 
-    if (
-      feedback.user_id !== user_id &&
-      userRole !== 'ADMIN' &&
-      userRole !== 'MASTER'
-    ) {
-      throw new Error('수정 권한이 없습니다.');
+    const isOwner = feedback.user_id === userRole.id;
+    const isStaff = userRole === 'ADMIN' || userRole === 'MASTER';
+    if (!isOwner && !isStaff) {
+      throw new ForbiddenException(ERROR_MESSAGE.FEEDBACK_ACCESS_DENIED);
     }
 
     const updatedFeedback = await this.#feedbackRepository.update(
@@ -69,10 +75,7 @@ export class FeedbackService {
       content,
     );
 
-    if (
-      feedback.user_id !== user_id &&
-      (userRole === 'ADMIN' || userRole === 'MASTER')
-    ) {
+    if (!isOwner && !isStaff) {
       await this.#notificationRepository.create({
         user_id: feedback.user_id,
         type: 'FEEDBACK_UPDATED',

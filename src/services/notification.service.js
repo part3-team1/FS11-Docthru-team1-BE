@@ -1,3 +1,6 @@
+import { ERROR_MESSAGE } from '#constants/error.js';
+import { NotFoundException, ForbiddenException } from '#exceptions';
+
 export class NotificationService {
   #notificationRepository;
 
@@ -29,11 +32,11 @@ export class NotificationService {
     const notification =
       await this.#notificationRepository.findById(notification_id);
     if (!notification) {
-      throw new Error('알림을 찾을 수 없습니다.');
+      throw new NotFoundException(ERROR_MESSAGE.NOTIFICATION_NOT_FOUND);
     }
 
     if (notification.user_id !== user_id) {
-      throw new Error('본인의 알람만 읽음 처리할 수 있습니다.');
+      throw new ForbiddenException(ERROR_MESSAGE.NOTIFICATION_ACCESS_DENIED);
     }
 
     return await this.#notificationRepository.markAsRead(notification_id);
@@ -43,11 +46,11 @@ export class NotificationService {
     const notification =
       await this.#notificationRepository.findById(notification_id);
     if (!notification) {
-      throw new Error('삭제할 알림을 찾을 수 없습니다.');
+      throw new NotFoundException(ERROR_MESSAGE.NOTIFICATION_NOT_FOUND);
     }
 
     if (notification.user_id !== user_id) {
-      throw new Error('본인의 알람만 삭제할 수 있습니다.');
+      throw new ForbiddenException(ERROR_MESSAGE.NOTIFICATION_ACCESS_DENIED);
     }
 
     return await this.#notificationRepository.delete(notification_id);

@@ -1,4 +1,6 @@
+import { ERROR_MESSAGE } from '#constants/error.js';
 import { NOTIFICATION_MESSAGES } from '#constants/message.js';
+import { NotFoundException, BadRequestException } from '#exceptions';
 
 export class EditRequestService {
   #editRequestRepository;
@@ -17,10 +19,11 @@ export class EditRequestService {
 
   async createEditRequest(admin_id, challenge_id, updateData, reason) {
     const challenge = await this.#challengeRepository.findById(challenge_id);
-    if (!challenge) throw new Error('수정할 챌린지를 찾을 수 없습니다.');
+    if (!challenge)
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_FOR_EDIT_NOT_FOUND);
 
     if (challenge.status === 'DELETED')
-      throw new Error('이미 삭제된 챌린지입니다.');
+      throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_ALREADY_DELETED);
 
     const editLog = await this.#editRequestRepository.create({
       challenge_id,

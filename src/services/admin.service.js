@@ -1,4 +1,6 @@
 import { NOTIFICATION_MESSAGES } from '../common/constants/message.js';
+import { NotFoundException, ForbiddenException } from '#exceptions';
+import { ERROR_MESSAGE } from '#constants/error.js';
 
 export class AdminService {
   #challengeRepository;
@@ -26,7 +28,7 @@ export class AdminService {
 
   async approveRequest(request_id) {
     const request = await this.#challengeRequestRepository.findById(request_id);
-    if (!request) throw new Error('리퀘스트를 찾을 수 없습니다.');
+    if (!request) throw new NotFoundException(ERROR_MESSAGE.NOT_FOUND);
 
     const challenge = await this.#challengeRepository.create({
       request_id: request.id,
@@ -52,7 +54,7 @@ export class AdminService {
 
   async rejectRequest(request_id, reason) {
     const request = await this.#challengeRequestRepository.findById(request_id);
-    if (!request) throw new Error('리퀘스트를 찾을 수 없습니다.');
+    if (!request) throw new NotFoundException(ERROR_MESSAGE.NOT_FOUND);
 
     await this.#challengeRequestRepository.updateStatus(
       request_id,
@@ -71,10 +73,10 @@ export class AdminService {
   //유저 강제 정지
   async banUser(user_id, reason) {
     const user = await this.#userRepository.findById(user_id);
-    if (!user) throw new Error('유저를 찾을 수 없습니다.');
+    if (!user) throw new NotFoundException(ERROR_MESSAGE.USER_NOT_FOUND);
 
     if (user.role === 'MASTER')
-      throw new Error('정지/ 차단할 수 없는 계정입니다.');
+      throw new ForbiddenException(ERROR_MESSAGE.CANNOT_BAN_MASTER);
 
     await this.#userRepository.updateStatus(user_id, {
       status: 'BANNED',
@@ -92,7 +94,8 @@ export class AdminService {
   //어드민의 수동 삭제
   async adminDeleteSubmission(submission_id, reason) {
     const submission = await this.#submissionRepository.findById(submission_id);
-    if (!submission) throw new Error('작업물을 찾을 수 없습니다.');
+    if (!submission)
+      throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
 
     await this.#notificationRepository.create({
       user_id: submission.user_id,
@@ -107,7 +110,8 @@ export class AdminService {
   //어드민의 수동 댓글 차단
   async adminBlockFeedback(feedback_id, reason) {
     const feedback = await this.#feedbackRepository.findById(feedback_id);
-    if (!feedback) throw new Error('댓글을 찾을 수 없습니다.');
+    if (!feedback)
+      throw new NotFoundException(ERROR_MESSAGE.FEEDBACK_NOT_FOUND);
 
     await this.#feedbackRepository.block(feedback_id, true);
 

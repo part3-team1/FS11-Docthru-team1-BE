@@ -1,5 +1,10 @@
 import { UP_GRADE_CONDITION } from '#constants/count.js';
-
+import { ERROR_MESSAGE } from '#constants/error.js';
+import {
+  ForbiddenException,
+  BadRequestException,
+  NotFoundException,
+} from '#exceptions';
 export class SocialAuthService {
   #userRepository;
   #tokenProvider;
@@ -14,11 +19,11 @@ export class SocialAuthService {
     const user = await this.#resolveUser({ provider, profile });
 
     if (user.status === 'BANNED' || user.is_banned) {
-      throw new Error('운영 정책 위반으로 정지된 계정입니다.');
+      throw new ForbiddenException(ERROR_MESSAGE.USER_BANNED);
     }
 
     if (user.status === 'WITHDRAWN') {
-      throw new Error('탈퇴 처리된 계정입니다.');
+      throw new ForbiddenException(ERROR_MESSAGE.USER_WITHDRAWN);
     }
 
     const updatedUser = await this.#checkGrade(user);
@@ -82,9 +87,9 @@ export class SocialAuthService {
       user.participation_count >= UP_GRADE_CONDITION.PRTICIPATION_COUNT &&
       user.best_selection_count >= UP_GRADE_CONDITION.BEST_SELECTION_COUNT
     ) {
-      await this.#userRepository.updateUser(...user, { grade: 'EXPERT' });
+      await this.#userRepository.updateUser(user.id, { grade: 'EXPERT' });
 
-      return { ...user, grad: 'EXPERT' };
+      return { ...user, grade: 'EXPERT' };
     }
 
     return user;
@@ -99,7 +104,7 @@ export class SocialAuthService {
       case 'naver':
         return this.#getNaverProfile(code, state);
       default:
-        throw new Error('지원하지 않는 소셜 제공자입니다.');
+        throw new BadRequestException(ERROR_MESSAGE.UNSUPPORTED_PROVIDER);
     }
   }
 

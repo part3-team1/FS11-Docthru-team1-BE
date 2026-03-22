@@ -1,4 +1,6 @@
+import { ERROR_MESSAGE } from '#constants/error.js';
 import { NOTIFICATION_MESSAGES } from '#constants/message.js';
+import { NotFoundException, BadRequestException } from '#exceptions';
 
 export class ChallengeService {
   #challengeRepository;
@@ -11,28 +13,32 @@ export class ChallengeService {
 
   async getChallenge(id) {
     const challenge = await this.#challengeRepository.findById(id);
-    if (!challenge) throw new Error('챌린지를 찾을 수 없습니다.');
+    if (!challenge)
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
 
     return challenge;
   }
 
   async join(user_id, challenge_id) {
     const challenge = await this.#challengeRepository.findById(challenge_id);
-    if (!challenge) throw new Error('챌린지를 찾을 수 없습니다.');
+    if (!challenge)
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
 
     if (challenge.status !== 'OPENED')
-      throw new Error('지금은 챌린지를 참여할 수 없습니다.');
+      throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_NOT_OPENED);
     if (new Date(challenge.due_date) < new Date())
-      throw new Error('챌린지가 마감되었습니다.');
+      throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_EXPIRED);
     if (challenge.current_participants >= challenge.max_participants)
-      throw new Error('챌린지 인원이 초과되었습니다.');
+      throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_FULL);
 
     const isAlreadyJoined = await this.#challengeRepository.isParticipating(
       user_id,
       challenge_id,
     );
     if (isAlreadyJoined) {
-      throw new Error('이미 참여중인 챌린지입니다.');
+      throw new BadRequestException(
+        ERROR_MESSAGE.ALREADY_PARTICIPATING_CHALLENGE,
+      );
     }
 
     const result = await this.#challengeRepository.join(user_id, challenge_id);
@@ -48,10 +54,11 @@ export class ChallengeService {
 
   async leave(user_id, challenge_id) {
     const challenge = await this.#challengeRepository.findById(challenge_id);
-    if (!challenge) throw new Error('챌린지를 찾을 수 없습니다.');
+    if (!challenge)
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
 
     if (new Date(challenge.due_date) < new Date()) {
-      throw new Error('마감된 챌린지는 참여를 취소할 수 없습니다.');
+      throw new BadRequestException(ERROR_MESSAGE.CANNOT_LEAVE_CHALLENGE);
     }
 
     const isParticipating = await this.#challengeRepository.isParticipating(
@@ -59,7 +66,7 @@ export class ChallengeService {
       challenge_id,
     );
     if (!isParticipating) {
-      throw new Error('참여 중인 챌린지가 아닙니다.');
+      throw new BadRequestException(ERROR_MESSAGE.NOT_PARTICIPATING_CHALLENGE);
     }
 
     return await this.#challengeRepository.leave(user_id, challenge_id);
