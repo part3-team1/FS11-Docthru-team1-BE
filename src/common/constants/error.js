@@ -6,7 +6,7 @@ export const PRISMA_ERROR = {
 export const ERROR_MESSAGE = {
   // 인증 및 계정 관련
   USER_BANNED: '운영 정책 위반으로 정지된 계정입니다.',
-  USER_WITHDRAWN: '탈퇴 처리된 계정입니다.',
+  USER_WITHDRAWN: '계정이 탈퇴 처리되었습니다.',
   UNSUPPORTED_PROVIDER: '지원하지 않는 소셜 제공자입니다.',
   INVALID_SOCIAL_AUTH: '소셜 인증 정보가 유효하지 않습니다.',
   DUPLICATE_EMAIL: '이미 사용 중인 이메일입니다.',

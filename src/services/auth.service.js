@@ -38,7 +38,14 @@ export class AuthService {
       nickname,
     });
 
-    return user;
+    const tokens = this.#tokenProvider.generateTokens(user);
+
+    await this.#userRepository.updateRefreshToken(
+      user.id,
+      tokens.refresh_token,
+    );
+
+    return { user, tokens };
   }
 
   async login({ email, password }) {
@@ -72,6 +79,15 @@ export class AuthService {
 
     delete finalUser.password_hash;
     return { user: finalUser, tokens };
+  }
+
+  async logout(userId) {
+    const user = await this.#userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException(ERROR_MESSAGE.ACCOUNT_NOT_FOUND);
+    }
+
+    await this.#userRepository.updateRefreshToken(userId, null);
   }
 
   async withdraw(userId) {
@@ -118,8 +134,8 @@ export class AuthService {
     return { user: finalUser, tokens };
   }
 
-  async getMe(user_id) {
-    const user = await this.#userRepository.findById(user_id);
+  async getMe(userId) {
+    const user = await this.#userRepository.findById(userId);
     if (!user) {
       throw new NotFoundException(ERROR_MESSAGE.ACCOUNT_NOT_FOUND);
     }

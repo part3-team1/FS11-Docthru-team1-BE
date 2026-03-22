@@ -20,7 +20,8 @@
     "#providers": "./src/providers/index.js",
     "#routes": "./src/routes/index.js",
     "#routes/*": "./src/routes/*",
-    "#utils/*": "./src/utils/*"
+    "#utils/*": "./src/utils/*",
+    "#schemas/*":"./src/schemas/*"
   },
   "scripts": {
     "dev": "nodemon --env-file=./env/.env.development ./src/main.js",
