@@ -3,14 +3,33 @@ import { NotFoundException, BadRequestException } from '#exceptions';
 
 export class ChallengeService {
   #challengeRepository;
+  #challengeRequestRepository;
   #notificationRepository;
 
-  constructor({ challengeRepository, notificationRepository }) {
+  constructor({
+    challengeRepository,
+    challengeRequestRepository,
+    notificationRepository,
+  }) {
     this.#challengeRepository = challengeRepository;
+    this.#challengeRequestRepository = challengeRequestRepository;
     this.#notificationRepository = notificationRepository;
   }
 
-  async getChallenge(id) {
+  async createRequest(user_id, data) {
+    const request = await this.#challengeRequestRepository.create({
+      user_id,
+      ...data,
+    });
+
+    return request;
+  }
+
+  async getChallenges(query) {
+    return await this.#challengeRepository.findAll(query);
+  }
+
+  async getChallengeById(id) {
     const challenge = await this.#challengeRepository.findById(id);
     if (!challenge)
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);

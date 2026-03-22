@@ -50,6 +50,33 @@ export class SubmissionService {
     return submission;
   }
 
+  async getSubmissionsByChallenge(challenge_id, query) {
+    return await this.#submissionRepository.findAllByChallengeId(
+      challenge_id,
+      query,
+    );
+  }
+
+  async getsubmissionById(id) {
+    const submission = await this.#submissionRepository.findById(id);
+    if (!submission || submission.is_deleted || submission.is_blocked) {
+      throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
+    }
+
+    return submission;
+  }
+
+  async getTopRankings(challenge_id, limit) {
+    return await this.#submissionRepository.findTopRankings(
+      challenge_id,
+      limit,
+    );
+  }
+
+  async getMySubmissions(user_id, query) {
+    return await this.#submissionRepository.findAllByUserId(user_id, query);
+  }
+
   async toggleHeart(user_id, submission_id) {
     const submission = await this.#submissionRepository.findById(submission_id);
     if (!submission)

@@ -5,7 +5,7 @@ export const PRISMA_ERROR = {
 
 export const ERROR_MESSAGE = {
   // 인증 및 계정 관련
-  USER_BANNED: '운영 정책 위반으로 정지된 계정입니다.',
+  USER_BANNED: '운영 정책 위반으로 계정이 정지되었습니다.',
   USER_WITHDRAWN: '계정이 탈퇴 처리되었습니다.',
   UNSUPPORTED_PROVIDER: '지원하지 않는 소셜 제공자입니다.',
   INVALID_SOCIAL_AUTH: '소셜 인증 정보가 유효하지 않습니다.',
@@ -47,13 +47,15 @@ export const ERROR_MESSAGE = {
   NOTIFICATION_NOT_FOUND: '알림을 찾을 수 없습니다.',
   NOTIFICATION_ACCESS_DENIED: '본인의 알림만 관리할 수 있습니다.',
 
-  // 피드백(Feedback) 관련
-  FEEDBACK_NOT_FOUND: '피드백(댓글)을 찾을 수 없습니다.',
+  // 피드백 관련
+  FEEDBACK_NOT_FOUND: '댓글을 찾을 수 없습니다.',
   FEEDBACK_ACCESS_DENIED: '해당 피드백을 수정할 권한이 없습니다.',
+  FEEBACK_BANNED: '댓글이 차단되었습니다.',
 
   //기타
   INVALID_INPUT: '입력값이 잘못되었습니다.',
   VALIDATION_FAILED: '검증에 실패했습니다.',
+  REQUEST_DENIED: '신청이 거부되었습니다.',
 
   //기본 에러 메시지
   NOT_FOUND: '요청한 리소스를 찾을 수 없습니다.',

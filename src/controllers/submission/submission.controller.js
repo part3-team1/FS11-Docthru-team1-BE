@@ -1,0 +1,107 @@
+import { BaseController } from '#controllers/base.controller.js';
+import { HTTP_STATUS } from '#constants';
+import { authenticate, validate } from '#middlewares';
+import { submissionSchema } from '#schemas/validation.schema.js';
+
+export class SubmissionController extends BaseController {
+  #submissionService;
+
+  constructor({ submissionService }) {
+    super();
+    this.#submissionService = submissionService;
+  }
+
+  routes() {
+    this.router.get('/challenges/:challengeId', (req, res, next) =>
+      this.getSubmissionByChallenge(req, res, next),
+    );
+    this.router.get('/:id', (req, res, next) =>
+      this.getSubmissionById(req, res, next),
+    );
+    this.router.get('/me', authenticate, (req, res, next) =>
+      this.getMySubmissions(req, res, next),
+    );
+    this.router.get('/challenges/:challengeId/rankings', (req, res, next) =>
+      this.getTopRankings(req, res, next),
+    );
+    this.router.post(
+      '/challenges/:challengeId',
+      authenticate,
+      validate('body', submissionSchema),
+      (req, res, next) => this.submit(req, res, next),
+    );
+    this.router.post('/:id/heart', authenticate, (req, res, next) =>
+      this.toggleHeart(req, res, next),
+    );
+
+    return this.router;
+  }
+
+  async getSubmissionByChallenge(req, res, next) {
+    try {
+      const { challengeId } = req.params;
+      const { skip, take, SortBy, sortOrder } = req.query;
+
+      const result = await this.#submissionService.getSubmissionByChallenge(
+        challengeId,
+        { skip, take, SortBy, sortOrder },
+      );
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: {
+          submissions: result.submissions,
+          totalCount: result.totalCount,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getSubmissionById(req, res, next) {
+    try {
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMySubmissions(req, res, next) {
+    try {
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getTopRankings(req, res, next) {
+    try {
+      const { challengeId } = req.params;
+      const { limit = 5 } = req.query;
+
+      const rankings = await this.#submissionService.getTopRankings(
+        challengeId,
+        limit,
+      );
+
+      res
+        .status(HTTP_STATUS.OK)
+        .json({ success: true, data: { submissions: rankings } });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async submit(req, res, next) {
+    try {
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async toggleHeart(req, res, next) {
+    try {
+    } catch (error) {
+      next(error);
+    }
+  }
+}

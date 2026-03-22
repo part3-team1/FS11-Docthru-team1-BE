@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { REPORT_REASON, VALIDATION_ERROR} from '#constants';
+import { REPORT_REASON, VALIDATION_ERROR } from '#constants';
 
 export const authSchema = z.object({
   nickname: z
@@ -28,6 +28,13 @@ export const challengeSchema = z.object({
 
 export const feedbackSchema = z.object({
   content: z.string().max(500, VALIDATION_ERROR.MAX_FEEDBACK),
+});
+
+export const submissionSchema = z.object({
+  title: z
+    .string()
+    .min(10, VALIDATION_ERROR.MIN_TITLE)
+    .max(50, VALIDATION_ERROR.MAX_TITLE),
 });
 
 export const reportSchema = z.object({
