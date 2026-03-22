@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { REPORT_REASON } from '#constants/report.js';
-import { VALIDATION_ERROR } from '#constants/error.js';
+import { REPORT_REASON, VALIDATION_ERROR} from '#constants';
 
 export const authSchema = z.object({
   nickname: z

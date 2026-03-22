@@ -52,10 +52,8 @@ export const ERROR_MESSAGE = {
   FEEDBACK_ACCESS_DENIED: '해당 피드백을 수정할 권한이 없습니다.',
 
   //기타
-  INVALID_GOOGLE_TOKEN: '유효하지 않은 Google 토큰입니다.',
-  TEMP_NOT_FOUND: '저장된 임시작업이 없습니다.',
-  INVALID_INPUT: 'Invalid input',
-  VALIDATION_FAILED: 'Validation failed',
+  INVALID_INPUT: '입력값이 잘못되었습니다.',
+  VALIDATION_FAILED: '검증에 실패했습니다.',
 
   //기본 에러 메시지
   NOT_FOUND: '요청한 리소스를 찾을 수 없습니다.',

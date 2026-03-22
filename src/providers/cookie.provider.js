@@ -1,8 +1,5 @@
 import { config } from '#config';
-import {
-  ACCESS_TOKEN_MAX_AGE,
-  REFRESH_TOKEN_MAX_AGE,
-} from '#constants/time.js';
+import { ACCESS_TOKEN_MAX_AGE, REFRESH_TOKEN_MAX_AGE } from '#constants';
 
 export class CookieProvider {
   setAuthCookies(res, tokens) {

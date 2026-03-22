@@ -1,5 +1,4 @@
-import { BAN_COUNT } from '#constants/count.js';
-import { ERROR_MESSAGE } from '#constants/error.js';
+import { BAN_COUNT, ERROR_MESSAGE } from '#constants';
 import {
   BadRequestException,
   NotFoundException,

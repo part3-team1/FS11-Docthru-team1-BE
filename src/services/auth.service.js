@@ -1,5 +1,4 @@
-import { UP_GRADE_CONDITION } from '#constants/count.js';
-import { ERROR_MESSAGE } from '#constants/error.js';
+import { UP_GRADE_CONDITION, ERROR_MESSAGE } from '#constants';
 import {
   UnauthorizedException,
   NotFoundException,

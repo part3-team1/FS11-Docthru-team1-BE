@@ -1,24 +1,36 @@
-//임시! 변경 예정!
-export const validate = (schema) => (req, res, next) => {
-  try {
-    const validatedData = schema.parse(req.body);
-    req.body = validatedData;
+import { isProduction } from '#config';
+import { flattenError } from 'zod';
+import { BadRequestException } from '#exceptions';
+import { ERROR_MESSAGE } from '#constants';
 
-    next();
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const errorMessages = error.errors.map((error) => ({
-        field: error.path.join('.'),
-        message: error.message,
-      }));
-
-      return res.status(400).json({
-        success: false,
-        message: '입력값이 유효하지 않습니다.',
-        errors: errorMessages,
-      });
-    }
-
-    next(error);
+export const validate = (target, schema) => {
+  if (!['body', 'query', 'params'].includes(target)) {
+    throw new Error(
+      `[validate middleware] Invalid target: "${target}". Expected "body", "query", or "params" `,
+    );
   }
+
+  return (req, res, next) => {
+    try {
+      const result = schema.safeParse(req[target]);
+
+      if (!result.success) {
+        const { fieldErrors } = flattenError(result.error);
+
+        if (isProduction) {
+          throw new BadRequestException(ERROR_MESSAGE.INVALID_INPUT);
+        }
+
+        throw new BadRequestException(
+          ERROR_MESSAGE.VALIDATION_FAILED,
+          fieldErrors,
+        );
+      }
+
+      req[target] = result.data;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };
 };

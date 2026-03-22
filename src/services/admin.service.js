@@ -1,6 +1,5 @@
-import { NOTIFICATION_MESSAGES } from '../common/constants/message.js';
+import { NOTIFICATION_MESSAGES, ERROR_MESSAGE } from '#constants';
 import { NotFoundException, ForbiddenException } from '#exceptions';
-import { ERROR_MESSAGE } from '#constants/error.js';
 
 export class AdminService {
   #challengeRepository;

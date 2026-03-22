@@ -1,5 +1,4 @@
-import { NOTIFICATION_MESSAGES } from '#constants/message.js';
-import { ERROR_MESSAGE } from '#constants/error.js';
+import { NOTIFICATION_MESSAGES, ERROR_MESSAGE } from '#constants';
 import { NotFoundException, BadRequestException } from '#exceptions';
 
 export class SubmissionService {

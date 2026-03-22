@@ -1,4 +1,4 @@
-import { ERROR_MESSAGE } from '#constants/error.js';
+import { ERROR_MESSAGE } from '#constants';
 import { NotFoundException, ForbiddenException } from '#exceptions';
 
 export class NotificationService {

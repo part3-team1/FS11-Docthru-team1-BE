@@ -9,6 +9,7 @@ export * from './auth.middleware.js';
 export * from './logger.middleware.js';
 export * from './authorization.middleware.js';
 export * from './case-converter.middleware.js';
+export * from './cors.middleware.js';
 
 //미들웨어 순서
 // logger
