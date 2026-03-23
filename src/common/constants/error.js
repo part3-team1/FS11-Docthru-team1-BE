@@ -53,7 +53,7 @@ export const ERROR_MESSAGE = {
   // 피드백 관련
   FEEDBACK_NOT_FOUND: '댓글을 찾을 수 없습니다.',
   FEEDBACK_ACCESS_DENIED: '해당 피드백을 수정할 권한이 없습니다.',
-  FEEBACK_BANNED: '댓글이 차단되었습니다.',
+  FEEDBACK_BANNED: '댓글이 차단되었습니다.',
   FEEDBACK_DELELTED: '댓글이 삭제되었습니다.',
 
   //기타

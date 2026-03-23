@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { ERROR_MESSAGE, HTTP_STATUS } from '#constants';
-import { validate, authenticate } from '#middlewares';
+import { validate, needsLogin } from '#middlewares';
 import { authSchema } from '#schemas/validation.schema.js';
 
 export class AuthController extends BaseController {
@@ -22,13 +22,13 @@ export class AuthController extends BaseController {
     this.router.post('/login', validate('body', authSchema), (req, res, next) =>
       this.login(req, res, next),
     );
-    this.router.post('/logout', authenticate, (req, res, next) =>
+    this.router.post('/logout', needsLogin, (req, res, next) =>
       this.logout(req, res, next),
     );
-    this.router.get('/me', authenticate, (req, res, next) =>
+    this.router.get('/me', needsLogin, (req, res, next) =>
       this.getMe(req, res, next),
     );
-    this.router.delete('/withdraw', authenticate, (req, res, next) =>
+    this.router.delete('/withdraw', needsLogin, (req, res, next) =>
       this.withdraw(req, res, next),
     );
 

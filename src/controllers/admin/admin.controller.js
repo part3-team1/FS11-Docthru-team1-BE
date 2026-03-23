@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { ERROR_MESSAGE, HTTP_STATUS } from '#constants';
-import { authenticate } from '#middlewares';
+import { authenticate, needsAdmin } from '#middlewares';
 
 export class AdminController extends BaseController {
   #adminService;
@@ -11,19 +11,21 @@ export class AdminController extends BaseController {
   }
 
   routes() {
-    this.router.patch('/requests/:id/approve', authenticate, (req, res, next) =>
+    this.router.use(needsAdmin); //어드민만 이 파일의 api 이용가능
+
+    this.router.patch('/requests/:id/approve', (req, res, next) =>
       this.approveRequest(req, res, next),
     );
-    this.router.patch('/requests/:id/reject', authenticate, (req, res, next) =>
+    this.router.patch('/requests/:id/reject', (req, res, next) =>
       this.rejectRequest(req, res, next),
     );
-    this.router.patch('/users/:id/ban', authenticate, (req, res, next) =>
+    this.router.patch('/users/:id/ban', (req, res, next) =>
       this.banUser(req, res, next),
     );
-    this.router.delete('/submissions/:id', authenticate, (req, res, next) =>
+    this.router.delete('/submissions/:id', (req, res, next) =>
       this.deleteSubmission(req, res, next),
     );
-    this.router.patch('/feedbacks/:id/block', authenticate, (req, res, next) =>
+    this.router.patch('/feedbacks/:id/block', (req, res, next) =>
       this.blockFeedback(req, res, next),
     );
 
@@ -89,7 +91,7 @@ export class AdminController extends BaseController {
       await this.#adminService.adminBlockFeedback(feedbackId, reason);
       res
         .status(HTTP_STATUS.OK)
-        .json({ success: true, message: ERROR_MESSAGE.FEEBACK_BANNED });
+        .json({ success: true, message: ERROR_MESSAGE.FEEDBACK_BANNED });
     } catch (error) {
       next(error);
     }

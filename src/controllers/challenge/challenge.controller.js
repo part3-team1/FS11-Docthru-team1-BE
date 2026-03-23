@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
-import { authenticate } from '#middlewares';
+import { needsLogin } from '#middlewares';
 
 export class ChallengeController extends BaseController {
   #challengeService;
@@ -17,10 +17,10 @@ export class ChallengeController extends BaseController {
     this.router.get('/:id', (req, res, next) =>
       this.getChallengeById(req, res, next),
     );
-    this.router.post('/:id/join', authenticate, (req, res, next) =>
+    this.router.post('/:id/join', needsLogin, (req, res, next) =>
       this.join(req, res, next),
     );
-    this.router.delete('/:id/leave', authenticate, (req, res, next) =>
+    this.router.delete('/:id/leave', needsLogin, (req, res, next) =>
       this.leave(req, res, next),
     );
 
@@ -29,8 +29,15 @@ export class ChallengeController extends BaseController {
 
   async getChallenges(req, res, next) {
     try {
-      const { skip, take, keyword, category, status, sortBy, sortOrder } =
-        req.query;
+      const {
+        skip,
+        take,
+        keyword,
+        category,
+        status,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+      } = req.query;
 
       const result = await this.#challengeService.getChallenges({
         skip,
@@ -45,7 +52,7 @@ export class ChallengeController extends BaseController {
       res.status(HTTP_STATUS.OK).json({
         success: true,
         data: {
-          challenge: result.challenges,
+          challenges: result.challenges,
           totalCount: result.totalCount,
         },
       });
@@ -56,8 +63,9 @@ export class ChallengeController extends BaseController {
 
   async getChallengeById(req, res, next) {
     try {
-      const { id } = req.params;
-      const challenge = await this.#challengeService.getChallengeById(id);
+      const { id: challengeId } = req.params;
+      const challenge =
+        await this.#challengeService.getChallengeById(challengeId);
 
       res.status(HTTP_STATUS.OK).json({
         success: true,

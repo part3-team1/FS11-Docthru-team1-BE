@@ -10,5 +10,7 @@ const createAuthorizationMiddleware = (predicate) => (req, res, next) => {
 };
 
 const hasLoginUser = (req) => Boolean(req.user);
+const hasAdminUser = (req) => ['ADMIN', 'MASTER'].includes(req.user?.role);
 
 export const needsLogin = createAuthorizationMiddleware(hasLoginUser);
+export const needsAdmin = createAuthorizationMiddleware(hasAdminUser);

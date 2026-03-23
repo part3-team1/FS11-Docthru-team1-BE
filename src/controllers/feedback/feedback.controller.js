@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { ERROR_MESSAGE, HTTP_STATUS } from '#constants';
-import { authenticate, validate } from '#middlewares';
+import { needsLogin, validate } from '#middlewares';
 import { feedbackSchema } from '#schemas/validation.schema.js';
 
 export class FeedbackController extends BaseController {
@@ -17,17 +17,17 @@ export class FeedbackController extends BaseController {
     );
     this.router.post(
       '/submissions/:submissionId',
-      authenticate,
+      needsLogin,
       validate('body', feedbackSchema),
       (req, res, next) => this.createFeedback(req, res, next),
     );
     this.router.patch(
       '/:id',
-      authenticate,
+      needsLogin,
       validate('body', feedbackSchema),
       (req, res, next) => this.updateFeedback(req, res, next),
     );
-    this.router.delete('/:id', authenticate, (req, res, next) =>
+    this.router.delete('/:id', needsLogin, (req, res, next) =>
       this.deleteFeedback(req, res, next),
     );
 
@@ -36,8 +36,8 @@ export class FeedbackController extends BaseController {
 
   async getFeedbacksBySubmission(req, res, next) {
     try {
-      const { submissionId } = req.params;
-      const { skip, take, sortBy, sortOrder } = req.query;
+      const { submission_id: submissionId } = req.params;
+      const { skip, take, sort_by: sortBy, sort_order: sortOrder } = req.query;
 
       const result = await this.#feedbackService.getFeedbacksBySubmission(
         submissionId,
@@ -56,7 +56,7 @@ export class FeedbackController extends BaseController {
   async createFeedback(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { submissionId } = req.params;
+      const { submission_id: submissionId } = req.params;
       const { content } = req.body;
 
       const feedback = await this.#feedbackService.createFeedback(

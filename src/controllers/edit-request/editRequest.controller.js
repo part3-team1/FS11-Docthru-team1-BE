@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
-import { authenticate } from '#middlewares';
+import { needsLogin } from '#middlewares';
 
 export class EditRequestController extends BaseController {
   #editRequestService;
@@ -11,7 +11,7 @@ export class EditRequestController extends BaseController {
   }
 
   routes() {
-    this.router.post('/challenge/:id', authenticate, (req, res, next) =>
+    this.router.post('/challenge/:challengeId', needsLogin, (req, res, next) =>
       this.createEditRequest(req, res, next),
     );
 
@@ -20,9 +20,9 @@ export class EditRequestController extends BaseController {
 
   async createEditRequest(req, res, next) {
     try {
-      const { id: challengeId } = req.params;
+      const { challenge_id: challengeId } = req.params;
       const { id: adminId } = req.user;
-      const { updateData, reason } = req.body;
+      const { update_data: updateData, reason } = req.body;
 
       const result = await this.#editRequestService.createEditRequest(
         adminId,

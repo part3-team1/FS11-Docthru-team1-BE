@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { ERROR_MESSAGE, HTTP_STATUS } from '#constants';
-import { authenticate } from '#middlewares';
+import { needsLogin } from '#middlewares';
 
 export class NotificationController extends BaseController {
   #notificationService;
@@ -11,16 +11,16 @@ export class NotificationController extends BaseController {
   }
 
   routes() {
-    this.router.get('/', authenticate, (req, res, next) =>
+    this.router.get('/', needsLogin, (req, res, next) =>
       this.getMyNotifications(req, res, next),
     );
-    this.router.get('/unread-count', authenticate, (req, res, next) =>
+    this.router.get('/unread-count', needsLogin, (req, res, next) =>
       this.getUnreadCount(req, res, next),
     );
-    this.router.patch('/:id/read', authenticate, (req, res, next) =>
+    this.router.patch('/:id/read', needsLogin, (req, res, next) =>
       this.markAsRead(req, res, next),
     );
-    this.router.delete('/:id', authenticate, (req, res, next) =>
+    this.router.delete('/:id', needsLogin, (req, res, next) =>
       this.deleteNotification(req, res, next),
     );
 

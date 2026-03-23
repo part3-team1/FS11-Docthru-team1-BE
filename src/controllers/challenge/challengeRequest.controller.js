@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
-import { authenticate, validate } from '#middlewares';
+import { needsLogin, validate } from '#middlewares';
 import { challengeSchema } from '#schemas/validation.schema.js';
 
 export class ChallengeRequestController extends BaseController {
@@ -14,7 +14,7 @@ export class ChallengeRequestController extends BaseController {
   routes() {
     this.router.post(
       '/',
-      authenticate,
+      needsLogin,
       validate('body', challengeSchema),
       (req, res, next) => this.createRequest(req, res, next),
     );
@@ -27,22 +27,22 @@ export class ChallengeRequestController extends BaseController {
       const { id: userId } = req.user;
       const {
         title,
-        docUrl,
+        doc_url,
         description,
         category,
-        documentType,
-        dueDate,
-        maxParticipants,
+        document_type,
+        due_date,
+        max_participants,
       } = req.body;
 
       const request = await this.#challengeService.createRequest(userId, {
         title,
-        docUrl,
+        doc_url,
         description,
         category,
-        documentType,
-        dueDate,
-        maxParticipants,
+        document_type,
+        due_date,
+        max_participants,
       });
 
       res.status(HTTP_STATUS.CREATED).json({ success: true, data: request });

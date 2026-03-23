@@ -3,15 +3,15 @@ import { BaseController } from './base.controller.js';
 import { HTTP_STATUS } from '#constants';
 
 export * from './base.controller.js';
-export * from './admin';
-export * from './auth';
-export * from './challenge';
-export * from './draft';
-export * from './edit-request';
-export * from './feedback';
-export * from './notification';
-export * from './report';
-export * from './submission';
+export * from './admin/index.js';
+export * from './auth/index.js';
+export * from './challenge/index.js';
+export * from './draft/index.js';
+export * from './edit-request/index.js';
+export * from './feedback/index.js';
+export * from './notification/index.js';
+export * from './report/index.js';
+export * from './submission/index.js';
 
 export class Controller extends BaseController {
   #adminController;

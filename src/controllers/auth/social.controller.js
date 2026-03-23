@@ -5,10 +5,12 @@ import { socialLoginSchema } from '#schemas/validation.schema.js';
 
 export class SocialAuthController extends BaseController {
   #socialAuthService;
+  #cookieProvider;
 
-  constructor({ socialAuthService }) {
+  constructor({ socialAuthService, cookieProvider }) {
     super();
     this.#socialAuthService = socialAuthService;
+    this.#cookieProvider = cookieProvider;
   }
 
   routes() {
@@ -31,6 +33,8 @@ export class SocialAuthController extends BaseController {
         code,
         state,
       });
+
+      this.#cookieProvider.setAuthCookies(res, tokens);
 
       res.status(HTTP_STATUS.OK).json({
         success: true,

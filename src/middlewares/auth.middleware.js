@@ -3,7 +3,7 @@ export class AuthMiddleware {
   #tokenProvider;
   #cookieProvider;
 
-  constructor(authService, tokenProvider, cookieProvider) {
+  constructor({ authService, tokenProvider, cookieProvider }) {
     this.#authService = authService;
     this.#tokenProvider = tokenProvider;
     this.#cookieProvider = cookieProvider;
@@ -17,12 +17,16 @@ export class AuthMiddleware {
         return next();
       }
 
-      const accessUserId = accessToken
-        ? this.#tokenProvider.verifyAccessToken(accessToken)?.userId
+      const decoded = accessToken
+        ? this.#tokenProvider.verifyAccessToken(accessToken)
         : null;
 
-      if (accessUserId) {
-        req.user = { id: accessUserId };
+      if (decoded?.user_id) {
+        req.user = {
+          id: decoded.user_id,
+          role: decoded.role,
+          grade: decoded.grade,
+        };
         return next();
       }
 
@@ -35,7 +39,7 @@ export class AuthMiddleware {
         await this.#authService.refreshTokens(refreshToken);
 
       this.#cookieProvider.setAuthCookies(res, tokens);
-      req.user = { id: user.id };
+      req.user = { id: user.id, role: user.role, grade: user.grade };
 
       return next();
     } catch {

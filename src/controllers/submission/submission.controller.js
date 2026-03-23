@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
-import { authenticate, validate } from '#middlewares';
+import { needsLogin, validate } from '#middlewares';
 import { submissionSchema } from '#schemas/validation.schema.js';
 
 export class SubmissionController extends BaseController {
@@ -18,7 +18,7 @@ export class SubmissionController extends BaseController {
     this.router.get('/:id', (req, res, next) =>
       this.getSubmissionById(req, res, next),
     );
-    this.router.get('/me', authenticate, (req, res, next) =>
+    this.router.get('/me', needsLogin, (req, res, next) =>
       this.getMySubmissions(req, res, next),
     );
     this.router.get('/challenges/:challengeId/rankings', (req, res, next) =>
@@ -26,11 +26,11 @@ export class SubmissionController extends BaseController {
     );
     this.router.post(
       '/challenges/:challengeId',
-      authenticate,
+      needsLogin,
       validate('body', submissionSchema),
       (req, res, next) => this.submit(req, res, next),
     );
-    this.router.post('/:id/heart', authenticate, (req, res, next) =>
+    this.router.post('/:id/heart', needsLogin, (req, res, next) =>
       this.toggleHeart(req, res, next),
     );
 
@@ -39,8 +39,8 @@ export class SubmissionController extends BaseController {
 
   async getSubmissionByChallenge(req, res, next) {
     try {
-      const { challengeId } = req.params;
-      const { skip, take, SortBy, sortOrder } = req.query;
+      const { challenge_id: challengeId } = req.params;
+      const { skip, take, sort_by: SortBy, sort_order: sortOrder } = req.query;
 
       const result = await this.#submissionService.getSubmissionByChallenge(
         challengeId,
@@ -94,7 +94,7 @@ export class SubmissionController extends BaseController {
 
   async getTopRankings(req, res, next) {
     try {
-      const { challengeId } = req.params;
+      const { challenge_id: challengeId } = req.params;
       const { limit = 5 } = req.query;
 
       const rankings = await this.#submissionService.getTopRankings(
@@ -113,7 +113,7 @@ export class SubmissionController extends BaseController {
   async submit(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { challengeId } = req.params;
+      const { challenge_id: challengeId } = req.params;
       const { title, content } = req.body;
 
       const submission = await this.#submissionService.submit(
