@@ -74,6 +74,9 @@ export const ERROR_MESSAGE = {
 };
 
 export const VALIDATION_ERROR = {
+  EMPTY_EMAIL: '이메일을 입력해주세요.',
+  MAX_EMAIL: '이메일은 50자까지 가능합니다.',
+  INVALID_EMAIL: '사용할 수 없는 이메일 형식입니다.',
   MIN_NICKNAME: '닉네임은 최소 2자 이상이어야 합니다.',
   MAX_NICKNAME: '닉네임은 최대 8자까지 가능합니다.',
   MIN_PASSWORD: '비밀번호는 최소 8자 이상이어야 합니다.',

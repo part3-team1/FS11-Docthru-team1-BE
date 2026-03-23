@@ -1,7 +1,7 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { ERROR_MESSAGE, HTTP_STATUS } from '#constants';
 import { validate, needsLogin } from '#middlewares';
-import { authSchema } from '#schemas/validation.schema.js';
+import { authSchema, loginSchema } from '#schemas/validation.schema.js';
 
 export class AuthController extends BaseController {
   #authService;
@@ -19,7 +19,7 @@ export class AuthController extends BaseController {
       validate('body', authSchema),
       (req, res, next) => this.signup(req, res, next),
     );
-    this.router.post('/login', validate('body', authSchema), (req, res, next) =>
+    this.router.post('/login', validate('body', loginSchema), (req, res, next) =>
       this.login(req, res, next),
     );
     this.router.post('/logout', needsLogin, (req, res, next) =>

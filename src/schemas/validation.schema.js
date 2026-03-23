@@ -2,6 +2,11 @@ import { z } from 'zod';
 import { ERROR_MESSAGE, REPORT_REASON, VALIDATION_ERROR } from '#constants';
 
 export const authSchema = z.object({
+  email: z
+    .string()
+    .min(1, VALIDATION_ERROR.EMPTY_EMAIL)
+    .email(VALIDATION_ERROR.INVALID_EMAIL)
+    .max(50, VALIDATION_ERROR.MAX_EMAIL),
   nickname: z
     .string()
     .min(2, VALIDATION_ERROR.MIN_NICKNAME)
@@ -12,6 +17,8 @@ export const authSchema = z.object({
     .max(12, VALIDATION_ERROR.MAX_PASSWORD)
     .regex(/^[a-zA-Z0-9~!@#$%^&*]+$/, VALIDATION_ERROR.REGEX_PASSWORD),
 });
+
+export const loginSchema = authSchema.omit({ nickname: true });
 
 export const challengeSchema = z.object({
   title: z
