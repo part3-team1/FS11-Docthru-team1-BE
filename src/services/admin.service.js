@@ -1,5 +1,9 @@
 import { NOTIFICATION_MESSAGES, ERROR_MESSAGE } from '#constants';
-import { NotFoundException, ForbiddenException } from '#exceptions';
+import {
+  NotFoundException,
+  ForbiddenException,
+  ConflictException,
+} from '#exceptions';
 
 export class AdminService {
   #challengeRepository;
@@ -28,6 +32,10 @@ export class AdminService {
   async approveRequest(request_id) {
     const request = await this.#challengeRequestRepository.findById(request_id);
     if (!request) throw new NotFoundException(ERROR_MESSAGE.NOT_FOUND);
+
+    if (request.status === 'APPROVED') {
+      throw new ConflictException(ERROR_MESSAGE.ALREADY_APPROVED);
+    }
 
     const challenge = await this.#challengeRepository.create({
       request_id: request.id,

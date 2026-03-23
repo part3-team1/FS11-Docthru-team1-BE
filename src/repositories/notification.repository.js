@@ -33,7 +33,7 @@ export class NotificationRepository {
             created_at: true,
           },
         }),
-        this.#prisma.notification.count({ where: user_id }),
+        this.#prisma.notification.count({ where: { user_id } }),
       ])
       .then(([notifications, totalCount]) => {
         return { notifications, totalCount };

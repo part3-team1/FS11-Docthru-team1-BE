@@ -41,7 +41,7 @@ export class ChallengeRequestRepository {
 
     const queryOptions = {
       ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }),
-      ...(status && { status }),
+      status: status ? status : { not: 'DELETED' },
     };
 
     return this.#prisma
@@ -80,6 +80,9 @@ export class ChallengeRequestRepository {
   }
 
   delete(id) {
-    return this.#prisma.challengeRequest.delete({ where: { id } });
+    return this.#prisma.challengeRequest.update({
+      where: { id },
+      data: { status: 'DELETED' },
+    });
   }
 }

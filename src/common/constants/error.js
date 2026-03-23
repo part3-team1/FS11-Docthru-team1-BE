@@ -60,6 +60,7 @@ export const ERROR_MESSAGE = {
   INVALID_INPUT: '입력값이 잘못되었습니다.',
   VALIDATION_FAILED: '검증에 실패했습니다.',
   REQUEST_DENIED: '신청이 거부되었습니다.',
+  ALREADY_APPROVED: '이미 승인된 요청입니다.',
   AUTH_CODE_REQUIRED: '인증코드는 필수입니다.',
   AUTH_CODE_EMPTY: '인증코드가 비어있습니다.',
 
