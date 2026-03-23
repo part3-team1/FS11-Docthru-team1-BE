@@ -20,29 +20,36 @@ export const authSchema = z.object({
 
 export const loginSchema = authSchema.omit({ nickname: true });
 
-export const challengeSchema = z.object({
-  title: z
-    .string()
-    .min(10, VALIDATION_ERROR.MIN_TITLE)
-    .max(50, VALIDATION_ERROR.MAX_TITLE),
-  description: z.string().max(150, VALIDATION_ERROR.MAX_DESCRIPTION).optional(),
-  max_participants: z.coerce
-    .number()
-    .int()
-    .min(5, VALIDATION_ERROR.MIN_PARTICIPANTS)
-    .max(20, VALIDATION_ERROR.MAX_PARTICIPANTS),
-});
+export const challengeSchema = z
+  .object({
+    title: z
+      .string()
+      .min(10, VALIDATION_ERROR.MIN_TITLE)
+      .max(50, VALIDATION_ERROR.MAX_TITLE),
+    description: z
+      .string()
+      .max(150, VALIDATION_ERROR.MAX_DESCRIPTION)
+      .optional(),
+    max_participants: z.coerce
+      .number()
+      .int()
+      .min(5, VALIDATION_ERROR.MIN_PARTICIPANTS)
+      .max(20, VALIDATION_ERROR.MAX_PARTICIPANTS),
+  })
+  .passthrough();
 
 export const feedbackSchema = z.object({
   content: z.string().max(500, VALIDATION_ERROR.MAX_FEEDBACK),
 });
 
-export const submissionSchema = z.object({
-  title: z
-    .string()
-    .min(10, VALIDATION_ERROR.MIN_TITLE)
-    .max(50, VALIDATION_ERROR.MAX_TITLE),
-});
+export const submissionSchema = z
+  .object({
+    title: z
+      .string()
+      .min(10, VALIDATION_ERROR.MIN_TITLE)
+      .max(50, VALIDATION_ERROR.MAX_TITLE),
+  })
+  .passthrough();
 
 export const reportSchema = z.object({
   report_type: z.enum(['CHALLENGE', 'SUBMISSION', 'FEEDBACK']),
