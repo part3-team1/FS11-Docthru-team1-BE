@@ -61,6 +61,10 @@ export class SubmissionController extends BaseController {
 
   async getSubmissionById(req, res, next) {
     try {
+      const { id } = req.params;
+      const submission = await this.#submissionService.getSubmissionById(id);
+
+      res.status(HTTP_STATUS.OK).json({ success: true, data: submission });
     } catch (error) {
       next(error);
     }
@@ -68,6 +72,21 @@ export class SubmissionController extends BaseController {
 
   async getMySubmissions(req, res, next) {
     try {
+      const { id: userId } = req.user;
+      const { skip, take } = req.query;
+
+      const result = await this.#submissionService.getMySubmissions(userId, {
+        skip,
+        take,
+      });
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: {
+          submissions: result.submissions,
+          totalCount: result.totalCount,
+        },
+      });
     } catch (error) {
       next(error);
     }
@@ -93,6 +112,17 @@ export class SubmissionController extends BaseController {
 
   async submit(req, res, next) {
     try {
+      const { id: userId } = req.user;
+      const { challengeId } = req.params;
+      const { title, content } = req.body;
+
+      const submission = await this.#submissionService.submit(
+        userId,
+        challengeId,
+        { title, content },
+      );
+
+      res.status(HTTP_STATUS.CREATED).json({ success: true, data: submission });
     } catch (error) {
       next(error);
     }
@@ -100,6 +130,15 @@ export class SubmissionController extends BaseController {
 
   async toggleHeart(req, res, next) {
     try {
+      const { id: userId } = req.user;
+      const { id: submissionId } = req.params;
+
+      const result = await this.#submissionService.toggleHeart(
+        userId,
+        submissionId,
+      );
+
+      res.status(HTTP_STATUS.OK).json({ success: true, data: result });
     } catch (error) {
       next(error);
     }

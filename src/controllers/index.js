@@ -2,13 +2,72 @@ import { format } from 'date-fns';
 import { BaseController } from './base.controller.js';
 import { HTTP_STATUS } from '#constants';
 
+export * from './base.controller.js';
+export * from './admin';
+export * from './auth';
+export * from './challenge';
+export * from './draft';
+export * from './edit-request';
+export * from './feedback';
+export * from './notification';
+export * from './report';
+export * from './submission';
+
 export class Controller extends BaseController {
-  constructor() {
+  #adminController;
+  #authController;
+  #socialAuthController;
+  #challengeController;
+  #challengeRequestController;
+  #draftController;
+  #editRequestController;
+  #feedbackController;
+  #notificationController;
+  #reportController;
+  #submissionController;
+
+  constructor({
+    adminController,
+    authController,
+    socialAuthController,
+    challengeController,
+    challengeRequestController,
+    draftController,
+    editRequestController,
+    feedbackController,
+    notificationController,
+    reportController,
+    submissionController,
+  }) {
     super();
+    this.#adminController = adminController;
+    this.#authController = authController;
+    this.#socialAuthController = socialAuthController;
+    this.#challengeController = challengeController;
+    this.#challengeRequestController = challengeRequestController;
+    this.#draftController = draftController;
+    this.#editRequestController = editRequestController;
+    this.#feedbackController = feedbackController;
+    this.#notificationController = notificationController;
+    this.#reportController = reportController;
+    this.#submissionController = submissionController;
   }
 
   routes() {
-    //
+    this.router.use('/admin', this.#adminController.routes());
+    this.router.use('/auth', this.#authController.routes());
+    this.router.use('/auth', this.#socialAuthController.routes());
+    this.router.use('/challenge', this.#challengeController.routes());
+    this.router.use(
+      '/challengeRequest',
+      this.#challengeRequestController.routes(),
+    );
+    this.router.use('/draft', this.#draftController.routes());
+    this.router.use('/editRequest', this.#editRequestController.routes());
+    this.router.use('/feedback', this.#feedbackController.routes());
+    this.router.use('/notification', this.#notificationController.routes());
+    this.router.use('/report', this.#reportController.routes());
+    this.router.use('/submission', this.#submissionController.routes());
 
     this.router.get('./ping', (req, res) => this.ping(req, res));
 

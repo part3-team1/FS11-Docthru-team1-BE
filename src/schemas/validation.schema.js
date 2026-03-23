@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { REPORT_REASON, VALIDATION_ERROR } from '#constants';
+import { ERROR_MESSAGE, REPORT_REASON, VALIDATION_ERROR } from '#constants';
 
 export const authSchema = z.object({
   nickname: z
@@ -43,4 +43,11 @@ export const reportSchema = z.object({
   reason: z.string().refine((value) => REPORT_REASON.includes(value), {
     message: VALIDATION_ERROR.INVALID_REPORT_REASON,
   }),
+});
+
+export const socialLoginSchema = z.object({
+  code: z
+    .string({ required_error: ERROR_MESSAGE.AUTH_CODE_REQUIRED })
+    .min(1, ERROR_MESSAGE.AUTH_CODE_EMPTY),
+  state: z.string().optional(),
 });

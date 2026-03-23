@@ -23,6 +23,17 @@ export class ReportService {
     this.#challengeRepository = challengeRepository;
   }
 
+  async getReports(query) {
+    return await this.#reportRepository.finAll(query);
+  }
+
+  async getReportById(id) {
+    const report = await this.#reportRepository.findById(id);
+    if (!report) throw new NotFoundException(ERROR_MESSAGE.REPORT_NOT_FOUND);
+
+    return report;
+  }
+
   async createReport(user_id, data) {
     const { report_type, target_id, reason } = data;
 

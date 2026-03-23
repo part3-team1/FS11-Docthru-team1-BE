@@ -42,20 +42,26 @@ export const ERROR_MESSAGE = {
   REPORT_ALREADY_EXISTS: '이미 신고한 내역이 있습니다.',
   INVALID_REPORT_TARGET_TYPE: '유효하지 않은 신고 대상 타입입니다.',
   REPORT_TARGET_NOT_FOUND: '신고 대상을 찾을 수 없습니다.',
+  REPORT_NOT_FOUND: '신고 내역을 찾을 수 없습니다.',
 
   // 알림 관련
   NOTIFICATION_NOT_FOUND: '알림을 찾을 수 없습니다.',
   NOTIFICATION_ACCESS_DENIED: '본인의 알림만 관리할 수 있습니다.',
+  NOTIFICATION_READ: '알림을 읽음 처리 했습니다.',
+  NOTIFICATION_DELETED: '알림이 삭제되었습니다',
 
   // 피드백 관련
   FEEDBACK_NOT_FOUND: '댓글을 찾을 수 없습니다.',
   FEEDBACK_ACCESS_DENIED: '해당 피드백을 수정할 권한이 없습니다.',
   FEEBACK_BANNED: '댓글이 차단되었습니다.',
+  FEEDBACK_DELELTED: '댓글이 삭제되었습니다.',
 
   //기타
   INVALID_INPUT: '입력값이 잘못되었습니다.',
   VALIDATION_FAILED: '검증에 실패했습니다.',
   REQUEST_DENIED: '신청이 거부되었습니다.',
+  AUTH_CODE_REQUIRED: '인증코드는 필수입니다.',
+  AUTH_CODE_EMPTY: '인증코드가 비어있습니다.',
 
   //기본 에러 메시지
   NOT_FOUND: '요청한 리소스를 찾을 수 없습니다.',
