@@ -159,4 +159,22 @@ export class AuthService {
 
     return user;
   }
+  async refreshTokens(refreshToken) {
+    const payload = this.#tokenProvider.verifyRefreshToken(refreshToken);
+
+    if (!payload) {
+      throw new Error('유효하지 않은 토큰입니다.');
+    } 
+
+    const user = await this.#userRepository.findById(payload.userId);
+
+    if (!user) {
+      throw new Error('유저를 찾을 수 없습니다.');
+    }
+
+    const tokens = this.#tokenProvider.generateTokens(user);
+    await this.#userRepository.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return { user, tokens };
+  } 
 }
