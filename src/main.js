@@ -1,24 +1,15 @@
-//서버구동 확인을 위해 작성, 수정 예정
-import express from 'express';
-import { prisma } from '#db/prisma.js';
 import { config } from '#config';
+import { createContainer } from './common/di/container.js';
+import { setupGracefulShutdown } from './common/lifecycle/graceful_shutdown.js';
+import { App } from './app.js';
 
-const app = express();
+async function bootstrap() {
+  const { controller, authMiddleware, prisma } = createContainer();
 
-const startServer = async () => {
-  try {
-    await prisma.$connect();
-    console.log('데이터베이스 연결 성공!');
+  const app = new App(controller, authMiddleware);
+  const server = app.listen(config.PORT);
 
-    app.listen(config.PORT, () => {
-      console.log(`Server is running at: http://localhost:${config.PORT}`);
-    });
-  } catch (error) {
-    console.log('데이터베이스 연결 실패!');
-    console.error(error);
-    await prisma.$disconnect();
-    process.exit(1);
-  }
-};
+  setupGracefulShutdown(server, prisma);
+}
 
-startServer();
+bootstrap();
