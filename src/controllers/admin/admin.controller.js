@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { ERROR_MESSAGE, HTTP_STATUS } from '#constants';
-import { authenticate, needsAdmin } from '#middlewares';
+import { needsAdmin } from '#middlewares';
 
 export class AdminController extends BaseController {
   #adminService;

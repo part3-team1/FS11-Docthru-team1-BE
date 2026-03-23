@@ -7,7 +7,7 @@ import {
 } from 'awilix';
 import { prisma } from '#db/prisma.js';
 import {
-  challengeRepository,
+  ChallengeRepository,
   ChallengeRequestRepository,
   DraftRepository,
   EditRequestRepository,
@@ -62,7 +62,7 @@ export const createContainer = () => {
     cookieProvider: asClass(CookieProvider, { lifetime: Lifetime.SINGLETON }),
 
     userRepository: asClass(UserRepository, { lifetime: Lifetime.SINGLETON }),
-    challengeRepository: asClass(challengeRepository, {
+    challengeRepository: asClass(ChallengeRepository, {
       lifetime: Lifetime.SINGLETON,
     }),
     challengeRequestRepository: asClass(ChallengeRequestRepository, {

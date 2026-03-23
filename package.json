@@ -21,7 +21,7 @@
     "#routes": "./src/routes/index.js",
     "#routes/*": "./src/routes/*",
     "#utils/*": "./src/utils/*",
-    "#schemas/*":"./src/schemas/*"
+    "#schemas/*": "./src/schemas/*"
   },
   "scripts": {
     "dev": "nodemon --env-file=./env/.env.development ./src/main.js",
@@ -51,6 +51,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
