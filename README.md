@@ -35,21 +35,36 @@ pnpm run dev
 ## 사용 기술 스택 / 라이브러리
 
 node.js, express, postgresSQL, prisma /
-zod, bycript, axios, faker(seeding)
+zod, bycript, awilix, faker, change-case, cookie-parser, date-fns, axios
 
 ## 디렉터리 구조
 
 ```text
-src
-├─ common
-├─ config
-├─ controllers
-├─ db
-├─ docs
-├─ middlewares
-├─ providers
-├─ repository
-├─ routes
-├─ services
-└─ utils
+├── env
+├── node_modules
+├── prisma
+│   └── schema.prisma
+├── public
+├── scripts
+│   └── seed.js
+├── prisma/
+│   └── schema.prisma
+├── src/
+│   ├── common/
+│   │     └── constants
+│   │     └── di
+│   │     └── exceptions
+│   │     └── lifecycle
+│   ├── config/
+│   ├── controllers/
+│   ├── db/
+│   ├── docs/
+│   ├── middlewares/
+│   ├── providers/
+│   ├── repository/
+│   ├── schemas/
+│   ├── services/
+│   ├── utils/
+├── app.js
+└── main.js
 ```

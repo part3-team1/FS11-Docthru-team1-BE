@@ -6,9 +6,22 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserStatus {
+  ACTIVE
+  BANNED
+  WITHDRAWN
+}
+
+enum ReportType {
+  CHALLENGE
+  SUBMISSION
+  FEEDBACK
+}
+
 enum Role {
   USER
   ADMIN
+  MASTER
 }
 
 enum Grade {
@@ -27,6 +40,7 @@ enum RequestStatus {
   PENDING
   APPROVED
   REJECTED
+  DELETED
 }
 
 enum ChallengeStatus {
@@ -36,22 +50,35 @@ enum ChallengeStatus {
 }
 
 enum NotificationType {
-  STATUS
-  ACTIVITY
-  ADMIN
+  CHALLENGE_APPROVED
+  CHALLENGE_REJECTED
+  CHALLENGE_DELETED
+  CHALLENGE_CLOSED
+  CHALLENGE_PARTICIPATED
+  SUBMISSION_CREATED
+  SUBMISSION_UPDATED
+  FEEDBACK_CREATED
+  FEEDBACK_UPDATED
+  ADMIN_ACTION
+  AUTO_BLOCKED
 }
 
 model User {
-  id                   String   @id @default(cuid())
-  email                String   @unique
+  id                   String     @id @default(cuid())
+  email                String     @unique
   password_hash        String?
-  nickname             String   @unique
-  role                 Role     @default(USER)
-  grade                Grade    @default(NORMAL)
-  participation_count  Int      @default(0)
-  best_selection_count Int      @default(0)
-  provider             Provider @default(LOCAL)
-  created_at           DateTime @default(now())
+  nickname             String     @unique
+  role                 Role       @default(USER)
+  grade                Grade      @default(NORMAL)
+  status               UserStatus @default(ACTIVE)
+  is_banned            Boolean    @default(false)
+  participation_count  Int        @default(0)
+  best_selection_count Int        @default(0)
+  provider             Provider   @default(LOCAL)
+  provider_id          String?
+  refresh_token        String?
+  created_at           DateTime   @default(now())
+  deleted_at           DateTime?
 
   challenge_requests ChallengeRequest[]
   participations     Participation[]
@@ -59,8 +86,10 @@ model User {
   feedbacks          Feedback[]
   hearts             Heart[]
   notifications      Notification[]
-  workspaces         UserWorkspace[]
+  drafts             Draft[]
   edit_requests      EditRequest[]
+  reports_made       Report[]           @relation("Reporter")
+  reports_received   Report[]           @relation("TargetUser")
 
   @@map("users")
 }
@@ -103,30 +132,26 @@ model Challenge {
   participations Participation[]
   submissions    Submission[]
   edit_requests  EditRequest[]
-  workspaces     UserWorkspace[]
+  drafts         Draft[]
 
   @@map("challenges")
 }
 
-model UserWorkspace {
-  id               String   @id @default(cuid())
-  user_id          String
-  challenge_id     String
-  title            String
-  doc_url          String
-  description      String?  @db.Text
-  category         String
-  document_type    String
-  due_date         DateTime
-  max_participants Int
-  updated_at       DateTime @updatedAt
+model Draft {
+  id           String   @id @default(cuid())
+  user_id      String
+  challenge_id String
+  title        String
+  content      Json
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
   user      User      @relation(fields: [user_id], references: [id])
   challenge Challenge @relation(fields: [challenge_id], references: [id])
 
   @@index([user_id])
   @@index([challenge_id])
-  @@map("user_workspaces")
+  @@map("drafts")
 }
 
 model EditRequest {
@@ -164,9 +189,12 @@ model Submission {
   id           String   @id @default(cuid())
   challenge_id String
   user_id      String
-  content      String   @db.Text
+  title        String
+  content      Json
   heart_count  Int      @default(0)
   is_best      Boolean  @default(false)
+  is_blocked   Boolean  @default(false)
+  is_deleted   Boolean  @default(false)
   created_at   DateTime @default(now())
 
   challenge Challenge  @relation(fields: [challenge_id], references: [id])
@@ -209,16 +237,32 @@ model Heart {
 }
 
 model Notification {
-  id         String   @id @default(cuid())
+  id         String           @id @default(cuid())
   user_id    String
   type       NotificationType
-  message    String
-  reason     String?  @db.Text
-  is_read    Boolean  @default(false)
-  created_at DateTime @default(now())
+  message    String?
+  reason     String?          @db.Text
+  is_read    Boolean          @default(false)
+  created_at DateTime         @default(now())
 
   user User @relation(fields: [user_id], references: [id])
 
   @@index([user_id])
   @@map("notifications")
+}
+
+model Report {
+  id             String     @id @default(cuid())
+  reporter_id    String
+  target_user_id String?
+  target_id      String
+  report_type    ReportType
+  reason         String     @db.VarChar(100)
+  created_at     DateTime   @default(now())
+
+  reporter    User  @relation("Reporter", fields: [reporter_id], references: [id])
+  target_user User? @relation("TargetUser", fields: [target_user_id], references: [id])
+
+  @@index([target_id])
+  @@map("reports")
 }

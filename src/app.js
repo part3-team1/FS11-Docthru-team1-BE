@@ -1,27 +1,49 @@
-// import express from 'express';
-
-// export class App {
-//   constructor() {
-//     this.app = express();
-//     this.middleware();
-//     this.routes();
-//     this.errorHandling();
-//   }
-
-//   middleware() {}
-// }
-
 import express from 'express';
-import { setupSwagger } from './docs/swagger.js';
-import { errorMiddleware } from './middlewares/error.middleware.js';
+import cookieParser from 'cookie-parser';
+import { config } from '#config';
+import {
+  errorHandler,
+  cors,
+  logger,
+  responseCaseConverter,
+  requestCaseConverter,
+} from '#middlewares';
+// import { registerSwagger } from '#docs/swagger.js';
 
-const app = express();
+export class App {
+  constructor(controller, authMiddleware) {
+    this.app = express();
+    this.middleware(authMiddleware);
+    this.routes(controller);
+    this.errorHandling();
+  }
 
-app.use(express.json());
+  middleware(authMiddleware) {
+    this.app.use(cors);
+    this.app.use(express.static('public'));
+    this.app.use(express.json());
+    this.app.use(requestCaseConverter);
+    this.app.use(responseCaseConverter);
+    this.app.use(logger);
+    this.app.use(cookieParser());
+    this.app.use((req, res, next) =>
+      authMiddleware.authenticate(req, res, next),
+    );
+  }
 
+  routes(controller) {
+    this.app.use('/api', controller.routes());
+  }
 
-setupSwagger(app);
+  errorHandling() {
+    this.app.use(errorHandler);
+  }
 
-app.use(errorMiddleware);
-
-export default app;
+  listen(port) {
+    return this.app.listen(port, () => {
+      console.log(
+        `[${config.NODE_ENV}] Server running at http://localhost:${port}`,
+      );
+    });
+  }
+}
