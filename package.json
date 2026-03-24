@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "imports": {
-    "#generated/*": "./generated/*",
+    "#generated/*": "./src/generated*",
     "#config": "./src/config/config.js",
     "#db/*": "./src/db/*",
     "#docs/*": "./src/docs/*",
@@ -40,6 +40,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.32.1",
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.5.0",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "awilix": "^13.0.3",
