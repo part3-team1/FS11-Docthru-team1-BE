@@ -1,0 +1,1106 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Docthru API",
+    "version": "1.0.0",
+    "description": "Docthru 백엔드 API 명세서"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "개발 서버"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "message": { "type": "string", "example": "에러 메시지" }
+        }
+      },
+      "Tokens": {
+        "type": "object",
+        "properties": {
+          "accessToken": { "type": "string" },
+          "refreshToken": { "type": "string" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "email": { "type": "string" },
+          "nickname": { "type": "string" },
+          "role": { "type": "string", "enum": ["USER", "ADMIN", "MASTER"] },
+          "grade": { "type": "string", "enum": ["NORMAL", "EXPERT"] },
+          "status": { "type": "string", "enum": ["ACTIVE", "BANNED", "WITHDRAWN"] },
+          "isBanned": { "type": "boolean" },
+          "participationCount": { "type": "integer" },
+          "bestSelectionCount": { "type": "integer" },
+          "provider": { "type": "string", "enum": ["LOCAL", "GOOGLE", "KAKAO", "NAVER"] },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ChallengeRequest": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "docUrl": { "type": "string" },
+          "description": { "type": "string" },
+          "category": { "type": "string" },
+          "documentType": { "type": "string" },
+          "dueDate": { "type": "string", "format": "date-time" },
+          "maxParticipants": { "type": "integer" },
+          "status": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"] },
+          "rejectionReason": { "type": "string", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Challenge": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "docUrl": { "type": "string" },
+          "description": { "type": "string" },
+          "category": { "type": "string" },
+          "documentType": { "type": "string" },
+          "dueDate": { "type": "string", "format": "date-time" },
+          "maxParticipants": { "type": "integer" },
+          "currentParticipants": { "type": "integer" },
+          "status": { "type": "string", "enum": ["OPENED", "CLOSED", "DELETED"] },
+          "approvedAt": { "type": "string", "format": "date-time", "nullable": true }
+        }
+      },
+      "Submission": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "content": { "type": "object" },
+          "heartCount": { "type": "integer" },
+          "isBest": { "type": "boolean" },
+          "isBlocked": { "type": "boolean" },
+          "isDeleted": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer" },
+              "nickname": { "type": "string" }
+            }
+          },
+          "challenge": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer" },
+              "title": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Feedback": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "content": { "type": "string" },
+          "isBlocked": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer" },
+              "nickname": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Draft": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "challengeId": { "type": "integer" },
+          "title": { "type": "string" },
+          "content": { "type": "object" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "type": {
+            "type": "string",
+            "enum": ["CHALLENGE_APPROVED", "CHALLENGE_REJECTED", "SUBMISSION_BEST", "FEEDBACK_RECEIVED", "HEART_RECEIVED", "REPORT_RECEIVED", "BANNED"]
+          },
+          "message": { "type": "string" },
+          "reason": { "type": "string", "nullable": true },
+          "isRead": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "targetId": { "type": "string" },
+          "reportType": { "type": "string", "enum": ["CHALLENGE", "FEEDBACK", "SUBMISSION"] },
+          "reason": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/auth/signup": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "일반 회원가입",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "nickname"],
+                "properties": {
+                  "email": { "type": "string", "example": "test@test.com" },
+                  "password": { "type": "string", "example": "Test1234!" },
+                  "nickname": { "type": "string", "example": "테스터" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "회원가입 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "email": { "type": "string" },
+                    "nickname": { "type": "string" },
+                    "createdAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "409": { "description": "이메일 또는 닉네임 중복", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "일반 로그인",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "example": "test@test.com" },
+                  "password": { "type": "string", "example": "Test1234!" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "로그인 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tokens": { "$ref": "#/components/schemas/Tokens" },
+                    "user": { "$ref": "#/components/schemas/User" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/auth/google": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "구글 로그인",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["idToken"],
+                "properties": {
+                  "idToken": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "구글 로그인 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tokens": { "$ref": "#/components/schemas/Tokens" },
+                    "user": { "$ref": "#/components/schemas/User" },
+                    "isNewUser": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "유효하지 않은 구글 토큰", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "로그아웃",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "로그아웃 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/auth/token/refresh": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "토큰 재발급",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "재발급 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Tokens" } } } },
+          "401": { "description": "유효하지 않은 토큰", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "내 프로필 조회",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "조회 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "patch": {
+        "tags": ["Users"],
+        "summary": "내 프로필 수정",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nickname": { "type": "string", "example": "새닉네임" },
+                  "profileImage": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "수정 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "409": { "description": "닉네임 중복", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Users"],
+        "summary": "회원 탈퇴",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "탈퇴 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/challenge-requests": {
+      "post": {
+        "tags": ["ChallengeRequest"],
+        "summary": "챌린지 신청",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "docUrl", "description", "category", "documentType", "dueDate", "maxParticipants"],
+                "properties": {
+                  "title": { "type": "string", "example": "챌린지 제목" },
+                  "docUrl": { "type": "string", "example": "https://docs.example.com" },
+                  "description": { "type": "string", "example": "챌린지 설명" },
+                  "category": { "type": "string", "example": "Next.js" },
+                  "documentType": { "type": "string", "example": "공식문서" },
+                  "dueDate": { "type": "string", "format": "date-time" },
+                  "maxParticipants": { "type": "integer", "example": 10 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "신청 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ChallengeRequest" } } } },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "get": {
+        "tags": ["ChallengeRequest"],
+        "summary": "내 챌린지 신청 목록",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"] } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": { "type": "array", "items": { "$ref": "#/components/schemas/ChallengeRequest" } },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/challenges": {
+      "get": {
+        "tags": ["Challenge"],
+        "summary": "챌린지 목록 조회",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["OPENED", "CLOSED", "DELETED"] } },
+          { "name": "category", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": { "type": "array", "items": { "$ref": "#/components/schemas/Challenge" } },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/challenges/{id}": {
+      "get": {
+        "tags": ["Challenge"],
+        "summary": "챌린지 상세 조회",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "조회 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Challenge" } } } },
+          "404": { "description": "챌린지 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/challenges/{id}/participate": {
+      "post": {
+        "tags": ["Challenge"],
+        "summary": "챌린지 참여",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "201": { "description": "참여 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "409": { "description": "이미 참여한 챌린지", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/challenges/{id}/edit-requests": {
+      "post": {
+        "tags": ["Challenge"],
+        "summary": "챌린지 수정 요청",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reason", "changeContent"],
+                "properties": {
+                  "reason": { "type": "string", "example": "수정 사유" },
+                  "changeContent": { "type": "object", "example": { "title": "새 제목" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "수정 요청 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "챌린지 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/submissions": {
+      "get": {
+        "tags": ["Submission"],
+        "summary": "작업물 목록 조회",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "challengeId", "in": "query", "schema": { "type": "integer" } },
+          { "name": "onlyMine", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": { "type": "array", "items": { "$ref": "#/components/schemas/Submission" } },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "post": {
+        "tags": ["Submission"],
+        "summary": "작업물 제출",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["challengeId", "title", "content"],
+                "properties": {
+                  "challengeId": { "type": "integer", "example": 1 },
+                  "title": { "type": "string", "example": "작업물 제목" },
+                  "content": { "type": "object", "example": { "blocks": [] } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "제출 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Submission" } } } },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/submissions/{id}": {
+      "get": {
+        "tags": ["Submission"],
+        "summary": "작업물 상세 조회",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "조회 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Submission" } } } },
+          "404": { "description": "작업물 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "patch": {
+        "tags": ["Submission"],
+        "summary": "작업물 수정",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string", "example": "수정된 제목" },
+                  "content": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "수정 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Submission" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "작업물 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Submission"],
+        "summary": "작업물 삭제",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "삭제 성공" },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "작업물 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/submissions/{id}/hearts": {
+      "post": {
+        "tags": ["Submission"],
+        "summary": "좋아요",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "201": { "description": "좋아요 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "409": { "description": "이미 좋아요한 작업물", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Submission"],
+        "summary": "좋아요 취소",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "좋아요 취소 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "좋아요 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/submissions/{id}/feedbacks": {
+      "get": {
+        "tags": ["Feedback"],
+        "summary": "피드백 목록 조회",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": { "type": "array", "items": { "$ref": "#/components/schemas/Feedback" } },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "post": {
+        "tags": ["Feedback"],
+        "summary": "피드백 작성",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["content"],
+                "properties": {
+                  "content": { "type": "string", "example": "피드백 내용" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "피드백 작성 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Feedback" } } } },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/feedbacks/{id}": {
+      "delete": {
+        "tags": ["Feedback"],
+        "summary": "피드백 삭제",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "삭제 성공" },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "피드백 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/drafts": {
+      "get": {
+        "tags": ["Draft"],
+        "summary": "임시저장 목록 조회",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": { "type": "array", "items": { "$ref": "#/components/schemas/Draft" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "post": {
+        "tags": ["Draft"],
+        "summary": "임시저장",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["challengeId", "title", "content"],
+                "properties": {
+                  "challengeId": { "type": "integer", "example": 1 },
+                  "title": { "type": "string", "example": "임시저장 제목" },
+                  "content": { "type": "object", "example": { "blocks": [] } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "임시저장 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Draft" } } } },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/drafts/{id}": {
+      "patch": {
+        "tags": ["Draft"],
+        "summary": "임시저장 수정",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "content": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "수정 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Draft" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "임시저장 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Draft"],
+        "summary": "임시저장 삭제",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "삭제 성공" },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "임시저장 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "tags": ["Notification"],
+        "summary": "알림 목록 조회",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": { "type": "array", "items": { "$ref": "#/components/schemas/Notification" } },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/notifications/{id}/read": {
+      "patch": {
+        "tags": ["Notification"],
+        "summary": "알림 읽음 처리",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "읽음 처리 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "알림 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/reports": {
+      "post": {
+        "tags": ["Report"],
+        "summary": "신고",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["targetUserId", "targetId", "reportType", "reason"],
+                "properties": {
+                  "targetUserId": { "type": "string", "example": "user_id" },
+                  "targetId": { "type": "string", "example": "target_id" },
+                  "reportType": { "type": "string", "enum": ["CHALLENGE", "FEEDBACK", "SUBMISSION"] },
+                  "reason": { "type": "string", "example": "신고 사유" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "신고 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Report" } } } },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/challenge-requests": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "챌린지 신청 목록 (어드민)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"] } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": { "type": "array", "items": { "$ref": "#/components/schemas/ChallengeRequest" } },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/challenge-requests/{id}/approve": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "챌린지 신청 승인",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "승인 성공", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Challenge" } } } },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "신청 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/challenge-requests/{id}/reject": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "챌린지 신청 거절",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rejectionReason"],
+                "properties": {
+                  "rejectionReason": { "type": "string", "example": "거절 사유" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "거절 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "신청 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/edit-requests": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "수정 요청 목록 (어드민)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"] } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": { "description": "조회 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/edit-requests/{id}/approve": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "수정 요청 승인",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "승인 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "요청 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/edit-requests/{id}/reject": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "수정 요청 거절",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "거절 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "요청 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/reports": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "신고 목록 조회 (어드민)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "reportType", "in": "query", "schema": { "type": "string", "enum": ["CHALLENGE", "FEEDBACK", "SUBMISSION"] } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": { "type": "array", "items": { "$ref": "#/components/schemas/Report" } },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/users/{id}/ban": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "유저 정지",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reason"],
+                "properties": {
+                  "reason": { "type": "string", "example": "정지 사유" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "정지 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "유저 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/submissions/{id}/block": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "작업물 차단",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "차단 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "작업물 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/feedbacks/{id}/block": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "피드백 차단",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "차단 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "피드백 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/admin/submissions/{id}/best": {
+      "patch": {
+        "tags": ["Admin"],
+        "summary": "베스트 작업물 선정",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "선정 성공" },
+          "401": { "description": "인증 실패", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "권한 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "작업물 없음", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    }
+  }
+}

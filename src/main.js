@@ -1,9 +1,18 @@
-//서버구동 확인을 위해 작성, 수정 예정
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { prisma } from '#db/prisma.js';
 import { config } from '#config';
+import { setupSwagger } from './docs/swagger.js';
+import { errorMiddleware } from './middlewares/error.middleware.js';
 
 const app = express();
+
+app.use(express.json());
+app.use(cookieParser());
+
+setupSwagger(app);
+
+app.use(errorMiddleware);
 
 const startServer = async () => {
   try {
