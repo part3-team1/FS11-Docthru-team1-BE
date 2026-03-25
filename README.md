@@ -35,7 +35,7 @@ pnpm run dev
 ## 사용 기술 스택 / 라이브러리
 
 node.js, express, postgresSQL, prisma /
-zod, bycript, awilix, faker, change-case, cookie-parser, date-fns, axios
+zod, bycript, awilix, faker, change-case, cookie-parser, date-fns
 
 ## 디렉터리 구조
 
