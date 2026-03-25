@@ -25,6 +25,10 @@ export class DraftRepository {
     //임시 저장 목록(모달 리스트용)
   }
 
+  findLatest(userId, challengeId) {
+    //가장 최근 임시저장 불러오기
+  }
+
   delete(id) {
     //모달에서 직접 유저가 삭제할 때
   }

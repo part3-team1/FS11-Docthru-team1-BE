@@ -1,6 +1,8 @@
 export const PRISMA_ERROR = {
   UNIQUE_CONSTRAINT: 'P2002',
   RECORD_NOT_FOUND: 'P2025',
+  FOREIGN_KEY_CONSTRAINT: 'P2003',
+  NULL_CONSTRAINT: 'P2011',
 };
 
 export const ERROR_MESSAGE = {
@@ -20,7 +22,7 @@ export const ERROR_MESSAGE = {
   CANNOT_BAN_MASTER: '마스터 계정은 정지하거나 차단할 수 없습니다.',
   AUTH_CODE_REQUIRED: '인증코드는 필수입니다.',
   AUTH_CODE_EMPTY: '인증코드가 비어있습니다.',
-  LOGIN_REQUIRED:"로그인이 필요합니다.",
+  LOGIN_REQUIRED: '로그인이 필요합니다.',
 
   // 챌린지 관련
   CHALLENGE_NOT_FOUND: '챌린지를 찾을 수 없습니다.',
@@ -29,14 +31,17 @@ export const ERROR_MESSAGE = {
   CHALLENGE_ALREADY_DELETED: '이미 삭제된 챌린지입니다.',
   CHALLENGE_FOR_EDIT_NOT_FOUND: '수정할 챌린지를 찾을 수 없습니다.',
   CHALLENGE_NOT_OPENED: '현재 참여가능한 상태의 챌린지가 아닙니다.',
-  CHALLENGE_EXPIRED: '챌린지의 기간이 종료되었습니다.',
+  CHALLENGE_EXPIRED: '챌린지의 기간이 이미 종료되었습니다.',
   CHALLENGE_FULL: '참여 인원이 초과되었습니다.',
   ALREADY_PARTICIPATING_CHALLENGE: '이미 참여 중인 챌린지입니다.',
+  CHALLENGE_EDIT_RESTRICTED_WITH_PARTICIPANTS:
+    '참여 인원이 있는 챌린지는 수정할 수 없습니다',
   NOT_PARTICIPATING_CHALLENGE: '참여 중인 챌린지가 아닙니다.',
   CANNOT_LEAVE_CHALLENGE: '마감된 챌린지는 참여 취소가 불가능합니다',
 
   // 작업물 관련
   SUBMISSION_NOT_FOUND: '작업물을 찾을 수 없습니다.',
+  SUBMISSION_ACCESS_DENIED: '작업물에 접근 권한이 없습니다.',
 
   // 하트 관련
   CANNOT_LIKE_OWN_SUBMISSION: '본인의 작업물에는 좋아요를 누를 수 없습니다.',
@@ -64,6 +69,8 @@ export const ERROR_MESSAGE = {
   VALIDATION_FAILED: '검증에 실패했습니다.',
   REQUEST_DENIED: '신청이 거부되었습니다.',
   ALREADY_APPROVED: '이미 승인된 요청입니다.',
+  ONLY_MASTER_ALLOWED: '마스터 계정만 접근 가능합니다.',
+  NOT_CHANGE_ROLE_SELF: '마스터 본인의 권한은 변경할 수 없습니다.',
 
   //기본 에러 메시지
   NOT_FOUND: '요청한 리소스를 찾을 수 없습니다.',

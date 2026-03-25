@@ -23,15 +23,15 @@ export class FeedbackService {
     this.#notificationRepository = notificationRepository;
   }
 
-  async getFeedbacksBySubmission(submission_id, query) {
+  async getFeedbacksBySubmission(submissionId, query) {
     return await this.#feedbackRepository.findAllBySubmissionId(
-      submission_id,
+      submissionId,
       query,
     );
   }
 
-  async createFeedback(user_id, submission_id, content) {
-    const submission = await this.#submissionRepository.findById(submission_id);
+  async createFeedback(userId, submissionId, content) {
+    const submission = await this.#submissionRepository.findById(submissionId);
     if (!submission)
       throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
 
@@ -42,13 +42,13 @@ export class FeedbackService {
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_ALREADY_FINISHED);
 
     const feedback = await this.#feedbackRepository.create({
-      user_id,
-      submission_id,
+      userId,
+      submissionId,
       content,
     });
 
     await this.#notificationRepository.create({
-      user_id: submission.user_id,
+      userId: submission.user_id,
       type: 'FEEDBACK_CREATED',
       message: NOTIFICATION_MESSAGES.FEEDBACK_ADDED(challenge.title),
     });
@@ -56,8 +56,8 @@ export class FeedbackService {
     return feedback;
   }
 
-  async updateFeedback(user_id, feedback_id, content, role) {
-    const feedback = await this.#feedbackRepository.findById(feedback_id);
+  async updateFeedback(userId, feedbackId, content, role) {
+    const feedback = await this.#feedbackRepository.findById(feedbackId);
     if (!feedback)
       throw new NotFoundException(ERROR_MESSAGE.FEEDBACK_NOT_FOUND);
 
@@ -70,20 +70,20 @@ export class FeedbackService {
     if (challenge.status === 'CLOSED')
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_ALREADY_FINISHED);
 
-    const isOwner = feedback.user_id === user_id;
+    const isOwner = feedback.user_id === userId;
     const isStaff = role === 'ADMIN' || role === 'MASTER';
     if (!isOwner && !isStaff) {
       throw new ForbiddenException(ERROR_MESSAGE.FEEDBACK_ACCESS_DENIED);
     }
 
     const updatedFeedback = await this.#feedbackRepository.update(
-      feedback_id,
+      feedbackId,
       content,
     );
 
-    if (!isOwner && !isStaff) {
+    if (!isOwner && isStaff) {
       await this.#notificationRepository.create({
-        user_id: feedback.user_id,
+        userId: feedback.user_id,
         type: 'FEEDBACK_UPDATED',
         message: NOTIFICATION_MESSAGES.FEEDBACK_MODIFIED(challenge.title),
       });
@@ -92,16 +92,24 @@ export class FeedbackService {
     return updatedFeedback;
   }
 
-  async deleteFeedback(user_id, feedback_id, role) {
-    const feedback = await this.#feedbackRepository.findById(feedback_id);
+  async deleteFeedback(userId, feedbackId, role) {
+    const feedback = await this.#feedbackRepository.findById(feedbackId);
     if (!feedback)
       throw new NotFoundException(ERROR_MESSAGE.FEEDBACK_NOT_FOUND);
 
-    const isOwner = feedback.user_id === user_id;
+    const isOwner = feedback.user_id === userId;
     const isStaff = role === 'ADMIN' || role === 'MASTER';
     if (!isOwner && !isStaff)
       throw new ForbiddenException(ERROR_MESSAGE.FEEDBACK_ACCESS_DENIED);
 
-    return await this.#feedbackRepository.delete(feedback_id);
+    if (!isOwner && isStaff) {
+      await this.#notificationRepository.create({
+        userId: feedback.user_id,
+        type: 'ADMIN_ACTION',
+        message: NOTIFICATION_MESSAGES.FEEDBACK_DELETED,
+      });
+    }
+
+    return await this.#feedbackRepository.delete(feedbackId);
   }
 }

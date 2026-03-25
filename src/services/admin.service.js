@@ -29,8 +29,10 @@ export class AdminService {
     this.#submissionRepository = submissionRepository;
   }
 
-  async approveRequest(request_id) {
-    const request = await this.#challengeRequestRepository.findById(request_id);
+  //유저 서비스에도 어드민 로직이 있습니다. 확인해주세요!
+  //챌린지, 피드백, 서브미션 수정/삭제/차단은 각 서비스 로직 확인.
+  async approveRequest(requestId) {
+    const request = await this.#challengeRequestRepository.findById(requestId);
     if (!request) throw new NotFoundException(ERROR_MESSAGE.NOT_FOUND);
 
     if (request.status === 'APPROVED') {
@@ -38,20 +40,20 @@ export class AdminService {
     }
 
     const challenge = await this.#challengeRepository.create({
-      request_id: request.id,
+      requestId: request.id,
       title: request.title,
-      doc_url: request.doc_url,
+      docUrl: request.doc_url,
       description: request.description,
       category: request.category,
-      document_type: request.document_type,
-      due_date: request.due_date,
-      max_participants: request.max_participants,
+      documentType: request.document_type,
+      dueDate: request.due_date,
+      maxParticipants: request.max_participants,
     });
 
-    await this.#challengeRequestRepository.updateStatus(request_id, 'APPROVED');
+    await this.#challengeRequestRepository.updateStatus(requestId, 'APPROVED');
 
     await this.#notificationRepository.create({
-      user_id: request.requested_by,
+      userId: request.requested_by,
       type: 'CHALLENGE_APPROVED',
       message: NOTIFICATION_MESSAGES.CHALLENGE_APPROVED(request.title),
     });
@@ -59,71 +61,71 @@ export class AdminService {
     return challenge;
   }
 
-  async rejectRequest(request_id, reason) {
-    const request = await this.#challengeRequestRepository.findById(request_id);
+  async rejectRequest(requestId, reason) {
+    const request = await this.#challengeRequestRepository.findById(requestId);
     if (!request) throw new NotFoundException(ERROR_MESSAGE.NOT_FOUND);
 
     await this.#challengeRequestRepository.updateStatus(
-      request_id,
+      requestId,
       'REJECTED',
       reason,
     );
 
     await this.#notificationRepository.create({
-      user_id: request.requested_by,
+      userId: request.requested_by,
       type: 'CHALLENGE_REJECTED',
       message: NOTIFICATION_MESSAGES.CHALLENGE_REJECTED(request.title),
       reason,
     });
   }
 
+  async deleteRequest(requestId, reason) {
+    const request = await this.#challengeRequestRepository.findById(requestId);
+    if (!request) {
+      throw new NotFoundException(ERROR_MESSAGE.NOT_FOUND);
+    }
+
+    await this.#challengeRequestRepository.delete(requestId);
+
+    await this.#notificationRepository.create({
+      userId: request.requested_by,
+      type: 'ADMIN_ACTION',
+      message: NOTIFICATION_MESSAGES.REQUEST_DELETED(request.title),
+      reason,
+    });
+  }
+
   //유저 강제 정지
-  async banUser(user_id, reason) {
-    const user = await this.#userRepository.findById(user_id);
+  async banUser(userId, reason) {
+    const user = await this.#userRepository.findById(userId);
     if (!user) throw new NotFoundException(ERROR_MESSAGE.USER_NOT_FOUND);
 
     if (user.role === 'MASTER')
       throw new ForbiddenException(ERROR_MESSAGE.CANNOT_BAN_MASTER);
 
-    await this.#userRepository.updateStatus(user_id, {
+    await this.#userRepository.updateStatus(userId, {
       status: 'BANNED',
-      is_banned: true,
+      isBanned: true,
     });
 
     await this.#notificationRepository.create({
-      user_id,
+      userId,
       type: 'ADMIN_ACTION',
       message: NOTIFICATION_MESSAGES.USER_BANNED,
       reason,
     });
   }
 
-  //어드민의 수동 삭제
-  async adminDeleteSubmission(submission_id, reason) {
-    const submission = await this.#submissionRepository.findById(submission_id);
-    if (!submission)
-      throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
-
-    await this.#notificationRepository.create({
-      user_id: submission.user_id,
-      type: 'ADMIN_ACTION',
-      message: NOTIFICATION_MESSAGES.SUBMISSION_BANNED(submission.title),
-      reason,
-    });
-
-    await this.#submissionRepository.delete(submission_id);
-  }
-
   //어드민의 수동 댓글 차단
-  async adminBlockFeedback(feedback_id, reason) {
-    const feedback = await this.#feedbackRepository.findById(feedback_id);
+  async adminBlockFeedback(feedbackId, reason) {
+    const feedback = await this.#feedbackRepository.findById(feedbackId);
     if (!feedback)
       throw new NotFoundException(ERROR_MESSAGE.FEEDBACK_NOT_FOUND);
 
-    await this.#feedbackRepository.block(feedback_id, true);
+    await this.#feedbackRepository.block(feedbackId, true);
 
     await this.#notificationRepository.create({
-      user_id: feedback.user_id,
+      userId: feedback.user_id,
       type: 'ADMIN_ACTION',
       message: NOTIFICATION_MESSAGES.FEEDBACK_BANNED,
       reason,

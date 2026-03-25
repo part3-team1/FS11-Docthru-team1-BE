@@ -28,7 +28,7 @@ export class ReportRepository {
     });
 
     const queryOptions = {
-      ...(reportType && { report_type:reportType }),
+      ...(reportType && { report_type: reportType }),
     };
 
     return this.#prisma

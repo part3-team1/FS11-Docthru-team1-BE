@@ -1,5 +1,9 @@
 import { ERROR_MESSAGE, NOTIFICATION_MESSAGES } from '#constants';
-import { NotFoundException, BadRequestException } from '#exceptions';
+import {
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '#exceptions';
 
 export class ChallengeService {
   #challengeRepository;
@@ -16,9 +20,9 @@ export class ChallengeService {
     this.#notificationRepository = notificationRepository;
   }
 
-  async createRequest(user_id, data) {
+  async createRequest(userId, data) {
     const request = await this.#challengeRequestRepository.create({
-      user_id,
+      userId,
       ...data,
     });
 
@@ -37,8 +41,57 @@ export class ChallengeService {
     return challenge;
   }
 
-  async join(user_id, challenge_id) {
-    const challenge = await this.#challengeRepository.findById(challenge_id);
+  async updateChallenge(userId, challengeId, updateData) {
+    const challenge = await this.#challengeRepository.findById(challengeId);
+    if (!challenge) {
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
+    }
+
+    if (challenge.request.requested_by !== userId) {
+      throw new ForbiddenException(ERROR_MESSAGE.INACTIVE_ACCOUNT);
+    }
+
+    if (new Date(challenge.due_date) < new Date()) {
+      throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_EXPIRED);
+    }
+
+    if (challenge.current_participants > 0) {
+      throw new BadRequestException(
+        ERROR_MESSAGE.CHALLENGE_EDIT_RESTRICTED_WITH_PARTICIPANTS,
+      );
+    }
+
+    return await this.#challengeRepository.update(challengeId, updateData);
+  }
+
+  async deleteChallenge(userId, challengeId, role) {
+    const challenge = await this.#challengeRepository.findById(challengeId);
+    if (!challenge) {
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
+    }
+
+    const isOwner = challenge.request.requested_by === userId;
+    const isStaff = role === 'ADMIN' || role === 'MASTER';
+
+    if (!isOwner && !isStaff) {
+      throw new ForbiddenException(ERROR_MESSAGE.INACTIVE_ACCOUNT);
+    }
+
+    if (new Date(challenge.due_date) < new Date()) {
+      throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_EXPIRED);
+    }
+
+    if (!isOwner && isStaff) {
+      await this.#notificationRepository.create({
+        userId: challenge.request.requested_by,
+        type: 'ADMIN_ACTION',
+        message: NOTIFICATION_MESSAGES.CHALLENGE_DELETED(challenge.title),
+      });
+    }
+  }
+
+  async join(userId, challengeId) {
+    const challenge = await this.#challengeRepository.findById(challengeId);
     if (!challenge)
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
 
@@ -50,8 +103,8 @@ export class ChallengeService {
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_FULL);
 
     const isAlreadyJoined = await this.#challengeRepository.isParticipating(
-      user_id,
-      challenge_id,
+      userId,
+      challengeId,
     );
     if (isAlreadyJoined) {
       throw new BadRequestException(
@@ -59,10 +112,10 @@ export class ChallengeService {
       );
     }
 
-    const result = await this.#challengeRepository.join(user_id, challenge_id);
+    const result = await this.#challengeRepository.join(userId, challengeId);
 
     await this.#notificationRepository.create({
-      user_id: challenge.request.requested_by,
+      userId: challenge.request.requested_by,
       type: 'CHALLENGE_PARTICIPATED',
       message: NOTIFICATION_MESSAGES.CHALLENGE_PARTICIPATED(challenge.title),
     });
@@ -70,8 +123,8 @@ export class ChallengeService {
     return result;
   }
 
-  async leave(user_id, challenge_id) {
-    const challenge = await this.#challengeRepository.findById(challenge_id);
+  async leave(userId, challengeId) {
+    const challenge = await this.#challengeRepository.findById(challengeId);
     if (!challenge)
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
 
@@ -80,13 +133,13 @@ export class ChallengeService {
     }
 
     const isParticipating = await this.#challengeRepository.isParticipating(
-      user_id,
-      challenge_id,
+      userId,
+      challengeId,
     );
     if (!isParticipating) {
       throw new BadRequestException(ERROR_MESSAGE.NOT_PARTICIPATING_CHALLENGE);
     }
 
-    return await this.#challengeRepository.leave(user_id, challenge_id);
+    return await this.#challengeRepository.leave(userId, challengeId);
   }
 }

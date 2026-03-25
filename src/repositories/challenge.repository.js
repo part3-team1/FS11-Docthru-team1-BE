@@ -59,6 +59,27 @@ export class ChallengeRepository {
     });
   }
 
+  findAllParticipating(userId, { skip = 0, take = 10, status } = {}) {
+    const whereCondition = {
+      user_id: userId,
+      ...(status && { challenge: { status } }),
+    };
+
+    return this.#prisma
+      .$transaction([
+        this.#prisma.participation.findMany({
+          where: whereCondition,
+          skip: Number(skip),
+          take: Number(take),
+          include: { challenge: true },
+        }),
+        this.#prisma.participation.count({ where: whereCondition }),
+      ])
+      .then(([participations, totalCount]) => {
+        return { participations, totalCount };
+      });
+  }
+
   //중복 참여 방지
   isParticipating(userId, challengeId) {
     return this.#prisma.participation.findUnique({

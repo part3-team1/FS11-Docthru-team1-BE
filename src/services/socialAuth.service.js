@@ -58,14 +58,14 @@ export class SocialAuthService {
         email,
         nickname: profile.nickname || `User_${Date.now().toString().slice(-4)}`,
         provider: provider.toUpperCase(),
-        provider_id: String(profile.id),
+        providerId: String(profile.id),
         grade: 'NORMAL',
       });
     }
 
     await this.#userRepository.connectSocialAccount(existingUser.id, {
       provider: provider.toUpperCase(),
-      provider_id: String(profile.id),
+      providerId: String(profile.id),
     });
 
     return existingUser;

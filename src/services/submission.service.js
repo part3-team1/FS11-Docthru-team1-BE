@@ -1,5 +1,9 @@
 import { NOTIFICATION_MESSAGES, ERROR_MESSAGE } from '#constants';
-import { NotFoundException, BadRequestException } from '#exceptions';
+import {
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '#exceptions';
 
 export class SubmissionService {
   #submissionRepository;
@@ -22,8 +26,8 @@ export class SubmissionService {
     this.#notificationRepository = notificationRepository;
   }
 
-  async submit(user_id, challenge_id, data) {
-    const challenge = await this.#challengeRepository.findById(challenge_id);
+  async submit(userId, challengeId, data) {
+    const challenge = await this.#challengeRepository.findById(challengeId);
     if (!challenge) {
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
     }
@@ -33,31 +37,31 @@ export class SubmissionService {
     }
 
     const submission = await this.#submissionRepository.create({
-      user_id,
-      challenge_id,
+      userId,
+      challengeId,
       title: data.title,
       content: data.content,
     });
 
     await this.#notificationRepository.create({
-      user_id: challenge.request.requested_by,
+      userId: challenge.request.requested_by,
       type: 'SUBMISSION_CREATED',
       message: NOTIFICATION_MESSAGES.SUBMISSION_ADDED(challenge.title),
     });
 
-    await this.#draftRepository.deleteByChallenge(user_id, challenge_id);
+    await this.#draftRepository.deleteByChallenge(userId, challengeId);
 
     return submission;
   }
 
-  async getSubmissionsByChallenge(challenge_id, query) {
+  async getSubmissionsByChallenge(challengeId, query) {
     return await this.#submissionRepository.findAllByChallengeId(
-      challenge_id,
+      challengeId,
       query,
     );
   }
 
-  async getsubmissionById(id) {
+  async getSubmissionById(id) {
     const submission = await this.#submissionRepository.findById(id);
     if (!submission || submission.is_deleted || submission.is_blocked) {
       throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
@@ -66,44 +70,74 @@ export class SubmissionService {
     return submission;
   }
 
-  async getTopRankings(challenge_id, limit) {
-    return await this.#submissionRepository.findTopRankings(
-      challenge_id,
-      limit,
-    );
+  async getTopRankings(challengeId, limit) {
+    return await this.#submissionRepository.findTopRankings(challengeId, limit);
   }
 
-  async getMySubmissions(user_id, query) {
-    return await this.#submissionRepository.findAllByUserId(user_id, query);
+  async updateSubmission(userId, submissionId, updateData) {
+    const submission = await this.#submissionRepository.findById(submissionId);
+    if (!submission || submission.is_deleted || submission.is_blocked) {
+      throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
+    }
+
+    const isOwner = submission.user_id === userId;
+    if (!isOwner) {
+      throw new ForbiddenException(ERROR_MESSAGE.SUBMISSION_ACCESS_DENIED);
+    }
+
+    return await this.#submissionRepository.update(submissionId, updateData);
   }
 
-  async toggleHeart(user_id, submission_id) {
-    const submission = await this.#submissionRepository.findById(submission_id);
+  async deleteSubmission(userId, submissionId, role) {
+    const submission = await this.#submissionRepository.findById(id);
+    if (!submission || submission.is_deleted) {
+      throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
+    }
+
+    const isOwner = submission.user_id === userId;
+    const isStaff = role === 'ADMIN' || role === 'MASTER';
+    if (!isOwner && !isStaff) {
+      throw new ForbiddenException(ERROR_MESSAGE.SUBMISSION_ACCESS_DENIED);
+    }
+
+    await this.#notificationRepository.create({
+      userId: submission.user_id,
+      type: 'ADMIN_ACTION',
+      message: isOwner
+        ? NOTIFICATION_MESSAGES.SUBMISSION_DELETED(submission.title)
+        : NOTIFICATION_MESSAGES.SUBMISSION_BANNED(submission.title),
+    });
+
+    return await this.#submissionRepository.delete(submissionId);
+  }
+
+  async toggleHeart(userId, submissionId) {
+    const submission = await this.#submissionRepository.findById(submissionId);
     if (!submission)
       throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
 
-    if (submission.user_id === user_id) {
+    if (submission.user_id === userId) {
       throw new BadRequestException(ERROR_MESSAGE.CANNOT_LIKE_OWN_SUBMISSION);
     }
 
     const existingHeart = await this.#heartRepository.checkDuplicate(
-      user_id,
-      submission_id,
+      userId,
+      submissionId,
     );
 
     if (existingHeart) {
-      await this.#heartRepository.delete(user_id, submission_id);
-      return { liked: false, heart_count: submission.heart_count - 1 };
+      await this.#heartRepository.delete(userId, submissionId);
+      return { liked: false, heartCount: submission.heart_count - 1 };
     } else {
-      await this.#heartRepository.create(user_id, submission_id);
+      await this.#heartRepository.create(userId, submissionId);
     }
 
     await this.#notificationRepository.create({
-      user_id: submission.user_id,
+      userId: submission.user_id,
       type: 'SUBMISSION_UPDATED',
       message: NOTIFICATION_MESSAGES.HEART_TOGGLED,
     });
 
-    return { liked: true, heart_count: submission.heart_count + 1 };
+    return { liked: true, heartCount: submission.heart_count + 1 };
   }
 }

@@ -34,7 +34,7 @@ export class AuthService {
 
     const user = await this.#userRepository.create({
       email,
-      password_hash: hashed,
+      passwordHash: hashed,
       nickname,
     });
 
@@ -101,7 +101,7 @@ export class AuthService {
     return await this.#userRepository.deleteUser(userId, {
       email: maskedEmail,
       nickname: maskedNickname,
-      deleted_at: new Date(),
+      deletedAt: new Date(),
     });
   }
 

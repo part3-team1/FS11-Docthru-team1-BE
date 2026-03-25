@@ -166,7 +166,7 @@ export class UserRepository {
   updateRefreshToken(id, refreshToken) {
     return this.#prisma.user.update({
       where: { id },
-      data: { refresh_token:refreshToken },
+      data: { refresh_token: refreshToken },
     });
   }
 

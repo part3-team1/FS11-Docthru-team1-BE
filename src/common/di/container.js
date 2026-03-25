@@ -27,6 +27,7 @@ import {
   NotificationService,
   ReportService,
   SubmissionService,
+  UserService,
 } from '#services';
 import {
   Controller,
@@ -97,6 +98,7 @@ export const createContainer = () => {
     submissionService: asClass(SubmissionService, {
       lifetime: Lifetime.SINGLETON,
     }),
+    userService: asClass(UserService, { lifetime: Lifetime.SINGLETON }),
 
     authMiddleware: asClass(AuthMiddleware, { lifetime: Lifetime.SINGLETON }),
 

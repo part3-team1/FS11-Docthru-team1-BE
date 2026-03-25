@@ -69,6 +69,24 @@ export class ChallengeRequestRepository {
     });
   }
 
+  findAllByRequesterId(userId, { skip = 0, take = 10 } = {}) {
+    const queryOptions = { requested_by: userId, status: { not: 'DELETED' } };
+
+    return this.#prisma
+      .$transaction([
+        this.#prisma.challengeRequest.findMany({
+          where: queryOptions,
+          skip: Number(skip),
+          take: Number(take),
+          orderBy: { created_at: 'desc' },
+        }),
+        this.#prisma.challengeRequest.count({ where: queryOptions }),
+      ])
+      .then(([requests, totalCount]) => {
+        return { requests, totalCount };
+      });
+  }
+
   updateStatus(id, status, rejectionReason = null) {
     return this.#prisma.challengeRequest.update({
       where: { id },

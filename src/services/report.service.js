@@ -1,4 +1,4 @@
-import { BAN_COUNT, ERROR_MESSAGE } from '#constants';
+import { BAN_COUNT, ERROR_MESSAGE, NOTIFICATION_MESSAGES } from '#constants';
 import {
   BadRequestException,
   NotFoundException,
@@ -10,21 +10,24 @@ export class ReportService {
   #submissionRepository;
   #feedbackRepository;
   #challengeRepository;
+  #notificationRepository;
 
   constructor({
     reportRepository,
     submissionRepository,
     feedbackRepository,
     challengeRepository,
+    notificationRepository,
   }) {
     this.#reportRepository = reportRepository;
     this.#submissionRepository = submissionRepository;
     this.#feedbackRepository = feedbackRepository;
     this.#challengeRepository = challengeRepository;
+    this.#notificationRepository = notificationRepository;
   }
 
   async getReports(query) {
-    return await this.#reportRepository.finAll(query);
+    return await this.#reportRepository.findAll(query);
   }
 
   async getReportById(id) {
@@ -34,12 +37,12 @@ export class ReportService {
     return report;
   }
 
-  async createReport(user_id, data) {
-    const { report_type, target_id, reason } = data;
+  async createReport(userId, data) {
+    const { reportType, targetId, reason } = data;
 
     const isDuplicate = await this.#reportRepository.checkDuplicate(
-      user_id,
-      target_id,
+      userId,
+      targetId,
     );
     if (isDuplicate) {
       throw new ConflictException(ERROR_MESSAGE.REPORT_ALREADY_EXISTS);
@@ -51,43 +54,56 @@ export class ReportService {
       FEEDBACK: this.#feedbackRepository,
     };
 
-    const targetRepo = repoMap[report_type];
+    const targetRepo = repoMap[reportType];
     if (!targetRepo) {
       throw new BadRequestException(ERROR_MESSAGE.INVALID_REPORT_TARGET_TYPE);
     }
 
-    const targetData = await targetRepo.findById(target_id);
+    const targetData = await targetRepo.findById(targetId);
     if (!targetData) {
       throw new NotFoundException(ERROR_MESSAGE.REPORT_TARGET_NOT_FOUND);
     }
 
-    const target_user_id =
-      targetData.user_id || targetData.request?.requested_by;
+    const targetUserId = targetData.user_id || targetData.request?.requested_by;
 
     const report = await this.#reportRepository.create({
-      user_id,
-      target_user_id,
-      target_id,
-      report_type,
+      userId,
+      targetUserId,
+      targetId,
+      reportType,
       reason,
     });
 
-    await this.#handleAutoAction(report_type, target_id);
+    await this.#handleAutoAction(
+      reportType,
+      targetId,
+      targetUserId,
+      targetData.title,
+    );
 
     return report;
   }
 
-  async #handleAutoAction(report_type, target_id) {
-    const reportCount = await this.#reportRepository.countByTarget(target_id);
+  async #handleAutoAction(reportType, targetId, targetUserId, targetTitle) {
+    const reportCount = await this.#reportRepository.countByTarget(targetId);
 
     if (reportCount >= BAN_COUNT) {
-      if (report_type === 'CHALLENGE') {
-        await this.#challengeRepository.delete(target_id);
-      } else if (report_type === 'SUBMISSION') {
-        await this.#submissionRepository.updateBlockStatus(target_id, true);
-      } else if (report_type === 'FEEDBACK') {
-        await this.#feedbackRepository.block(target_id, true);
+      if (reportType === 'CHALLENGE') {
+        await this.#challengeRepository.delete(targetId);
+      } else if (reportType === 'SUBMISSION') {
+        await this.#submissionRepository.updateBlockStatus(targetId, true);
+      } else if (reportType === 'FEEDBACK') {
+        await this.#feedbackRepository.block(targetId, true);
       }
+
+      if(targetUserId){await this.#notificationRepository.create({
+        userId:targetUserId,
+        type:"ADMIN_ACTION",
+        message:NOTIFICATION_MESSAGES.AUTO_BLOCKED(targetTitle || "콘텐츠"
+        ),
+        reason:"신고 누적으로 인한 자동 차단"  
+
+      })}
     }
   }
 }

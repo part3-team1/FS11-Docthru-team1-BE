@@ -5,6 +5,6 @@ export * from './admin.service.js';
 export * from './draft.service.js';
 export * from './socialAuth.service.js';
 export * from './feedback.service.js';
-export * from './editRequest.service.js';
 export * from './notification.service.js';
 export * from './report.service.js';
+export * from './user.service.js';
