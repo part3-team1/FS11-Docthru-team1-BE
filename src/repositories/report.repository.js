@@ -9,17 +9,17 @@ export class ReportRepository {
   create(data) {
     return this.#prisma.report.create({
       data: {
-        reporter_id: data.user_id,
-        target_user_id: data.target_user_id,
-        target_id: data.target_id,
-        report_type: data.report_type,
+        reporter_id: data.userId,
+        target_user_id: data.targetUserId,
+        target_id: data.targetId,
+        report_type: data.reportType,
         reason: data.reason,
       },
     });
   }
 
   //어드민 or 마스터 관련, 페이지네이션 포함
-  findAll({ skip = 0, take = 10, sortBy, sortOrder, report_type } = {}) {
+  findAll({ skip = 0, take = 10, sortBy, sortOrder, reportType } = {}) {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
       sortOrder,
@@ -28,7 +28,7 @@ export class ReportRepository {
     });
 
     const queryOptions = {
-      ...(report_type && { report_type }),
+      ...(reportType && { report_type:reportType }),
     };
 
     return this.#prisma
@@ -63,18 +63,18 @@ export class ReportRepository {
   }
 
   //신고 누적 카운트
-  countByTarget(target_id) {
+  countByTarget(targetId) {
     return this.#prisma.report.count({
-      where: { target_id },
+      where: { targetId },
     });
   }
 
   //중복신고 방지
-  checkDuplicate(reporter_id, target_id) {
+  checkDuplicate(reporterId, targetId) {
     return this.#prisma.report.findFirst({
       where: {
-        reporter_id,
-        target_id,
+        reporterId,
+        targetId,
       },
     });
   }

@@ -9,7 +9,7 @@ export class FeedbackRepository {
 
   //페이지네이션 포함
   findAllBySubmissionId(
-    submission_id,
+    submissionId,
     { skip = 0, take = 10, sortBy, sortOrder } = {},
   ) {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
@@ -19,7 +19,7 @@ export class FeedbackRepository {
       defaultField: 'created_at',
     });
 
-    const whereCondition = { submission_id, is_blocked: false };
+    const whereCondition = { submission_id: submissionId, is_blocked: false };
 
     return this.#prisma
       .$transaction([
@@ -51,8 +51,8 @@ export class FeedbackRepository {
   create(data) {
     return this.#prisma.feedback.create({
       data: {
-        submission_id: data.submission_id,
-        user_id: data.user_id,
+        submission_id: data.submissionId,
+        user_id: data.userId,
         content: data.content,
       },
     });
@@ -66,10 +66,10 @@ export class FeedbackRepository {
     return this.#prisma.feedback.delete({ where: { id } });
   }
 
-  block(id, is_blocked = true) {
+  block(id, isBlocked = true) {
     return this.#prisma.feedback.update({
       where: { id },
-      data: { is_blocked },
+      data: { is_blocked: isBlocked },
     });
   }
 }

@@ -10,7 +10,6 @@ import {
   ChallengeRepository,
   ChallengeRequestRepository,
   DraftRepository,
-  EditRequestRepository,
   FeedbackRepository,
   HeartRepository,
   NotificationRepository,
@@ -24,7 +23,6 @@ import {
   SocialAuthService,
   ChallengeService,
   DraftService,
-  EditRequestService,
   FeedbackService,
   NotificationService,
   ReportService,
@@ -38,7 +36,6 @@ import {
   ChallengeController,
   ChallengeRequestController,
   DraftController,
-  EditRequestController,
   FeedbackController,
   NotificationController,
   ReportController,
@@ -69,9 +66,6 @@ export const createContainer = () => {
       lifetime: Lifetime.SINGLETON,
     }),
     draftRepository: asClass(DraftRepository, { lifetime: Lifetime.SINGLETON }),
-    editRequestRepository: asClass(EditRequestRepository, {
-      lifetime: Lifetime.SINGLETON,
-    }),
     feedbackRepository: asClass(FeedbackRepository, {
       lifetime: Lifetime.SINGLETON,
     }),
@@ -95,9 +89,6 @@ export const createContainer = () => {
       lifetime: Lifetime.SINGLETON,
     }),
     draftService: asClass(DraftService, { lifetime: Lifetime.SINGLETON }),
-    editRequestService: asClass(EditRequestService, {
-      lifetime: Lifetime.SINGLETON,
-    }),
     feedbackService: asClass(FeedbackService, { lifetime: Lifetime.SINGLETON }),
     notificationService: asClass(NotificationService, {
       lifetime: Lifetime.SINGLETON,
@@ -121,9 +112,6 @@ export const createContainer = () => {
       lifetime: Lifetime.SINGLETON,
     }),
     draftController: asClass(DraftController, { lifetime: Lifetime.SINGLETON }),
-    editRequestController: asClass(EditRequestController, {
-      lifetime: Lifetime.SINGLETON,
-    }),
     feedbackController: asClass(FeedbackController, {
       lifetime: Lifetime.SINGLETON,
     }),

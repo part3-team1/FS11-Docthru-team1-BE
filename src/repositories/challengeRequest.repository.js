@@ -10,14 +10,14 @@ export class ChallengeRequestRepository {
   create(data) {
     return this.#prisma.challengeRequest.create({
       data: {
-        requested_by: data.user_id,
+        requested_by: data.userId,
         title: data.title,
-        doc_url: data.doc_url,
+        doc_url: data.docUrl,
         description: data.description,
         category: data.category,
-        document_type: data.document_type,
-        due_date: new Date(data.due_date),
-        max_participants: Number(data.max_participants),
+        document_type: data.documentType,
+        due_date: new Date(data.dueDate),
+        max_participants: Number(data.maxParticipants),
         status: 'PENDING',
       },
     });
@@ -69,12 +69,12 @@ export class ChallengeRequestRepository {
     });
   }
 
-  updateStatus(id, status, rejection_reason = null) {
+  updateStatus(id, status, rejectionReason = null) {
     return this.#prisma.challengeRequest.update({
       where: { id },
       data: {
         status,
-        ...(rejection_reason && { rejection_reason }),
+        ...(rejectionReason && { rejection_reason: rejectionReason }),
       },
     });
   }

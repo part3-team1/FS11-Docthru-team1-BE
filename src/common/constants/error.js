@@ -18,6 +18,9 @@ export const ERROR_MESSAGE = {
   INACTIVE_ACCOUNT: '사용 권한이 없는 계정입니다.',
   USER_NOT_FOUND: '유저를 찾을 수 없습니다.',
   CANNOT_BAN_MASTER: '마스터 계정은 정지하거나 차단할 수 없습니다.',
+  AUTH_CODE_REQUIRED: '인증코드는 필수입니다.',
+  AUTH_CODE_EMPTY: '인증코드가 비어있습니다.',
+  LOGIN_REQUIRED:"로그인이 필요합니다.",
 
   // 챌린지 관련
   CHALLENGE_NOT_FOUND: '챌린지를 찾을 수 없습니다.',
@@ -61,8 +64,6 @@ export const ERROR_MESSAGE = {
   VALIDATION_FAILED: '검증에 실패했습니다.',
   REQUEST_DENIED: '신청이 거부되었습니다.',
   ALREADY_APPROVED: '이미 승인된 요청입니다.',
-  AUTH_CODE_REQUIRED: '인증코드는 필수입니다.',
-  AUTH_CODE_EMPTY: '인증코드가 비어있습니다.',
 
   //기본 에러 메시지
   NOT_FOUND: '요청한 리소스를 찾을 수 없습니다.',

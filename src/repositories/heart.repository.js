@@ -5,39 +5,41 @@ export class HeartRepository {
     this.#prisma = prisma;
   }
 
-  create(user_id, submission_id) {
+  create(userId, submissionId) {
     return this.#prisma.$transaction([
       this.#prisma.heart.create({
-        data: { user_id, submission_id },
+        data: { user_id: userId, submission_id: submissionId },
       }),
       this.#prisma.submission.update({
-        where: { id: submission_id },
+        where: { id: submissionId },
         data: { heart_count: { increment: 1 } },
       }),
     ]);
   }
 
-  delete(user_id, submission_id) {
+  delete(userId, submissionId) {
     return this.#prisma.$transaction([
       this.#prisma.heart.delete({
         where: {
           submission_id_user_id: {
-            user_id,
-            submission_id,
+            user_id: userId,
+            submission_id: submissionId,
           },
         },
       }),
       this.#prisma.submission.update({
-        where: { id: submission_id },
+        where: { id: submissionId },
         data: { heart_count: { decrement: 1 } },
       }),
     ]);
   }
 
   //중복 체크(유저 1명당 제출물에 1회 가능)
-  checkDuplicate(user_id, submission_id) {
+  checkDuplicate(userId, submissionId) {
     return this.#prisma.heart.findUnique({
-      where: { submission_id_user_id: { user_id, submission_id } },
+      where: {
+        submission_id_user_id: { user_id: userId, submission_id: submissionId },
+      },
     });
   }
 }

@@ -36,6 +36,19 @@ enum Provider {
   NAVER
 }
 
+enum Category {
+  DOCUMENTATION
+  BLOG
+}
+
+enum DocumentType {
+  NEXTJS
+  API
+  CAREER
+  MODERNJS
+  WEB
+}
+
 enum RequestStatus {
   PENDING
   APPROVED
@@ -87,7 +100,6 @@ model User {
   hearts             Heart[]
   notifications      Notification[]
   drafts             Draft[]
-  edit_requests      EditRequest[]
   reports_made       Report[]           @relation("Reporter")
   reports_received   Report[]           @relation("TargetUser")
 
@@ -100,8 +112,8 @@ model ChallengeRequest {
   title            String
   doc_url          String
   description      String?       @db.Text
-  category         String
-  document_type    String
+  category         Category
+  document_type    DocumentType
   due_date         DateTime
   max_participants Int
   status           RequestStatus @default(PENDING)
@@ -120,8 +132,8 @@ model Challenge {
   title                String
   doc_url              String
   description          String?         @db.Text
-  category             String
-  document_type        String
+  category             Category
+  document_type        DocumentType
   due_date             DateTime
   max_participants     Int
   current_participants Int             @default(0)
@@ -131,7 +143,6 @@ model Challenge {
   request        ChallengeRequest @relation(fields: [request_id], references: [id])
   participations Participation[]
   submissions    Submission[]
-  edit_requests  EditRequest[]
   drafts         Draft[]
 
   @@map("challenges")
@@ -154,22 +165,7 @@ model Draft {
   @@map("drafts")
 }
 
-model EditRequest {
-  id             String        @id @default(cuid())
-  challenge_id   String
-  user_id        String
-  reason         String        @db.Text
-  change_content Json
-  status         RequestStatus @default(PENDING)
-  created_at     DateTime      @default(now())
 
-  challenge Challenge @relation(fields: [challenge_id], references: [id])
-  user      User      @relation(fields: [user_id], references: [id])
-
-  @@index([challenge_id])
-  @@index([user_id])
-  @@map("edit_requests")
-}
 
 model Participation {
   id           String   @id @default(cuid())

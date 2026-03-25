@@ -92,10 +92,10 @@ export class UserRepository {
     return this.#prisma.user.create({
       data: {
         email: data.email,
-        password_hash: data.password_hash,
+        password_hash: data.passwordHash,
         nickname: data.nickname,
         provider: data.provider || 'LOCAL',
-        provider_id: data.provider_id || null,
+        provider_id: data.providerId || null,
         grade: 'NORMAL',
         status: 'ACTIVE',
       },
@@ -111,7 +111,12 @@ export class UserRepository {
   updateUser(id, data) {
     return this.#prisma.user.update({
       where: { id },
-      data,
+      data: {
+        nickname: data.nickname,
+        grade: data.grade,
+        participation_count: data.participationCount,
+        best_selection_count: data.bestSelectionCount,
+      },
       select: {
         id: true,
         email: true,
@@ -124,12 +129,12 @@ export class UserRepository {
   }
 
   //자진 탈퇴
-  deleteUser(id, { nickname, email, deleted_at }) {
+  deleteUser(id, { nickname, email, deletedAt }) {
     return this.#prisma.user.update({
       where: { id },
       data: {
         status: 'WITHDRAWN',
-        deleted_at,
+        deleted_at: deletedAt,
         nickname, //'탈퇴한 사용자'로 변경
         email,
         refresh_token: null, //강제 로그아웃
@@ -146,40 +151,40 @@ export class UserRepository {
   }
 
   //강제 정지 및 탈퇴
-  updateStatus(id, { status, is_banned }) {
+  updateStatus(id, { status, isBanned }) {
     return this.#prisma.user.update({
       where: { id },
       data: {
         status,
-        is_banned,
-        ...(is_banned && { refresh_token: null }), //접속 차단
+        is_banned: isBanned,
+        ...(isBanned && { refresh_token: null }), //접속 차단
       },
     });
   }
 
   //리프레시 토큰 저장용
-  updateRefreshToken(id, refresh_token) {
+  updateRefreshToken(id, refreshToken) {
     return this.#prisma.user.update({
       where: { id },
-      data: { refresh_token },
+      data: { refresh_token:refreshToken },
     });
   }
 
   //소셜로그인 관련
-  findBySocialAccount(provider, provider_id) {
+  findBySocialAccount(provider, providerId) {
     return this.#prisma.user.findFirst({
       where: {
         provider,
-        provider_id: String(provider_id),
+        provider_id: String(providerId),
         status: { not: 'WITHDRAWN' },
       },
     });
   }
 
-  connectSocialAccount(userId, { provider, provider_id }) {
+  connectSocialAccount(userId, { provider, providerId }) {
     return this.#prisma.user.update({
       where: { id: userId },
-      data: { provider, provider_id: String(provider_id) },
+      data: { provider, provider_id: String(providerId) },
     });
   }
 
@@ -189,7 +194,7 @@ export class UserRepository {
         email: data.email,
         nickname: data.nickname || data.name,
         provider: data.provider,
-        provider_id: String(data.provider_id),
+        provider_id: String(data.providerId),
         grade: 'NORMAL',
         status: 'ACTIVE',
       },
