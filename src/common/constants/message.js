@@ -19,8 +19,6 @@ export const NOTIFICATION_MESSAGES = {
     `[${title}] 챌린지 작업물에 댓글이 추가되었습니다.`,
   FEEDBACK_MODIFIED: (title) =>
     `[${title}] 챌린지 작업물에 작성한 댓글이 수정되었습니다.`,
-  FEEDBACK_DELETEDD: (title) =>
-    `[${title}] 챌린지 작업물에 작성한 댓글이 삭제되었습니다.`,
   AUTO_BLOCKED: (title) =>
     `해당 [${title}](이)가 신고 누적으로 자동 차단되었습니다.`,
   USER_BANNED: '운영 정책 위반으로 계정 이용이 제한되었습니다.',

@@ -1,6 +1,7 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
-import { needsLogin } from '#middlewares';
+import { needsLogin, validate } from '#middlewares';
+import { challengeSchema } from '#schemas/validation.schema.js';
 
 export class ChallengeController extends BaseController {
   #challengeService;
@@ -16,6 +17,15 @@ export class ChallengeController extends BaseController {
     );
     this.router.get('/:id', (req, res, next) =>
       this.getChallengeById(req, res, next),
+    );
+    this.router.patch(
+      '/:id',
+      needsLogin,
+      validate('body', challengeSchema.partial()),
+      (req, res, next) => this.updateChallenge(req, res, next),
+    );
+    this.router.delete('/:id', needsLogin, (req, res, next) =>
+      this.deleteChallenge(req, res, next),
     );
     this.router.post('/:id/join', needsLogin, (req, res, next) =>
       this.join(req, res, next),
@@ -71,6 +81,34 @@ export class ChallengeController extends BaseController {
         success: true,
         data: challenge,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateChallenge(req, res, next) {
+    try {
+      const { id: userId } = req.user;
+      const { id: challengeId } = req.params;
+
+      const result = await this.#challengeService.updateChallenge(
+        userId,
+        challengeId,
+        req.body,
+      );
+      res.status(HTTP_STATUS.OK).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteChallenge(req, res, next) {
+    try {
+      const { id: userId, role } = req.user;
+      const { id: challengeId } = req.params;
+
+      await this.#challengeService.deleteChallenge(userId, challengeId, role);
+      res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       next(error);
     }

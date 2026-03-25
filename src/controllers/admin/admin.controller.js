@@ -19,11 +19,11 @@ export class AdminController extends BaseController {
     this.router.patch('/requests/:id/reject', (req, res, next) =>
       this.rejectRequest(req, res, next),
     );
+    this.router.delete('/requests/:id', (req, res, next) =>
+      this.deleteRequest(req, res, next),
+    );
     this.router.patch('/users/:id/ban', (req, res, next) =>
       this.banUser(req, res, next),
-    );
-    this.router.delete('/submissions/:id', (req, res, next) =>
-      this.deleteSubmission(req, res, next),
     );
     this.router.patch('/feedbacks/:id/block', (req, res, next) =>
       this.blockFeedback(req, res, next),
@@ -57,6 +57,18 @@ export class AdminController extends BaseController {
     }
   }
 
+  async deleteRequest(req, res, next) {
+    try {
+      const { id: requestId } = req.params;
+      const { reason } = req.body;
+
+      await this.#adminService.deleteRequest(requestId, reason);
+      res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async banUser(req, res, next) {
     try {
       const { id: userId } = req.params;
@@ -66,18 +78,6 @@ export class AdminController extends BaseController {
       res
         .status(HTTP_STATUS.OK)
         .json({ success: true, message: ERROR_MESSAGE.USER_BANNED });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async deleteSubmission(req, res, next) {
-    try {
-      const { id: submissionId } = req.params;
-      const { reason } = req.body;
-
-      await this.#adminService.adminDeleteSubmission(submissionId, reason);
-      res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       next(error);
     }

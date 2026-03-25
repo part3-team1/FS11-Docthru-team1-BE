@@ -7,11 +7,11 @@ export * from './admin/index.js';
 export * from './auth/index.js';
 export * from './challenge/index.js';
 export * from './draft/index.js';
-export * from './edit-request/index.js';
 export * from './feedback/index.js';
 export * from './notification/index.js';
 export * from './report/index.js';
 export * from './submission/index.js';
+export * from './user/index.js';
 
 export class Controller extends BaseController {
   #adminController;
@@ -20,11 +20,11 @@ export class Controller extends BaseController {
   #challengeController;
   #challengeRequestController;
   #draftController;
-  #editRequestController;
   #feedbackController;
   #notificationController;
   #reportController;
   #submissionController;
+  #userController;
 
   constructor({
     adminController,
@@ -33,11 +33,11 @@ export class Controller extends BaseController {
     challengeController,
     challengeRequestController,
     draftController,
-    editRequestController,
     feedbackController,
     notificationController,
     reportController,
     submissionController,
+    userController,
   }) {
     super();
     this.#adminController = adminController;
@@ -46,30 +46,30 @@ export class Controller extends BaseController {
     this.#challengeController = challengeController;
     this.#challengeRequestController = challengeRequestController;
     this.#draftController = draftController;
-    this.#editRequestController = editRequestController;
     this.#feedbackController = feedbackController;
     this.#notificationController = notificationController;
     this.#reportController = reportController;
     this.#submissionController = submissionController;
+    this.#userController = userController;
   }
 
   routes() {
     this.router.use('/admin', this.#adminController.routes());
     this.router.use('/auth', this.#authController.routes());
     this.router.use('/auth', this.#socialAuthController.routes());
-    this.router.use('/challenge', this.#challengeController.routes());
+    this.router.use('/users', this.#userController.routes());
+    this.router.use('/challenges', this.#challengeController.routes());
     this.router.use(
-      '/challengeRequest',
+      '/challengeRequests',
       this.#challengeRequestController.routes(),
     );
-    this.router.use('/draft', this.#draftController.routes());
-    this.router.use('/editRequest', this.#editRequestController.routes());
-    this.router.use('/feedback', this.#feedbackController.routes());
-    this.router.use('/notification', this.#notificationController.routes());
-    this.router.use('/report', this.#reportController.routes());
-    this.router.use('/submission', this.#submissionController.routes());
+    this.router.use('/drafts', this.#draftController.routes());
+    this.router.use('/notifications', this.#notificationController.routes());
+    this.router.use('/reports', this.#reportController.routes());
+    this.router.use('/', this.#feedbackController.routes());
+    this.router.use('/', this.#submissionController.routes());
 
-    this.router.get('./ping', (req, res) => this.ping(req, res));
+    this.router.get('/ping', (req, res) => this.ping(req, res));
 
     return this.router;
   }

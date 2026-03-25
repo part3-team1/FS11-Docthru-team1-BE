@@ -89,7 +89,7 @@ export class SubmissionService {
   }
 
   async deleteSubmission(userId, submissionId, role) {
-    const submission = await this.#submissionRepository.findById(id);
+    const submission = await this.#submissionRepository.findById(submissionId);
     if (!submission || submission.is_deleted) {
       throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
     }

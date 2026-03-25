@@ -7,7 +7,25 @@ export class FeedbackRepository {
     this.#prisma = prisma;
   }
 
-  //페이지네이션 포함
+  findAllByUserId(userId, { skip = 0, take = 10 } = {}) {
+    return this.#prisma
+      .$transaction([
+        this.#prisma.feedback.findMany({
+          where: { user_id: userId },
+          skip: Number(skip),
+          take: Number(take),
+          orderBy: { created_at: 'desc' },
+          include: {
+            submission: { select: { id: true, title: true } },
+          },
+        }),
+        this.#prisma.feedback.count({ where: { user_id: userId } }),
+      ])
+      .then(([feedbacks, totalCount]) => {
+        return { feedbacks, totalCount };
+      });
+  }
+
   findAllBySubmissionId(
     submissionId,
     { skip = 0, take = 10, sortBy, sortOrder } = {},

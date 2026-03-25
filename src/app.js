@@ -8,7 +8,7 @@ import {
   responseCaseConverter,
   requestCaseConverter,
 } from '#middlewares';
-// import { registerSwagger } from '#docs/swagger.js';
+import { registerSwagger } from '#docs/swagger.js';
 
 export class App {
   constructor(controller, authMiddleware) {
@@ -32,6 +32,7 @@ export class App {
   }
 
   routes(controller) {
+    registerSwagger(this.app);
     this.app.use('/api', controller.routes());
   }
 

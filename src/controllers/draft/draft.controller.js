@@ -32,8 +32,6 @@ export class DraftController extends BaseController {
     return this.router;
   }
 
-  //매핑 주의!!!!!!
-
   async getListDraft(req, res, next) {
     try {
       //로직 작성

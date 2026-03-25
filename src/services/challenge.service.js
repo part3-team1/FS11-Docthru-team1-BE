@@ -48,7 +48,7 @@ export class ChallengeService {
     }
 
     if (challenge.request.requested_by !== userId) {
-      throw new ForbiddenException(ERROR_MESSAGE.INACTIVE_ACCOUNT);
+      throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN);
     }
 
     if (new Date(challenge.due_date) < new Date()) {
@@ -74,7 +74,7 @@ export class ChallengeService {
     const isStaff = role === 'ADMIN' || role === 'MASTER';
 
     if (!isOwner && !isStaff) {
-      throw new ForbiddenException(ERROR_MESSAGE.INACTIVE_ACCOUNT);
+      throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN);
     }
 
     if (new Date(challenge.due_date) < new Date()) {
@@ -88,6 +88,8 @@ export class ChallengeService {
         message: NOTIFICATION_MESSAGES.CHALLENGE_DELETED(challenge.title),
       });
     }
+
+    return await this.#challengeRepository.delete(challengeId);
   }
 
   async join(userId, challengeId) {

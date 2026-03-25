@@ -1,10 +1,13 @@
 import swaggerUi from 'swagger-ui-express';
-import { createRequire } from 'module';
-import { generateOpenApiDocument } from './openapi.js';
+import { openApiDocument } from './openapi.js';
 
-const require = createRequire(import.meta.url);
+const swaggerHandler = swaggerUi.setup(openApiDocument, { explorer: true });
 
-export function setupSwagger(app) {
-  const document = generateOpenApiDocument();
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(document));
-}
+export const registerSwagger = (app) => {
+  app.get('/api/openapi.json', (_req, res) => {
+    res.status(200).json(openApiDocument);
+  });
+
+  app.use('/api/docs', swaggerUi.serve);
+  app.get('/api/docs', swaggerHandler);
+};

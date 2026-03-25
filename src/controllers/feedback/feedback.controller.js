@@ -12,22 +12,22 @@ export class FeedbackController extends BaseController {
   }
 
   routes() {
-    this.router.get('/submissions/:submissionId', (req, res, next) =>
+    this.router.get('/submissions/:submissionId/feedbacks', (req, res, next) =>
       this.getFeedbacksBySubmission(req, res, next),
     );
     this.router.post(
-      '/submissions/:submissionId',
+      '/submissions/:submissionId/feedbacks',
       needsLogin,
       validate('body', feedbackSchema),
       (req, res, next) => this.createFeedback(req, res, next),
     );
     this.router.patch(
-      '/:id',
+      '/feedbacks/:id',
       needsLogin,
-      validate('body', feedbackSchema),
+      validate('body', feedbackSchema.partial()),
       (req, res, next) => this.updateFeedback(req, res, next),
     );
-    this.router.delete('/:id', needsLogin, (req, res, next) =>
+    this.router.delete('/feedbacks/:id', needsLogin, (req, res, next) =>
       this.deleteFeedback(req, res, next),
     );
 
@@ -36,7 +36,7 @@ export class FeedbackController extends BaseController {
 
   async getFeedbacksBySubmission(req, res, next) {
     try {
-      const { submission_id: submissionId } = req.params;
+      const { submissionId } = req.params;
       const { skip, take, sort_by: sortBy, sort_order: sortOrder } = req.query;
 
       const result = await this.#feedbackService.getFeedbacksBySubmission(
@@ -56,7 +56,7 @@ export class FeedbackController extends BaseController {
   async createFeedback(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { submission_id: submissionId } = req.params;
+      const { submissionId } = req.params;
       const { content } = req.body;
 
       const feedback = await this.#feedbackService.createFeedback(
@@ -97,10 +97,7 @@ export class FeedbackController extends BaseController {
 
       await this.#feedbackService.deleteFeedback(userId, feedbackId, role);
 
-      res.status(HTTP_STATUS.OK).json({
-        success: true,
-        message: ERROR_MESSAGE.FEEDBACK_DELELTED,
-      });
+      res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       next(error);
     }

@@ -42,8 +42,6 @@ export const ERROR_MESSAGE = {
   // 작업물 관련
   SUBMISSION_NOT_FOUND: '작업물을 찾을 수 없습니다.',
   SUBMISSION_ACCESS_DENIED: '작업물에 접근 권한이 없습니다.',
-
-  // 하트 관련
   CANNOT_LIKE_OWN_SUBMISSION: '본인의 작업물에는 좋아요를 누를 수 없습니다.',
 
   // 신고 관련
@@ -55,14 +53,11 @@ export const ERROR_MESSAGE = {
   // 알림 관련
   NOTIFICATION_NOT_FOUND: '알림을 찾을 수 없습니다.',
   NOTIFICATION_ACCESS_DENIED: '본인의 알림만 관리할 수 있습니다.',
-  NOTIFICATION_READ: '알림을 읽음 처리 했습니다.',
-  NOTIFICATION_DELETED: '알림이 삭제되었습니다',
 
   // 피드백 관련
   FEEDBACK_NOT_FOUND: '댓글을 찾을 수 없습니다.',
   FEEDBACK_ACCESS_DENIED: '해당 피드백을 수정할 권한이 없습니다.',
   FEEDBACK_BANNED: '댓글이 차단되었습니다.',
-  FEEDBACK_DELELTED: '댓글이 삭제되었습니다.',
 
   //기타
   INVALID_INPUT: '입력값이 잘못되었습니다.',
@@ -98,5 +93,8 @@ export const VALIDATION_ERROR = {
   MIN_PARTICIPANTS: '참여인원은 최대 20명까지 참여가 가능합니다.',
   MAX_FEEDBACK: '댓글은 최대 500자까지 가능합니다.',
   INVALID_ID: '유효하지 않은 아이디 형식입니다.',
+  INVALID_CATEGORY: '유효하지 않은 카테고리 형식입니다.',
+  INVALID_DOCUMENT_TYPE: '유효하지 않은 리포트 형식입니다.',
+  INVALID_REPORT_TYPE: '유효하지 않은 신고 형식입니다.',
   INVALID_REPORT_REASON: '유효하지 않은 신고 사유입니다.',
 };

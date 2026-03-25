@@ -6,17 +6,23 @@ export class UserService {
   #submissionRepository;
   #challengeRepository;
   #challengeRequestRepository;
+  #heartRepository;
+  #feedbackRepository;
 
   constructor({
     userRepository,
     submissionRepository,
     challengeRepository,
     challengeRequestRepository,
+    heartRepository,
+    feedbackRepository,
   }) {
     this.#userRepository = userRepository;
     this.#submissionRepository = submissionRepository;
     this.#challengeRepository = challengeRepository;
     this.#challengeRequestRepository = challengeRequestRepository;
+    this.#heartRepository = heartRepository;
+    this.#feedbackRepository = feedbackRepository;
   }
 
   //어드민/마스터 전용
@@ -97,5 +103,20 @@ export class UserService {
     );
 
     return { items: result.requests, totalCount: result.totalCount };
+  }
+
+  async getMyHearts(userId, query) {
+    const result = await this.#heartRepository.findAllByUserId(userId, query);
+
+    return { items: result.hearts, totalCount: result.totalCount };
+  }
+
+  async getMyFeedbacks(userId, query) {
+    const result = await this.#feedbackRepository.findAllByUserId(
+      userId,
+      query,
+    );
+
+    return { items: result.feedbacks, totalCount: result.totalCount };
   }
 }

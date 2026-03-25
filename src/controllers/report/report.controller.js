@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
-import { needsLogin, validate } from '#middlewares';
+import { needsLogin, needsAdmin, validate } from '#middlewares';
 import { reportSchema } from '#schemas/validation.schema.js';
 
 export class ReportController extends BaseController {
@@ -12,10 +12,10 @@ export class ReportController extends BaseController {
   }
 
   routes() {
-    this.router.get('/', needsLogin, (req, res, next) =>
+    this.router.get('/', needsAdmin, (req, res, next) =>
       this.getReports(req, res, next),
     );
-    this.router.get('/:id', needsLogin, (req, res, next) =>
+    this.router.get('/:id', needsAdmin, (req, res, next) =>
       this.getReportById(req, res, next),
     );
     this.router.post(
@@ -35,14 +35,14 @@ export class ReportController extends BaseController {
         take,
         sort_by: sortBy,
         sort_order: sortOrder,
-        report_type,
+        report_type: reportType,
       } = req.query;
       const result = await this.#reportService.getReports({
         skip,
         take,
         sortBy,
         sortOrder,
-        report_type,
+        reportType,
       });
 
       res.status(HTTP_STATUS.OK).json({
@@ -71,13 +71,8 @@ export class ReportController extends BaseController {
   async createReport(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { report_type, target_id, reason } = req.body;
 
-      const report = await this.#reportService.createReport(userId, {
-        report_type,
-        target_id,
-        reason,
-      });
+      const report = await this.#reportService.createReport(userId, req.body);
 
       res.status(HTTP_STATUS.CREATED).json({ success: true, data: report });
     } catch (error) {

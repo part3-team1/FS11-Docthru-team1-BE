@@ -19,8 +19,10 @@ export class AuthController extends BaseController {
       validate('body', authSchema),
       (req, res, next) => this.signup(req, res, next),
     );
-    this.router.post('/login', validate('body', loginSchema), (req, res, next) =>
-      this.login(req, res, next),
+    this.router.post(
+      '/login',
+      validate('body', loginSchema),
+      (req, res, next) => this.login(req, res, next),
     );
     this.router.post('/logout', needsLogin, (req, res, next) =>
       this.logout(req, res, next),
@@ -37,12 +39,7 @@ export class AuthController extends BaseController {
 
   async signup(req, res, next) {
     try {
-      const { email, password, nickname } = req.body;
-      const { user, tokens } = await this.#authService.signup({
-        email,
-        password,
-        nickname,
-      });
+      const { user, tokens } = await this.#authService.signup(req.body);
 
       this.#cookieProvider.setAuthCookies(res, tokens);
       res.status(HTTP_STATUS.CREATED).json({ success: true, data: user });
@@ -53,11 +50,7 @@ export class AuthController extends BaseController {
 
   async login(req, res, next) {
     try {
-      const { email, password } = req.body;
-      const { user, tokens } = await this.#authService.login({
-        email,
-        password,
-      });
+      const { user, tokens } = await this.#authService.login(req.body);
 
       this.#cookieProvider.setAuthCookies(res, tokens);
       res.status(HTTP_STATUS.OK).json({ success: true, data: user });
@@ -80,7 +73,8 @@ export class AuthController extends BaseController {
 
   async getMe(req, res, next) {
     try {
-      const user = await this.#authService.getMe(req.user.id);
+      const userId = req.user.id;
+      const user = await this.#authService.getMe(userId);
 
       res.status(HTTP_STATUS.OK).json({ success: true, data: user });
     } catch (error) {

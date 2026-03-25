@@ -19,24 +19,28 @@ export const authSchema = z.object({
 });
 
 export const loginSchema = authSchema.omit({ nickname: true });
+export const userUpdateSchema = authSchema.pick({ nickname: true });
 
-export const challengeSchema = z
-  .object({
-    title: z
-      .string()
-      .min(10, VALIDATION_ERROR.MIN_TITLE)
-      .max(50, VALIDATION_ERROR.MAX_TITLE),
-    description: z
-      .string()
-      .max(150, VALIDATION_ERROR.MAX_DESCRIPTION)
-      .optional(),
-    max_participants: z.coerce
-      .number()
-      .int()
-      .min(5, VALIDATION_ERROR.MIN_PARTICIPANTS)
-      .max(20, VALIDATION_ERROR.MAX_PARTICIPANTS),
-  })
-  .passthrough();
+export const challengeSchema = z.object({
+  title: z
+    .string()
+    .min(10, VALIDATION_ERROR.MIN_TITLE)
+    .max(50, VALIDATION_ERROR.MAX_TITLE),
+  doc_url: z.string().url(),
+  description: z.string().max(150, VALIDATION_ERROR.MAX_DESCRIPTION).optional(),
+  max_participants: z.coerce
+    .number()
+    .int()
+    .min(5, VALIDATION_ERROR.MIN_PARTICIPANTS)
+    .max(20, VALIDATION_ERROR.MAX_PARTICIPANTS),
+  category: z.enum(['DOCUMENTATION', 'BLOG'], {
+    errorMap: () => ({ message: VALIDATION_ERROR.INVALID_CATEGORY }),
+  }),
+  document_type: z.enum(['NEXTJS', 'API', 'CAREER', 'MODERNJS', 'WEB'], {
+    errorMap: () => ({ message: VALIDATION_ERROR.INVALID_DOCUMENT_TYPE }),
+  }),
+  due_date: z.string().datetime(),
+});
 
 export const feedbackSchema = z.object({
   content: z.string().max(500, VALIDATION_ERROR.MAX_FEEDBACK),
@@ -52,7 +56,9 @@ export const submissionSchema = z
   .passthrough();
 
 export const reportSchema = z.object({
-  report_type: z.enum(['CHALLENGE', 'SUBMISSION', 'FEEDBACK']),
+  report_type: z.enum(['CHALLENGE', 'SUBMISSION', 'FEEDBACK'], {
+    errorMap: () => ({ message: VALIDATION_ERROR.INVALID_REPORT_TYPE }),
+  }),
   target_id: z.string().cuid(VALIDATION_ERROR.INVALID_ID),
   reason: z.string().refine((value) => REPORT_REASON.includes(value), {
     message: VALIDATION_ERROR.INVALID_REPORT_REASON,

@@ -65,7 +65,7 @@ export class ReportRepository {
   //신고 누적 카운트
   countByTarget(targetId) {
     return this.#prisma.report.count({
-      where: { targetId },
+      where: { target_id: targetId },
     });
   }
 
@@ -73,8 +73,8 @@ export class ReportRepository {
   checkDuplicate(reporterId, targetId) {
     return this.#prisma.report.findFirst({
       where: {
-        reporterId,
-        targetId,
+        reporter_id: reporterId,
+        target_id: targetId,
       },
     });
   }

@@ -41,6 +41,7 @@ import {
   NotificationController,
   ReportController,
   SubmissionController,
+  UserController,
 } from '#controllers';
 import { PasswordProvider, TokenProvider, CookieProvider } from '#providers';
 import { AuthMiddleware } from '#middlewares';
@@ -124,6 +125,9 @@ export const createContainer = () => {
       lifetime: Lifetime.SINGLETON,
     }),
     submissionController: asClass(SubmissionController, {
+      lifetime: Lifetime.SINGLETON,
+    }),
+    userController: asClass(UserController, {
       lifetime: Lifetime.SINGLETON,
     }),
 

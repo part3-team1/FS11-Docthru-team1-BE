@@ -38,10 +38,7 @@ export class SocialAuthController extends BaseController {
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
-        data: {
-          user,
-          tokens,
-        },
+        data: user,
       });
     } catch (error) {
       next(error);

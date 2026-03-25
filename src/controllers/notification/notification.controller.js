@@ -1,5 +1,5 @@
 import { BaseController } from '#controllers/base.controller.js';
-import { ERROR_MESSAGE, HTTP_STATUS } from '#constants';
+import { HTTP_STATUS } from '#constants';
 import { needsLogin } from '#middlewares';
 
 export class NotificationController extends BaseController {
@@ -30,7 +30,11 @@ export class NotificationController extends BaseController {
   async getMyNotifications(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const result = await this.#notificationService.getMyNotifications(userId);
+      const { skip, take } = req.query;
+      const result = await this.#notificationService.getMyNotifications(
+        userId,
+        { skip, take },
+      );
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
@@ -65,7 +69,7 @@ export class NotificationController extends BaseController {
 
       res
         .status(HTTP_STATUS.OK)
-        .json({ success: true, message: ERROR_MESSAGE.NOTIFICATION_READ });
+        .json({ success: true, data: { id: notificationId } });
     } catch (error) {
       next(error);
     }
@@ -81,9 +85,7 @@ export class NotificationController extends BaseController {
         notificationId,
       );
 
-      res
-        .status(HTTP_STATUS.OK)
-        .json({ success: true, message: ERROR_MESSAGE.NOTIFICATION_DELETED });
+      res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       next(error);
     }

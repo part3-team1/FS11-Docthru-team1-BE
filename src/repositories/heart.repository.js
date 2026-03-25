@@ -5,6 +5,30 @@ export class HeartRepository {
     this.#prisma = prisma;
   }
 
+  findAllByUserId(userId, { skip = 0, take = 10 } = {}) {
+    return this.#prisma
+      .$transaction([
+        this.#prisma.heart.findMany({
+          where: { user_id: userId },
+          skip: Number(skip),
+          take: Number(take),
+          orderBy: { created_at: 'desc' },
+          include: {
+            submission: {
+              include: {
+                user: { select: { nickname: true } },
+                challenge: { select: { title: true } },
+              },
+            },
+          },
+        }),
+        this.#prisma.heart.count({ where: { user_id: userId } }),
+      ])
+      .then(([hearts, totalCount]) => {
+        return { hearts, totalCount };
+      });
+  }
+
   create(userId, submissionId) {
     return this.#prisma.$transaction([
       this.#prisma.heart.create({
