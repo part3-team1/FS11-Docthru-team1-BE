@@ -22,7 +22,6 @@ export class ChallengeRepository {
       sortBy,
       sortOrder,
       allowedFields: ['approvedAt', 'dueDate', 'currentParticipants', 'title'],
-      defaultField: 'approvedAt',
     });
 
     const queryOptions = {
@@ -50,7 +49,18 @@ export class ChallengeRepository {
   findById(id) {
     return this.#prisma.challenge.findUnique({
       where: { id },
-      include: { request: true },
+      include: {
+        request: true,
+        participations: {
+          include: {
+            user: { select: { id: true, nickname: true, grade: true } },
+          },
+        },
+        submissions: {
+          where: { isDeleted: false, isBlocked: false },
+          include: { user: { select: { id: true, nickname: true } } },
+        },
+      },
     });
   }
 

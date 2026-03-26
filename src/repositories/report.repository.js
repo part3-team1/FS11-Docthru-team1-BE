@@ -24,7 +24,6 @@ export class ReportRepository {
       sortBy,
       sortOrder,
       allowedFields: ['createdAt'],
-      defaultField: 'createdAt',
     });
 
     const queryOptions = {

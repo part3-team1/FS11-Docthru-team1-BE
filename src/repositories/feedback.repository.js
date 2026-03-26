@@ -34,7 +34,6 @@ export class FeedbackRepository {
       sortBy,
       sortOrder,
       allowedFields: ['createdAt'],
-      defaultField: 'createdAt',
     });
 
     const whereCondition = { submissionId, isBlocked: false };

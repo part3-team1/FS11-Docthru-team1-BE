@@ -18,7 +18,6 @@ export class UserRepository {
         'participationCount',
         'bestSelectionCount',
       ],
-      defaultField: 'createdAt',
     });
 
     return this.#prisma.user.findMany({

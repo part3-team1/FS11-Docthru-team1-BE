@@ -36,7 +36,6 @@ export class ChallengeRequestRepository {
       sortBy,
       sortOrder,
       allowedFields: ['createdAt', 'dueDate', 'status', 'title'],
-      defaultField: 'createdAt',
     });
 
     const queryOptions = {

@@ -15,8 +15,7 @@ export class SubmissionRepository {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
       sortOrder,
-      allowedFields: ['heartCount', 'createdAt'],
-      defaultField: 'heartCount',
+      allowedFields: ['createdAt', 'heartCount'],
     });
 
     const whereCondition = {

@@ -2,9 +2,10 @@ export const validateSort = (
   sortBy,
   sortOrder = 'desc',
   allowedFields = [],
-  defaultField = 'approvedAt',
 ) => {
-  const safeSortBy = allowedFields.includes(sortBy) ? sortBy : defaultField;
+  const fallbackField = allowedFields[0] || 'id';
+
+  const safeSortBy = allowedFields.includes(sortBy) ? sortBy : fallbackField;
   const safeSortOrder = ['asc', 'desc'].includes(sortOrder?.toLowerCase())
     ? sortOrder.toLowerCase()
     : 'desc';
