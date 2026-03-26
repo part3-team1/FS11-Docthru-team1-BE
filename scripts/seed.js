@@ -22,7 +22,7 @@ class Seeder {
   #makeUserInput() {
     return {
       email: faker.internet.email(),
-      nickname: faker.internet.userName().slice(0, 10) + faker.number.int(1000),
+      nickname: faker.internet.username().slice(0, 10) + faker.number.int(1000),
       password_hash: this.#hashedPassword,
       role: 'USER',
       grade: faker.helpers.arrayElement(['NORMAL', 'EXPERT']),
@@ -285,6 +285,8 @@ class Seeder {
   }
 
   async run() {
+    console.log('현재 NODE_ENV:', process.env.NODE_ENV);
+
     if (process.env.NODE_ENV !== 'development') {
       throw new Error('프로덕션 환경에서는 시딩을 실행하지 않습니다.');
     }
