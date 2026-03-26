@@ -49,10 +49,10 @@ export const challengeSchema = z
       .int()
       .min(5, VALIDATION_ERROR.MIN_PARTICIPANTS)
       .max(20, VALIDATION_ERROR.MAX_PARTICIPANTS),
-    category: z.enum(['DOCUMENTATION', 'BLOG'], {
+    category: z.enum(['NEXTJS', 'API', 'CAREER', 'MODERNJS', 'WEB'], {
       errorMap: () => ({ message: VALIDATION_ERROR.INVALID_CATEGORY }),
     }),
-    document_type: z.enum(['NEXTJS', 'API', 'CAREER', 'MODERNJS', 'WEB'], {
+    document_type: z.enum(['DOCUMENTATION', 'BLOG'], {
       errorMap: () => ({ message: VALIDATION_ERROR.INVALID_DOCUMENT_TYPE }),
     }),
     due_date: z.string().datetime(),

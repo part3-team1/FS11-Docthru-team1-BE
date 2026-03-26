@@ -37,16 +37,18 @@ enum Provider {
 }
 
 enum Category {
-  DOCUMENTATION
-  BLOG
-}
-
-enum DocumentType {
   NEXTJS
   API
   CAREER
   MODERNJS
   WEB
+  DOCUMENTATION
+  BLOG
+}
+
+enum DocumentType {
+  DOCUMENTATION
+  BLOG
 }
 
 enum RequestStatus {
