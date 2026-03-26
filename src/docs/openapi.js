@@ -1,591 +1,1192 @@
-export const openApiDocument = () => {};
+import { z } from 'zod';
+import { createDocument } from 'zod-openapi';
+import {
+  authSchema,
+  loginSchema,
+  challengeSchema,
+  reportSchema,
+  roleUpdateSchema,
+  userUpdateSchema,
+  submissionSchema,
+  feedbackSchema,
+  socialLoginSchema,
+} from '#schemas/validation.schema.js';
 
-// import { OpenApiGeneratorV3, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-// import { z } from 'zod';
-// import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-// import { signupSchema, loginSchema, googleLoginSchema, refreshTokenSchema } from '../common/schemas/auth.schema.js';
+const successResponseSchema = z
+  .object({
+    success: z.literal(true),
+    data: z.any().optional(),
+  })
+  .meta({ id: 'SuccessResponse', description: '기본 성공 응답' });
 
-// extendZodWithOpenApi(z);
+const errorResponseSchema = z
+  .object({
+    success: z.literal(false),
+    message: z.string(),
+    details: z.record(z.string(), z.array(z.string())).optional(),
+  })
+  .meta({ id: 'ErrorResponse', description: '공통 에러 응답' });
 
-// export const registry = new OpenAPIRegistry();
+const reasonBodySchema = z
+  .object({
+    reason: z.string().min(1, '사유를 입력해주세요.'),
+  })
+  .meta({
+    id: 'ReasonRequest',
+    description: '거절/차단/삭제 사유 요청 데이터',
+  });
 
-// const ErrorResponse = registry.register('ErrorResponse', z.object({
-//   success: z.boolean().openapi({ example: false }),
-//   message: z.string().openapi({ example: '에러 메시지' }),
-// }).openapi('ErrorResponse'));
+export const openApiDocument = createDocument({
+  openapi: '3.1.0',
+  info: {
+    title: 'Docthru By Team No.1 API ',
+    version: '1.0.0',
+    description: '1팀의 Docthru API 문서입니다.',
+  },
+  tags: [
+    { name: 'Admin', description: '관리자 관련 API' },
+    { name: 'Auth', description: '인증 및 회원가입 관련 API' },
+    { name: 'Challenge', description: '챌린지 관련 API' },
+    { name: 'Draft', description: '임시저장 관련 API' },
+    { name: 'Feedback', description: '피드백 관련 API' },
+    { name: 'Notification', description: '알림 관련 API' },
+    { name: 'Report', description: '신고 기능 관련 API' },
+    { name: 'Submission', description: '작업물 관련 API' },
+    { name: 'User', description: '사용자 및 개인페이지 관련 API' },
+  ],
+  components: {
+    securitySchemes: {
+      accessTokenCookie: {
+        type: 'apiKey',
+        in: 'cookie',
+        name: 'accessToken',
+        description: '로그인 설정 시 설정되는 Access Token 쿠키',
+      },
+    },
+  },
+  paths: {
+    //[draft] 추가 필요!!
 
-// const Tokens = registry.register('Tokens', z.object({
-//   accessToken: z.string(),
-//   refreshToken: z.string(),
-// }).openapi('Tokens'));
+    '/api/admin/requests/{id}/approve': {
+      patch: {
+        tags: ['Admin'],
+        summary: '챌린지 개설 요청 승인',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '승인할 요청의 ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: '승인 성공 및 챌린지 생성 완료',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// const User = registry.register('User', z.object({
-//   id: z.number(),
-//   email: z.string(),
-//   nickname: z.string(),
-//   role: z.enum(['USER', 'ADMIN', 'MASTER']),
-//   grade: z.enum(['NORMAL', 'EXPERT']),
-//   status: z.enum(['ACTIVE', 'BANNED', 'WITHDRAWN']),
-//   isBanned: z.boolean(),
-//   participationCount: z.number(),
-//   bestSelectionCount: z.number(),
-//   provider: z.enum(['LOCAL', 'GOOGLE', 'KAKAO', 'NAVER']),
-//   createdAt: z.string(),
-// }).openapi('User'));
+    '/api/admin/requests/{id}/reject': {
+      patch: {
+        tags: ['Admin'],
+        summary: '챌린지 개설 요청 거절',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '거절할 요청의 ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: reasonBodySchema } },
+        },
+        responses: {
+          200: {
+            description: '요청 거절 처리 완료',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// const ChallengeRequest = registry.register('ChallengeRequest', z.object({
-//   id: z.number(),
-//   title: z.string(),
-//   docUrl: z.string(),
-//   description: z.string(),
-//   category: z.string(),
-//   documentType: z.string(),
-//   dueDate: z.string(),
-//   maxParticipants: z.number(),
-//   status: z.enum(['PENDING', 'APPROVED', 'REJECTED']),
-//   rejectionReason: z.string().nullable(),
-//   createdAt: z.string(),
-// }).openapi('ChallengeRequest'));
+    '/api/admin/requests/{id}': {
+      delete: {
+        tags: ['Admin'],
+        summary: '챌린지 개설 요청 삭제',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '삭제할 요청의 ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: reasonBodySchema } },
+        },
+        responses: {
+          204: {
+            description: '삭제 완료',
+          },
+        },
+      },
+    },
 
-// const Challenge = registry.register('Challenge', z.object({
-//   id: z.number(),
-//   title: z.string(),
-//   docUrl: z.string(),
-//   description: z.string(),
-//   category: z.string(),
-//   documentType: z.string(),
-//   dueDate: z.string(),
-//   maxParticipants: z.number(),
-//   currentParticipants: z.number(),
-//   status: z.enum(['OPENED', 'CLOSED', 'DELETED']),
-//   approvedAt: z.string().nullable(),
-// }).openapi('Challenge'));
+    '/api/admin/users/{id}/ban': {
+      patch: {
+        tags: ['Admin'],
+        summary: '악성 유저 차단',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '차단할 유저의 ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: reasonBodySchema } },
+        },
+        responses: {
+          200: {
+            description: '유저 차단 완료',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// const Submission = registry.register('Submission', z.object({
-//   id: z.number(),
-//   title: z.string(),
-//   content: z.record(z.any()),
-//   heartCount: z.number(),
-//   isBest: z.boolean(),
-//   isBlocked: z.boolean(),
-//   isDeleted: z.boolean(),
-//   createdAt: z.string(),
-//   user: z.object({ id: z.number(), nickname: z.string() }),
-//   challenge: z.object({ id: z.number(), title: z.string() }),
-// }).openapi('Submission'));
+    '/api/admin/feedbacks/{id}/block': {
+      patch: {
+        tags: ['Admin'],
+        summary: '악성 피드백 차단',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '차단할 피드백의 ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: reasonBodySchema } },
+        },
+        responses: {
+          200: {
+            description: '피드백 차단 완료',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// const Feedback = registry.register('Feedback', z.object({
-//   id: z.number(),
-//   content: z.string(),
-//   isBlocked: z.boolean(),
-//   createdAt: z.string(),
-//   user: z.object({ id: z.number(), nickname: z.string() }),
-// }).openapi('Feedback'));
+    '/api/auth/signup': {
+      post: {
+        tags: ['Auth'],
+        summary: '이메일 회원가입',
+        description:
+          '회원가입 성공 시 쿠키에 Access Token과 Refresh Token이 구워집니다.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: authSchema },
+          },
+        },
+        responses: {
+          201: {
+            description: '회원가입 성공 및 토큰 발급',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+          400: {
+            description: '입력값 검증 실패',
+            content: { 'application/json': { schema: errorResponseSchema } },
+          },
+        },
+      },
+    },
 
-// const Draft = registry.register('Draft', z.object({
-//   id: z.number(),
-//   challengeId: z.number(),
-//   title: z.string(),
-//   content: z.record(z.any()),
-//   createdAt: z.string(),
-//   updatedAt: z.string(),
-// }).openapi('Draft'));
+    '/api/auth/login': {
+      post: {
+        tags: ['Auth'],
+        summary: '이메일 로그인',
+        description:
+          '로그인 성공 시 쿠키에 Access Token과 Refresh Token이 구워집니다.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: loginSchema },
+          },
+        },
+        responses: {
+          200: {
+            description: '로그인 성공 및 토큰 발급',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+          401: {
+            description: '이메일 또는 비밀번호 불일치',
+            content: { 'application/json': { schema: errorResponseSchema } },
+          },
+        },
+      },
+    },
 
-// const Notification = registry.register('Notification', z.object({
-//   id: z.number(),
-//   type: z.enum(['CHALLENGE_APPROVED', 'CHALLENGE_REJECTED', 'SUBMISSION_BEST', 'FEEDBACK_RECEIVED', 'HEART_RECEIVED', 'REPORT_RECEIVED', 'BANNED']),
-//   message: z.string(),
-//   reason: z.string().nullable(),
-//   isRead: z.boolean(),
-//   createdAt: z.string(),
-// }).openapi('Notification'));
+    '/api/auth/logout': {
+      post: {
+        tags: ['Auth'],
+        summary: '로그아웃',
+        description:
+          '서버에서 토큰을 만료 처리하고, 클라이언트의 인증 쿠키를 삭제합니다.',
+        security: [{ accessTokenCookie: [] }],
+        responses: {
+          204: {
+            description: '로그아웃 성공',
+          },
+        },
+      },
+    },
 
-// const Report = registry.register('Report', z.object({
-//   id: z.string(),
-//   targetId: z.string(),
-//   reportType: z.enum(['CHALLENGE', 'FEEDBACK', 'SUBMISSION']),
-//   reason: z.string(),
-//   createdAt: z.string(),
-// }).openapi('Report'));
+    '/api/auth/me': {
+      get: {
+        tags: ['Auth'],
+        summary: '현재 로그인한 내 정보 조회',
+        security: [{ accessTokenCookie: [] }],
+        responses: {
+          200: {
+            description: '정보 조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } }, // 실제로는 data에 user 객체가 들어감
+          },
+          401: {
+            description: '인증되지 않은 사용자 (토큰 만료/없음)',
+            content: { 'application/json': { schema: errorResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/auth/signup', tags: ['Auth'], summary: '일반 회원가입',
-//   request: { body: { content: { 'application/json': { schema: signupSchema } } } },
-//   responses: {
-//     201: { description: '회원가입 성공', content: { 'application/json': { schema: z.object({ id: z.number(), email: z.string(), nickname: z.string(), createdAt: z.string() }) } } },
-//     409: { description: '이메일 또는 닉네임 중복', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/auth/withdraw': {
+      delete: {
+        tags: ['Auth'],
+        summary: '회원 탈퇴',
+        description: '계정을 삭제하고 모든 인증 쿠키를 지웁니다.',
+        security: [{ accessTokenCookie: [] }],
+        responses: {
+          200: {
+            description: '회원 탈퇴 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/auth/login', tags: ['Auth'], summary: '일반 로그인',
-//   request: { body: { content: { 'application/json': { schema: loginSchema } } } },
-//   responses: {
-//     200: { description: '로그인 성공', content: { 'application/json': { schema: z.object({ tokens: Tokens, user: User }) } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/auth/login/{provider}': {
+      post: {
+        tags: ['Auth'],
+        summary: '소셜 로그인 (OAuth)',
+        description:
+          '제공자(구글 등)로부터 받은 인가 코드를 이용해 로그인/회원가입을 진행하고 쿠키를 굽습니다.',
+        parameters: [
+          {
+            name: 'provider',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+            },
+            description: '소셜 로그인 제공자 이름 (goole, kakao, naver)',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: socialLoginSchema },
+          },
+        },
+        responses: {
+          200: {
+            description: '소셜 로그인(또는 회원가입) 성공 및 토큰 발급 완료',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+          400: {
+            description: '인가 코드 누락 등 입력값 오류',
+            content: { 'application/json': { schema: errorResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/auth/google', tags: ['Auth'], summary: '구글 로그인',
-//   request: { body: { content: { 'application/json': { schema: googleLoginSchema } } } },
-//   responses: {
-//     200: { description: '구글 로그인 성공', content: { 'application/json': { schema: z.object({ tokens: Tokens, user: User, isNewUser: z.boolean() }) } } },
-//     401: { description: '유효하지 않은 구글 토큰', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/challenges': {
+      get: {
+        tags: ['Challenge'],
+        summary: '챌린지 목록 조회',
+        description: '챌린지 목록을 불러옵니다.',
 
-// registry.registerPath({
-//   method: 'post', path: '/api/auth/logout', tags: ['Auth'], summary: '로그아웃',
-//   security: [{ bearerAuth: [] }],
-//   responses: {
-//     200: { description: '로그아웃 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+        parameters: [
+          {
+            name: 'skip',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '건너뛸 개수',
+          },
+          {
+            name: 'take',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '가져올 개수',
+          },
+          {
+            name: 'keyword',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '검색어',
+          },
+          {
+            name: 'category',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '카테고리 (DOCUMENTATION, BLOG)',
+          },
+          {
+            name: 'status',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '상태',
+          },
+          {
+            name: 'sortBy',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '정렬 기준',
+          },
+          {
+            name: 'sortOrder',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '정렬 방향',
+          },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/auth/token/refresh', tags: ['Auth'], summary: '토큰 재발급',
-//   request: { body: { content: { 'application/json': { schema: refreshTokenSchema } } } },
-//   responses: {
-//     200: { description: '재발급 성공', content: { 'application/json': { schema: Tokens } } },
-//     401: { description: '유효하지 않은 토큰', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/challenges/{id}': {
+      get: {
+        tags: ['Challenge'],
+        summary: '특정 챌린지 상세 조회',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '챌린지 ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/users/me', tags: ['Users'], summary: '내 프로필 조회',
-//   security: [{ bearerAuth: [] }],
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: User } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+      patch: {
+        tags: ['Challenge'],
+        summary: '챌린지 정보 수정',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '수정할 챌린지 ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: challengeSchema },
+          },
+        },
+        responses: {
+          200: {
+            description: '수정 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
 
-// registry.registerPath({
-//   method: 'patch', path: '/api/users/me', tags: ['Users'], summary: '내 프로필 수정',
-//   security: [{ bearerAuth: [] }],
-//   request: { body: { content: { 'multipart/form-data': { schema: z.object({ nickname: z.string().optional(), profileImage: z.string().optional().openapi({ format: 'binary' }) }) } } } },
-//   responses: {
-//     200: { description: '수정 성공', content: { 'application/json': { schema: User } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     409: { description: '닉네임 중복', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+      delete: {
+        tags: ['Challenge'],
+        summary: '챌린지 삭제',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '삭제할 챌린지 ID',
+          },
+        ],
+        responses: {
+          204: { description: '삭제 성공' },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'delete', path: '/api/users/me', tags: ['Users'], summary: '회원 탈퇴',
-//   security: [{ bearerAuth: [] }],
-//   responses: {
-//     200: { description: '탈퇴 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/challenges/{id}/join': {
+      post: {
+        tags: ['Challenge'],
+        summary: '챌린지 참여하기',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '참여할 챌린지 ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: '참여 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/challenge-requests', tags: ['ChallengeRequest'], summary: '챌린지 신청',
-//   security: [{ bearerAuth: [] }],
-//   request: {
-//     body: {
-//       content: {
-//         'application/json': {
-//           schema: z.object({
-//             title: z.string().openapi({ example: '챌린지 제목' }),
-//             docUrl: z.string().url().openapi({ example: 'https://docs.example.com' }),
-//             description: z.string().openapi({ example: '챌린지 설명' }),
-//             category: z.string().openapi({ example: 'Next.js' }),
-//             documentType: z.string().openapi({ example: '공식문서' }),
-//             dueDate: z.string(),
-//             maxParticipants: z.number().openapi({ example: 10 }),
-//           }).openapi('CreateChallengeRequest'),
-//         },
-//       },
-//     },
-//   },
-//   responses: {
-//     201: { description: '신청 성공', content: { 'application/json': { schema: ChallengeRequest } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/challenges/{id}/leave': {
+      delete: {
+        tags: ['Challenge'],
+        summary: '챌린지 참여 취소',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '나갈 챌린지 ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: '취소 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/challenge-requests', tags: ['ChallengeRequest'], summary: '내 챌린지 신청 목록',
-//   security: [{ bearerAuth: [] }],
-//   request: { query: z.object({ status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(), page: z.coerce.number().default(1), limit: z.coerce.number().default(10) }) },
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: z.object({ items: z.array(ChallengeRequest), total: z.number(), page: z.number(), limit: z.number() }) } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/challengeRequests': {
+      post: {
+        tags: ['Challenge'],
+        summary: '새로운 챌린지 개설 요청',
+        description:
+          '일반 유저가 관리자에게 새로운 챌린지 개설을 요청합니다. (관리자 승인 후 챌린지가 생성됩니다.)',
+        security: [{ accessTokenCookie: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: challengeSchema },
+          },
+        },
+        responses: {
+          201: {
+            description: '챌린지 개설 요청 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/challenges', tags: ['Challenge'], summary: '챌린지 목록 조회',
-//   request: { query: z.object({ status: z.enum(['OPENED', 'CLOSED', 'DELETED']).optional(), category: z.string().optional(), page: z.coerce.number().default(1), limit: z.coerce.number().default(10) }) },
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: z.object({ items: z.array(Challenge), total: z.number(), page: z.number(), limit: z.number(), totalPages: z.number() }) } } },
-//   },
-// });
+    '/api/submissions/{submissionId}/feedbacks': {
+      get: {
+        tags: ['Feedback'],
+        summary: '특정 작업물의 피드백 목록 조회',
+        description:
+          '작업물에 달린 피드백 목록을 페이지네이션 및 정렬하여 가져옵니다.',
 
-// registry.registerPath({
-//   method: 'get', path: '/api/challenges/{id}', tags: ['Challenge'], summary: '챌린지 상세 조회',
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: Challenge } } },
-//     404: { description: '챌린지 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+        parameters: [
+          {
+            name: 'submissionId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '작업물 ID',
+          },
+          {
+            name: 'skip',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '건너뛸 개수',
+          },
+          {
+            name: 'take',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '가져올 개수',
+          },
+          {
+            name: 'sort_by',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '정렬 기준',
+          },
+          {
+            name: 'sort_order',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '정렬 방향',
+          },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/challenges/{id}/participate', tags: ['Challenge'], summary: '챌린지 참여',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     201: { description: '참여 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     409: { description: '이미 참여한 챌린지', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+      post: {
+        tags: ['Feedback'],
+        summary: '피드백 작성',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'submissionId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '피드백을 남길 작업물 ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: feedbackSchema },
+          },
+        },
+        responses: {
+          201: {
+            description: '피드백 작성 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/challenges/{id}/edit-requests', tags: ['Challenge'], summary: '챌린지 수정 요청',
-//   security: [{ bearerAuth: [] }],
-//   request: {
-//     params: z.object({ id: z.string().openapi({ example: '1' }) }),
-//     body: { content: { 'application/json': { schema: z.object({ reason: z.string().openapi({ example: '수정 사유' }), changeContent: z.record(z.any()) }).openapi('CreateEditRequest') } } },
-//   },
-//   responses: {
-//     201: { description: '수정 요청 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '챌린지 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/feedbacks/{id}': {
+      patch: {
+        tags: ['Feedback'],
+        summary: '피드백 내용 수정',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '수정할 피드백 ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: feedbackSchema },
+          },
+        },
+        responses: {
+          200: {
+            description: '피드백 수정 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/submissions', tags: ['Submission'], summary: '작업물 목록 조회',
-//   security: [{ bearerAuth: [] }],
-//   request: { query: z.object({ challengeId: z.coerce.number().optional(), onlyMine: z.coerce.boolean().optional(), page: z.coerce.number().default(1), limit: z.coerce.number().default(10) }) },
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: z.object({ items: z.array(Submission), total: z.number(), page: z.number(), limit: z.number() }) } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+      delete: {
+        tags: ['Feedback'],
+        summary: '피드백 삭제',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '삭제할 피드백 ID',
+          },
+        ],
+        responses: {
+          204: {
+            description: '삭제 성공',
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/submissions', tags: ['Submission'], summary: '작업물 제출',
-//   security: [{ bearerAuth: [] }],
-//   request: { body: { content: { 'application/json': { schema: z.object({ challengeId: z.number().openapi({ example: 1 }), title: z.string().openapi({ example: '작업물 제목' }), content: z.record(z.any()) }).openapi('CreateSubmission') } } } },
-//   responses: {
-//     201: { description: '제출 성공', content: { 'application/json': { schema: Submission } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/challenges/{challengeId}/submissions': {
+      get: {
+        tags: ['Submission'],
+        summary: '특정 챌린지의 작업물 목록 조회',
+        description:
+          '페이지네이션과 정렬 기능을 이용해 작업물 목록을 조회합니다.',
+        parameters: [
+          {
+            name: 'challengeId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+          { name: 'skip', in: 'query', schema: { type: 'string' } },
+          { name: 'take', in: 'query', schema: { type: 'string' } },
+          { name: 'sort_by', in: 'query', schema: { type: 'string' } },
+          { name: 'sort_order', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/submissions/{id}', tags: ['Submission'], summary: '작업물 상세 조회',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: Submission } } },
-//     404: { description: '작업물 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+      post: {
+        tags: ['Submission'],
+        summary: '작업물 제출',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'challengeId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: submissionSchema } },
+        },
+        responses: {
+          201: {
+            description: '제출 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'patch', path: '/api/submissions/{id}', tags: ['Submission'], summary: '작업물 수정',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }), body: { content: { 'application/json': { schema: z.object({ title: z.string().optional(), content: z.record(z.any()).optional() }).openapi('UpdateSubmission') } } } },
-//   responses: {
-//     200: { description: '수정 성공', content: { 'application/json': { schema: Submission } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '작업물 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/challenges/{challengeId}/submissions/rankings': {
+      get: {
+        tags: ['Submission'],
+        summary: '작업물 인기 랭킹 조회',
+        description: '상위 랭킹의 작업물을 조회합니다.',
+        parameters: [
+          {
+            name: 'challengeId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+          {
+            name: 'limit',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '가져올 개수',
+          },
+        ],
+        responses: {
+          200: {
+            description: '랭킹 조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'delete', path: '/api/submissions/{id}', tags: ['Submission'], summary: '작업물 삭제',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '삭제 성공' },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '작업물 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/submissions/{id}': {
+      get: {
+        tags: ['Submission'],
+        summary: '작업물 상세 조회',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+        ],
+        responses: {
+          200: {
+            description: '상세 조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/submissions/{id}/hearts', tags: ['Submission'], summary: '좋아요',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     201: { description: '좋아요 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     409: { description: '이미 좋아요한 작업물', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+      patch: {
+        tags: ['Submission'],
+        summary: '작업물 수정',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: submissionSchema } },
+        },
+        responses: {
+          200: {
+            description: '수정 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
 
-// registry.registerPath({
-//   method: 'delete', path: '/api/submissions/{id}/hearts', tags: ['Submission'], summary: '좋아요 취소',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '좋아요 취소 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '좋아요 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+      delete: {
+        tags: ['Submission'],
+        summary: '작업물 삭제',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+        ],
+        responses: {
+          204: { description: '삭제 성공' },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/submissions/{id}/feedbacks', tags: ['Feedback'], summary: '피드백 목록 조회',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: z.object({ items: z.array(Feedback), total: z.number() }) } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/submissions/{id}/heart': {
+      post: {
+        tags: ['Submission'],
+        summary: '작업물 좋아요 토글',
+        description: '좋아요를 추가하거나 취소합니다.',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+        ],
+        responses: {
+          200: {
+            description: '좋아요 토글 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/submissions/{id}/feedbacks', tags: ['Feedback'], summary: '피드백 작성',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }), body: { content: { 'application/json': { schema: z.object({ content: z.string().openapi({ example: '피드백 내용' }) }).openapi('CreateFeedback') } } } },
-//   responses: {
-//     201: { description: '피드백 작성 성공', content: { 'application/json': { schema: Feedback } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/users/me': {
+      get: {
+        tags: ['User'],
+        summary: '내 프로필 조회',
+        security: [{ accessTokenCookie: [] }],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
 
-// registry.registerPath({
-//   method: 'delete', path: '/api/feedbacks/{id}', tags: ['Feedback'], summary: '피드백 삭제',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '삭제 성공' },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '피드백 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+      patch: {
+        tags: ['User'],
+        summary: '내 프로필 수정',
+        security: [{ accessTokenCookie: [] }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: userUpdateSchema } },
+        },
+        responses: {
+          200: {
+            description: '수정 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/drafts', tags: ['Draft'], summary: '임시저장 목록 조회',
-//   security: [{ bearerAuth: [] }],
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: z.object({ items: z.array(Draft) }) } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/users/me/submissions': {
+      get: {
+        tags: ['User'],
+        summary: '내가 작성한 작업물 목록',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          { name: 'skip', in: 'query', schema: { type: 'string' } },
+          { name: 'take', in: 'query', schema: { type: 'string' } },
+          { name: 'sort_by', in: 'query', schema: { type: 'string' } },
+          { name: 'sort_order', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/drafts', tags: ['Draft'], summary: '임시저장',
-//   security: [{ bearerAuth: [] }],
-//   request: { body: { content: { 'application/json': { schema: z.object({ challengeId: z.number().openapi({ example: 1 }), title: z.string().openapi({ example: '임시저장 제목' }), content: z.record(z.any()) }).openapi('CreateDraft') } } } },
-//   responses: {
-//     201: { description: '임시저장 성공', content: { 'application/json': { schema: Draft } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/users/me/challenges': {
+      get: {
+        tags: ['User'],
+        summary: '내가 참여한 챌린지 목록',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          { name: 'skip', in: 'query', schema: { type: 'string' } },
+          { name: 'take', in: 'query', schema: { type: 'string' } },
+          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+          { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'patch', path: '/api/drafts/{id}', tags: ['Draft'], summary: '임시저장 수정',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }), body: { content: { 'application/json': { schema: z.object({ title: z.string().optional(), content: z.record(z.any()).optional() }).openapi('UpdateDraft') } } } },
-//   responses: {
-//     200: { description: '수정 성공', content: { 'application/json': { schema: Draft } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '임시저장 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/users/me/challengeRequests': {
+      get: {
+        tags: ['User'],
+        summary: '내가 보낸 챌린지 개설 요청 목록',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          { name: 'skip', in: 'query', schema: { type: 'string' } },
+          { name: 'take', in: 'query', schema: { type: 'string' } },
+          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+          { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'delete', path: '/api/drafts/{id}', tags: ['Draft'], summary: '임시저장 삭제',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '삭제 성공' },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '임시저장 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/users/me/hearts': {
+      get: {
+        tags: ['User'],
+        summary: '내가 좋아요 한 작업물 목록',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          { name: 'skip', in: 'query', schema: { type: 'string' } },
+          { name: 'take', in: 'query', schema: { type: 'string' } },
+          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+          { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/notifications', tags: ['Notification'], summary: '알림 목록 조회',
-//   security: [{ bearerAuth: [] }],
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: z.object({ items: z.array(Notification), total: z.number() }) } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/users/me/feedbacks': {
+      get: {
+        tags: ['User'],
+        summary: '내가 작성한 피드백 목록',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          { name: 'skip', in: 'query', schema: { type: 'string' } },
+          { name: 'take', in: 'query', schema: { type: 'string' } },
+          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+          { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'patch', path: '/api/notifications/{id}/read', tags: ['Notification'], summary: '알림 읽음 처리',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '읽음 처리 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '알림 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/users': {
+      get: {
+        tags: ['Admin', 'User'],
+        summary: '전체 유저 목록 조회 (관리자)',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          { name: 'skip', in: 'query', schema: { type: 'string' } },
+          { name: 'take', in: 'query', schema: { type: 'string' } },
+          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+          { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
+          {
+            name: 'role',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '역할 (USER, ADMIN, MASTER)',
+          },
+          {
+            name: 'status',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '상태 (ACTIVE, BANNED 등)',
+          },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'post', path: '/api/reports', tags: ['Report'], summary: '신고',
-//   security: [{ bearerAuth: [] }],
-//   request: {
-//     body: {
-//       content: {
-//         'application/json': {
-//           schema: z.object({
-//             targetUserId: z.string().openapi({ example: 'user_id' }),
-//             targetId: z.string().openapi({ example: 'target_id' }),
-//             reportType: z.enum(['CHALLENGE', 'FEEDBACK', 'SUBMISSION']),
-//             reason: z.string().openapi({ example: '신고 사유' }),
-//           }).openapi('CreateReport'),
-//         },
-//       },
-//     },
-//   },
-//   responses: {
-//     201: { description: '신고 성공', content: { 'application/json': { schema: Report } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/users/{id}': {
+      get: {
+        tags: ['Admin', 'User'],
+        summary: '특정 유저 상세 조회 (관리자)',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/admin/challenge-requests', tags: ['Admin'], summary: '챌린지 신청 목록 (어드민)',
-//   security: [{ bearerAuth: [] }],
-//   request: { query: z.object({ status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(), page: z.coerce.number().default(1), limit: z.coerce.number().default(10) }) },
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: z.object({ items: z.array(ChallengeRequest), total: z.number() }) } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/users/{id}/role': {
+      patch: {
+        tags: ['Admin', 'User'],
+        summary: '유저 권한 변경 (관리자)',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '권한을 변경할 유저 ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: roleUpdateSchema,
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: '권한 변경 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'patch', path: '/api/admin/challenge-requests/{id}/approve', tags: ['Admin'], summary: '챌린지 신청 승인',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '승인 성공', content: { 'application/json': { schema: Challenge } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '신청 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/reports': {
+      get: {
+        tags: ['Report', 'Admin'],
+        summary: '전체 신고 목록 조회 (관리자)',
+        description:
+          '관리자가 접수된 신고 목록을 필터링 및 페이지네이션하여 조회합니다.',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          { name: 'skip', in: 'query', schema: { type: 'string' } },
+          { name: 'take', in: 'query', schema: { type: 'string' } },
+          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+          { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
+          {
+            name: 'report_type',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '신고 타입 (CHALLENGE, SUBMISSION, FEEDBACK)',
+          },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
 
-// registry.registerPath({
-//   method: 'patch', path: '/api/admin/challenge-requests/{id}/reject', tags: ['Admin'], summary: '챌린지 신청 거절',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }), body: { content: { 'application/json': { schema: z.object({ rejectionReason: z.string().openapi({ example: '거절 사유' }) }).openapi('RejectChallengeRequest') } } } },
-//   responses: {
-//     200: { description: '거절 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '신청 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+      post: {
+        tags: ['Report'],
+        summary: '콘텐츠 신고하기',
+        description: '유저가 불건전한 챌린지, 작업물, 피드백을 신고합니다.',
+        security: [{ accessTokenCookie: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: reportSchema },
+          },
+        },
+        responses: {
+          201: {
+            description: '신고 접수 완료',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/admin/edit-requests', tags: ['Admin'], summary: '수정 요청 목록 (어드민)',
-//   security: [{ bearerAuth: [] }],
-//   request: { query: z.object({ status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(), page: z.coerce.number().default(1), limit: z.coerce.number().default(10) }) },
-//   responses: {
-//     200: { description: '조회 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/reports/{id}': {
+      get: {
+        tags: ['Report', 'Admin'],
+        summary: '특정 신고 상세 조회 (관리자)',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '조회할 신고 ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: '상세 조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'patch', path: '/api/admin/edit-requests/{id}/approve', tags: ['Admin'], summary: '수정 요청 승인',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '승인 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '요청 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/notifications': {
+      get: {
+        tags: ['Notification'],
+        summary: '내 알림 목록 조회',
+        description: '나에게 온 알림 목록을 페이지네이션하여 조회합니다.',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'skip',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '건너뛸 개수',
+          },
+          {
+            name: 'take',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '가져올 개수',
+          },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'patch', path: '/api/admin/edit-requests/{id}/reject', tags: ['Admin'], summary: '수정 요청 거절',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '거절 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '요청 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/notifications/unread-count': {
+      get: {
+        tags: ['Notification'],
+        summary: '읽지 않은 알림 개수 조회',
+        description: '아직 읽지 않은 알림의 총 개수를 반환합니다.',
+        security: [{ accessTokenCookie: [] }],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'get', path: '/api/admin/reports', tags: ['Admin'], summary: '신고 목록 조회 (어드민)',
-//   security: [{ bearerAuth: [] }],
-//   request: { query: z.object({ reportType: z.enum(['CHALLENGE', 'FEEDBACK', 'SUBMISSION']).optional(), page: z.coerce.number().default(1), limit: z.coerce.number().default(10) }) },
-//   responses: {
-//     200: { description: '조회 성공', content: { 'application/json': { schema: z.object({ items: z.array(Report), total: z.number() }) } } },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
+    '/api/notifications/{id}': {
+      delete: {
+        tags: ['Notification'],
+        summary: '알림 삭제',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '삭제할 알림 ID',
+          },
+        ],
+        responses: {
+          204: {
+            description: '삭제 성공',
+          },
+        },
+      },
+    },
 
-// registry.registerPath({
-//   method: 'patch', path: '/api/admin/users/{id}/ban', tags: ['Admin'], summary: '유저 정지',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }), body: { content: { 'application/json': { schema: z.object({ reason: z.string().openapi({ example: '정지 사유' }) }).openapi('BanUser') } } } },
-//   responses: {
-//     200: { description: '정지 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '유저 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
-
-// registry.registerPath({
-//   method: 'patch', path: '/api/admin/submissions/{id}/block', tags: ['Admin'], summary: '작업물 차단',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '차단 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '작업물 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
-
-// registry.registerPath({
-//   method: 'patch', path: '/api/admin/feedbacks/{id}/block', tags: ['Admin'], summary: '피드백 차단',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '차단 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '피드백 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
-
-// registry.registerPath({
-//   method: 'patch', path: '/api/admin/submissions/{id}/best', tags: ['Admin'], summary: '베스트 작업물 선정',
-//   security: [{ bearerAuth: [] }],
-//   request: { params: z.object({ id: z.string().openapi({ example: '1' }) }) },
-//   responses: {
-//     200: { description: '선정 성공' },
-//     401: { description: '인증 실패', content: { 'application/json': { schema: ErrorResponse } } },
-//     403: { description: '권한 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//     404: { description: '작업물 없음', content: { 'application/json': { schema: ErrorResponse } } },
-//   },
-// });
-
-// export function generateOpenApiDocument() {
-//   const generator = new OpenApiGeneratorV3(registry.definitions);
-//   return generator.generateDocument({
-//     openapi: '3.0.0',
-//     info: { title: 'Docthru API', version: '1.0.0', description: 'Docthru 백엔드 API 명세서' },
-//     servers: [{ url: 'http://localhost:3000', description: '개발 서버' }],
-//     components: { securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } } },
-//   });
-// }
-
-
+    '/api/notifications/{id}/read': {
+      patch: {
+        tags: ['Notification'],
+        summary: '알림 읽음 처리',
+        description: '특정 알림의 상태를 [읽음]으로 변경합니다.',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '읽음 처리할 알림 ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: '읽음 처리 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
+  },
+});

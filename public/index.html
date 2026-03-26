@@ -4,10 +4,66 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>1팀 Docthru 백엔드 서버</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #f4f7f6;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        background-color: #ffffff;
+        padding: 40px 60px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        text-align: center;
+      }
+
+      h2 {
+        color: #2c3e50;
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      p {
+        color: #666666;
+        margin-bottom: 30px;
+        line-height: 1.5;
+      }
+
+      .swagger-btn {
+        display: inline-block;
+        background-color: #49cc90;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition:
+          background-color 0.2s ease,
+          transform 0.1s ease;
+      }
+
+      .swagger-btn:hover {
+        background-color: #3ba976;
+        transform: translateY(-2px);
+      }
+    </style>
   </head>
   <body>
-    <h2>[ 1팀 Docthru 백엔드 서버 ]</h2>
-    <p>1팀의 백엔드 서버입니다. 아래 주소를 참고해주세요.</p>
-    <p>스웨거 주소(넣을 예정)</p>
+    <div class="container">
+      <h2>🚀 [ 1팀 Docthru 백엔드 서버 ]</h2>
+      <p>
+        서버가 정상적으로 실행 중입니다.<br />API 명세서는 아래 주소를
+        참고해주세요.
+      </p>
+      <a href="http://localhost:5001/api/docs" class="swagger-btn"
+        >Swagger 바로가기</a
+      >
+    </div>
   </body>
 </html>
