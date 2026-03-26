@@ -37,7 +37,7 @@ export class FeedbackController extends BaseController {
   async getFeedbacksBySubmission(req, res, next) {
     try {
       const { submissionId } = req.params;
-      const { skip, take, sort_by: sortBy, sort_order: sortOrder } = req.query;
+      const { skip, take, sortBy, sortOrder } = req.query;
 
       const result = await this.#feedbackService.getFeedbacksBySubmission(
         submissionId,

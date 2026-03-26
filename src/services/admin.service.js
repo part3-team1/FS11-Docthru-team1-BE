@@ -11,7 +11,6 @@ export class AdminService {
   #notificationRepository;
   #userRepository;
   #feedbackRepository;
-  #submissionRepository;
 
   constructor({
     challengeRepository,
@@ -19,14 +18,12 @@ export class AdminService {
     notificationRepository,
     userRepository,
     feedbackRepository,
-    submissionRepository,
   }) {
     this.#challengeRepository = challengeRepository;
     this.#challengeRequestRepository = challengeRequestRepository;
     this.#notificationRepository = notificationRepository;
     this.#userRepository = userRepository;
     this.#feedbackRepository = feedbackRepository;
-    this.#submissionRepository = submissionRepository;
   }
 
   //유저 서비스에도 어드민 로직이 있습니다. 확인해주세요!
@@ -42,18 +39,18 @@ export class AdminService {
     const challenge = await this.#challengeRepository.create({
       requestId: request.id,
       title: request.title,
-      docUrl: request.doc_url,
+      docUrl: request.docUrl,
       description: request.description,
       category: request.category,
-      documentType: request.document_type,
-      dueDate: request.due_date,
-      maxParticipants: request.max_participants,
+      documentType: request.documentType,
+      dueDate: request.dueDate,
+      maxParticipants: request.maxParticipants,
     });
 
     await this.#challengeRequestRepository.updateStatus(requestId, 'APPROVED');
 
     await this.#notificationRepository.create({
-      userId: request.requested_by,
+      userId: request.requestedBy,
       type: 'CHALLENGE_APPROVED',
       message: NOTIFICATION_MESSAGES.CHALLENGE_APPROVED(request.title),
     });
@@ -72,7 +69,7 @@ export class AdminService {
     );
 
     await this.#notificationRepository.create({
-      userId: request.requested_by,
+      userId: request.requestedBy,
       type: 'CHALLENGE_REJECTED',
       message: NOTIFICATION_MESSAGES.CHALLENGE_REJECTED(request.title),
       reason,
@@ -88,14 +85,13 @@ export class AdminService {
     await this.#challengeRequestRepository.delete(requestId);
 
     await this.#notificationRepository.create({
-      userId: request.requested_by,
+      userId: request.requestedBy,
       type: 'ADMIN_ACTION',
       message: NOTIFICATION_MESSAGES.REQUEST_DELETED(request.title),
       reason,
     });
   }
 
-  //유저 강제 정지
   async banUser(userId, reason) {
     const user = await this.#userRepository.findById(userId);
     if (!user) throw new NotFoundException(ERROR_MESSAGE.USER_NOT_FOUND);
@@ -116,7 +112,6 @@ export class AdminService {
     });
   }
 
-  //어드민의 수동 댓글 차단
   async adminBlockFeedback(feedbackId, reason) {
     const feedback = await this.#feedbackRepository.findById(feedbackId);
     if (!feedback)
@@ -125,7 +120,7 @@ export class AdminService {
     await this.#feedbackRepository.block(feedbackId, true);
 
     await this.#notificationRepository.create({
-      userId: feedback.user_id,
+      userId: feedback.userId,
       type: 'ADMIN_ACTION',
       message: NOTIFICATION_MESSAGES.FEEDBACK_BANNED,
       reason,

@@ -47,7 +47,7 @@ export class SubmissionController extends BaseController {
   async getSubmissionByChallenge(req, res, next) {
     try {
       const { challengeId } = req.params;
-      const { skip, take, sort_by: SortBy, sort_order: sortOrder } = req.query;
+      const { skip, take, SortBy, sortOrder } = req.query;
 
       const result = await this.#submissionService.getSubmissionByChallenge(
         challengeId,

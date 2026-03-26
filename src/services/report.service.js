@@ -64,7 +64,7 @@ export class ReportService {
       throw new NotFoundException(ERROR_MESSAGE.REPORT_TARGET_NOT_FOUND);
     }
 
-    const targetUserId = targetData.user_id || targetData.request?.requested_by;
+    const targetUserId = targetData.userId || targetData.request?.requestedBy;
 
     const report = await this.#reportRepository.create({
       userId,
@@ -96,14 +96,14 @@ export class ReportService {
         await this.#feedbackRepository.block(targetId, true);
       }
 
-      if(targetUserId){await this.#notificationRepository.create({
-        userId:targetUserId,
-        type:"ADMIN_ACTION",
-        message:NOTIFICATION_MESSAGES.AUTO_BLOCKED(targetTitle || "콘텐츠"
-        ),
-        reason:"신고 누적으로 인한 자동 차단"  
-
-      })}
+      if (targetUserId) {
+        await this.#notificationRepository.create({
+          userId: targetUserId,
+          type: 'ADMIN_ACTION',
+          message: NOTIFICATION_MESSAGES.AUTO_BLOCKED(targetTitle || '콘텐츠'),
+          reason: '신고 누적으로 인한 자동 차단',
+        });
+      }
     }
   }
 }

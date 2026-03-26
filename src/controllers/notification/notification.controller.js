@@ -14,7 +14,7 @@ export class NotificationController extends BaseController {
     this.router.get('/', needsLogin, (req, res, next) =>
       this.getMyNotifications(req, res, next),
     );
-    this.router.get('/unread-count', needsLogin, (req, res, next) =>
+    this.router.get('/unreadCount', needsLogin, (req, res, next) =>
       this.getUnreadCount(req, res, next),
     );
     this.router.patch('/:id/read', needsLogin, (req, res, next) =>

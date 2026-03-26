@@ -9,10 +9,10 @@ export class ReportRepository {
   create(data) {
     return this.#prisma.report.create({
       data: {
-        reporter_id: data.userId,
-        target_user_id: data.targetUserId,
-        target_id: data.targetId,
-        report_type: data.reportType,
+        reporterId: data.userId,
+        targetUserId: data.targetUserId,
+        targetId: data.targetId,
+        reportType: data.reportType,
         reason: data.reason,
       },
     });
@@ -23,12 +23,12 @@ export class ReportRepository {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
       sortOrder,
-      allowedFields: ['created_at'],
-      defaultField: 'created_at',
+      allowedFields: ['createdAt'],
+      defaultField: 'createdAt',
     });
 
     const queryOptions = {
-      ...(reportType && { report_type: reportType }),
+      ...(reportType && { reportType: reportType }),
     };
 
     return this.#prisma
@@ -40,7 +40,7 @@ export class ReportRepository {
           orderBy: { [safeSortBy]: safeSortOrder },
           include: {
             reporter: { select: { nickname: true } },
-            target_user: { select: { nickname: true, status: true } },
+            targetUser: { select: { nickname: true, status: true } },
           },
         }),
         this.#prisma.report.count({
@@ -57,7 +57,7 @@ export class ReportRepository {
       where: { id },
       include: {
         reporter: { select: { nickname: true, email: true } },
-        target_user: { select: { nickname: true, email: true, status: true } },
+        targetUser: { select: { nickname: true, email: true, status: true } },
       },
     });
   }
@@ -65,17 +65,14 @@ export class ReportRepository {
   //신고 누적 카운트
   countByTarget(targetId) {
     return this.#prisma.report.count({
-      where: { target_id: targetId },
+      where: { targetId },
     });
   }
 
   //중복신고 방지
   checkDuplicate(reporterId, targetId) {
     return this.#prisma.report.findFirst({
-      where: {
-        reporter_id: reporterId,
-        target_id: targetId,
-      },
+      where: { reporterId, targetId },
     });
   }
 }

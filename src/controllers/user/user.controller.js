@@ -78,7 +78,7 @@ export class UserController extends BaseController {
   async getMySubmissions(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { skip, take, sort_by: sortBy, sort_order: sortOrder } = req.query;
+      const { skip, take, sortBy, sortOrder } = req.query;
 
       const result = await this.#userService.getMySubmissions(userId, {
         skip,
@@ -96,7 +96,7 @@ export class UserController extends BaseController {
   async getMyChallenges(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { skip, take, sort_by: sortBy, sort_order: sortOrder } = req.query;
+      const { skip, take, sortBy, sortOrder } = req.query;
 
       const result = await this.#userService.getMyChallenges(userId, {
         skip,
@@ -114,7 +114,7 @@ export class UserController extends BaseController {
   async getMyChallengeRequests(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { skip, take, sort_by: sortBy, sort_order: sortOrder } = req.query;
+      const { skip, take, sortBy, sortOrder } = req.query;
 
       const result = await this.#userService.getMyChallengeRequests(userId, {
         skip,
@@ -132,7 +132,7 @@ export class UserController extends BaseController {
   async getMyHearts(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { skip, take, sort_by: sortBy, sort_order: sortOrder } = req.query;
+      const { skip, take, sortBy, sortOrder } = req.query;
 
       const result = await this.#userService.getMyHearts(userId, {
         skip,
@@ -150,7 +150,7 @@ export class UserController extends BaseController {
   async getMyFeedbacks(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { skip, take, sort_by: sortBy, sort_order: sortOrder } = req.query;
+      const { skip, take, sortBy, sortOrder } = req.query;
 
       const result = await this.#userService.getMyFeedbacks(userId, {
         skip,
@@ -167,14 +167,7 @@ export class UserController extends BaseController {
 
   async getUsers(req, res, next) {
     try {
-      const {
-        skip,
-        take,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        role,
-        status,
-      } = req.query;
+      const { skip, take, sortBy, sortOrder, role, status } = req.query;
 
       const result = await this.#userService.getUsers({
         skip,

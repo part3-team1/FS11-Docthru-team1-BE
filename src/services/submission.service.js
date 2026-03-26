@@ -32,7 +32,7 @@ export class SubmissionService {
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
     }
 
-    if (new Date(challenge.due_date) < new Date()) {
+    if (new Date(challenge.dueDate) < new Date()) {
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_ALREADY_CLOSED);
     }
 
@@ -44,7 +44,7 @@ export class SubmissionService {
     });
 
     await this.#notificationRepository.create({
-      userId: challenge.request.requested_by,
+      userId: challenge.request.requestedBy,
       type: 'SUBMISSION_CREATED',
       message: NOTIFICATION_MESSAGES.SUBMISSION_ADDED(challenge.title),
     });
@@ -63,7 +63,7 @@ export class SubmissionService {
 
   async getSubmissionById(id) {
     const submission = await this.#submissionRepository.findById(id);
-    if (!submission || submission.is_deleted || submission.is_blocked) {
+    if (!submission || submission.isDeleted || submission.isBlocked) {
       throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
     }
 
@@ -76,11 +76,11 @@ export class SubmissionService {
 
   async updateSubmission(userId, submissionId, updateData) {
     const submission = await this.#submissionRepository.findById(submissionId);
-    if (!submission || submission.is_deleted || submission.is_blocked) {
+    if (!submission || submission.isDeleted || submission.isBlocked) {
       throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
     }
 
-    const isOwner = submission.user_id === userId;
+    const isOwner = submission.userId === userId;
     if (!isOwner) {
       throw new ForbiddenException(ERROR_MESSAGE.SUBMISSION_ACCESS_DENIED);
     }
@@ -90,18 +90,18 @@ export class SubmissionService {
 
   async deleteSubmission(userId, submissionId, role) {
     const submission = await this.#submissionRepository.findById(submissionId);
-    if (!submission || submission.is_deleted) {
+    if (!submission || submission.isDeleted) {
       throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
     }
 
-    const isOwner = submission.user_id === userId;
+    const isOwner = submission.userId === userId;
     const isStaff = role === 'ADMIN' || role === 'MASTER';
     if (!isOwner && !isStaff) {
       throw new ForbiddenException(ERROR_MESSAGE.SUBMISSION_ACCESS_DENIED);
     }
 
     await this.#notificationRepository.create({
-      userId: submission.user_id,
+      userId: submission.userId,
       type: 'ADMIN_ACTION',
       message: isOwner
         ? NOTIFICATION_MESSAGES.SUBMISSION_DELETED(submission.title)
@@ -116,7 +116,7 @@ export class SubmissionService {
     if (!submission)
       throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
 
-    if (submission.user_id === userId) {
+    if (submission.userId === userId) {
       throw new BadRequestException(ERROR_MESSAGE.CANNOT_LIKE_OWN_SUBMISSION);
     }
 
@@ -127,17 +127,17 @@ export class SubmissionService {
 
     if (existingHeart) {
       await this.#heartRepository.delete(userId, submissionId);
-      return { liked: false, heartCount: submission.heart_count - 1 };
+      return { liked: false, heartCount: submission.heartCount - 1 };
     } else {
       await this.#heartRepository.create(userId, submissionId);
     }
 
     await this.#notificationRepository.create({
-      userId: submission.user_id,
+      userId: submission.userId,
       type: 'SUBMISSION_UPDATED',
       message: NOTIFICATION_MESSAGES.HEART_TOGGLED,
     });
 
-    return { liked: true, heartCount: submission.heart_count + 1 };
+    return { liked: true, heartCount: submission.heartCount + 1 };
   }
 }

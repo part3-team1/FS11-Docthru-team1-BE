@@ -1,13 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import { config } from '#config';
-import {
-  errorHandler,
-  cors,
-  logger,
-  responseCaseConverter,
-  requestCaseConverter,
-} from '#middlewares';
+import { errorHandler, cors, logger } from '#middlewares';
 import { registerSwagger } from '#docs/swagger.js';
 
 export class App {
@@ -22,8 +16,6 @@ export class App {
     this.app.use(cors);
     this.app.use(express.static('public'));
     this.app.use(express.json());
-    this.app.use(requestCaseConverter);
-    this.app.use(responseCaseConverter);
     this.app.use(logger);
     this.app.use(cookieParser());
     this.app.use((req, res, next) =>

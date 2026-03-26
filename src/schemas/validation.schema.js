@@ -39,12 +39,12 @@ export const challengeSchema = z
       .string()
       .min(10, VALIDATION_ERROR.MIN_TITLE)
       .max(50, VALIDATION_ERROR.MAX_TITLE),
-    doc_url: z.string().url(),
+    docUrl: z.string().url(),
     description: z
       .string()
       .max(150, VALIDATION_ERROR.MAX_DESCRIPTION)
       .optional(),
-    max_participants: z.coerce
+    maxParticipants: z.coerce
       .number()
       .int()
       .min(5, VALIDATION_ERROR.MIN_PARTICIPANTS)
@@ -52,10 +52,10 @@ export const challengeSchema = z
     category: z.enum(['NEXTJS', 'API', 'CAREER', 'MODERNJS', 'WEB'], {
       errorMap: () => ({ message: VALIDATION_ERROR.INVALID_CATEGORY }),
     }),
-    document_type: z.enum(['DOCUMENTATION', 'BLOG'], {
+    documentType: z.enum(['DOCUMENTATION', 'BLOG'], {
       errorMap: () => ({ message: VALIDATION_ERROR.INVALID_DOCUMENT_TYPE }),
     }),
-    due_date: z.string().datetime(),
+    dueDate: z.string().datetime(),
   })
   .meta({
     id: 'ChallengeRequest',
@@ -86,10 +86,10 @@ export const submissionSchema = z
 
 export const reportSchema = z
   .object({
-    report_type: z.enum(['CHALLENGE', 'SUBMISSION', 'FEEDBACK'], {
+    reportType: z.enum(['CHALLENGE', 'SUBMISSION', 'FEEDBACK'], {
       errorMap: () => ({ message: VALIDATION_ERROR.INVALID_REPORT_TYPE }),
     }),
-    target_id: z.string().cuid(VALIDATION_ERROR.INVALID_ID),
+    targetId: z.string().cuid(VALIDATION_ERROR.INVALID_ID),
     reason: z.string().refine((value) => REPORT_REASON.includes(value), {
       message: VALIDATION_ERROR.INVALID_REPORT_REASON,
     }),

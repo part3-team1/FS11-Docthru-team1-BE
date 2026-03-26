@@ -23,7 +23,7 @@ class Seeder {
     return {
       email: faker.internet.email(),
       nickname: faker.internet.username().slice(0, 10) + faker.number.int(1000),
-      password_hash: this.#hashedPassword,
+      passwordHash: this.#hashedPassword,
       role: 'USER',
       grade: faker.helpers.arrayElement(['NORMAL', 'EXPERT']),
       status: 'ACTIVE',
@@ -55,7 +55,7 @@ class Seeder {
     data.push({
       email: 'master@test.com',
       nickname: '갓은결',
-      password_hash: this.#hashedPassword,
+      passwordHash: this.#hashedPassword,
       role: 'MASTER',
       grade: 'EXPERT',
       status: 'ACTIVE',
@@ -108,9 +108,9 @@ class Seeder {
       userIds.map(async (user) => {
         const request = await this.#prisma.challengeRequest.create({
           data: {
-            requested_by: user.id,
+            requestedBy: user.id,
             title: faker.helpers.arrayElement(challengeTitles),
-            doc_url: faker.internet.url(),
+            docUrl: faker.internet.url(),
             description: faker.helpers.arrayElement(descriptions),
             category: faker.helpers.arrayElement([
               'NEXTJS',
@@ -119,12 +119,12 @@ class Seeder {
               'MODERNJS',
               'WEB',
             ]),
-            document_type: faker.helpers.arrayElement([
+            documentType: faker.helpers.arrayElement([
               'DOCUMENTATION',
               'BLOG',
             ]),
-            due_date: faker.date.future({ years: 1 }),
-            max_participants: faker.number.int({ min: 5, max: 20 }),
+            dueDate: faker.date.future({ years: 1 }),
+            maxParticipants: faker.number.int({ min: 5, max: 20 }),
             status: faker.helpers.arrayElement(randomStatus),
           },
         });
@@ -132,14 +132,14 @@ class Seeder {
         if (request.status === 'APPROVED') {
           const challenge = await this.#prisma.challenge.create({
             data: {
-              request_id: request.id,
+              requestId: request.id,
               title: request.title,
-              doc_url: request.doc_url,
+              docUrl: request.docUrl,
               description: request.description,
               category: request.category,
-              document_type: request.document_type,
-              due_date: request.due_date,
-              max_participants: request.max_participants,
+              documentType: request.documentType,
+              dueDate: request.dueDate,
+              maxParticipants: request.maxParticipants,
               status: faker.helpers.arrayElement([
                 'OPENED',
                 'CLOSED',
@@ -150,8 +150,8 @@ class Seeder {
 
           await this.#prisma.participation.create({
             data: {
-              user_id: user.id,
-              challenge_id: challenge.id,
+              userId: user.id,
+              challengeId: challenge.id,
             },
           });
 
@@ -190,29 +190,29 @@ class Seeder {
           participants.map(async (user) => {
             await this.#prisma.participation.upsert({
               where: {
-                challenge_id_user_id: {
-                  challenge_id: challengeId,
-                  user_id: user.id,
+                challengeId_userId: {
+                  challengeId: challengeId,
+                  userId: user.id,
                 },
               },
               update: {},
-              create: { challenge_id: challengeId, user_id: user.id },
+              create: { challengeId: challengeId, userId: user.id },
             });
 
             return this.#prisma.submission.create({
               data: {
-                challenge_id: challengeId,
-                user_id: user.id,
+                challengeId: challengeId,
+                userId: user.id,
                 title: faker.helpers.arrayElement(submissionTitles),
                 content: {
                   blocks: [
                     { type: 'paragraph', text: faker.lorem.paragraphs(2) },
                   ],
                 },
-                heart_count: faker.number.int({ min: 0, max: 9999 }),
-                is_best: faker.datatype.boolean(0.1),
-                is_blocked: false,
-                is_deleted: false,
+                heartCount: faker.number.int({ min: 0, max: 9999 }),
+                isBest: faker.datatype.boolean(0.1),
+                isBlocked: false,
+                isDeleted: false,
               },
             });
           }),
@@ -248,10 +248,10 @@ class Seeder {
           commenters.map(async (user) => {
             return this.#prisma.feedback.create({
               data: {
-                submission_id: submissionId,
-                user_id: user.id,
+                submissionId: submissionId,
+                userId: user.id,
                 content: faker.helpers.arrayElement(comments),
-                is_blocked: false,
+                isBlocked: false,
               },
             });
           }),
@@ -272,13 +272,13 @@ class Seeder {
             this.#prisma.heart
               .upsert({
                 where: {
-                  submission_id_user_id: {
-                    submission_id: submissionId,
-                    user_id: user.id,
+                  submissionId_userId: {
+                    submissionId: submissionId,
+                    userId: user.id,
                   },
                 },
                 update: {},
-                create: { submission_id: submissionId, user_id: user.id },
+                create: { submissionId: submissionId, userId: user.id },
               })
               .catch(() => {});
           }),

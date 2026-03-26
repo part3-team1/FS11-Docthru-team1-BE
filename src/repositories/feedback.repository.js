@@ -11,15 +11,15 @@ export class FeedbackRepository {
     return this.#prisma
       .$transaction([
         this.#prisma.feedback.findMany({
-          where: { user_id: userId },
+          where: { userId: userId },
           skip: Number(skip),
           take: Number(take),
-          orderBy: { created_at: 'desc' },
+          orderBy: { createdAt: 'desc' },
           include: {
             submission: { select: { id: true, title: true } },
           },
         }),
-        this.#prisma.feedback.count({ where: { user_id: userId } }),
+        this.#prisma.feedback.count({ where: { userId: userId } }),
       ])
       .then(([feedbacks, totalCount]) => {
         return { feedbacks, totalCount };
@@ -33,11 +33,11 @@ export class FeedbackRepository {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
       sortOrder,
-      allowedFields: ['created_at'],
-      defaultField: 'created_at',
+      allowedFields: ['createdAt'],
+      defaultField: 'createdAt',
     });
 
-    const whereCondition = { submission_id: submissionId, is_blocked: false };
+    const whereCondition = { submissionId, isBlocked: false };
 
     return this.#prisma
       .$transaction([
@@ -62,15 +62,15 @@ export class FeedbackRepository {
   findById(id) {
     return this.#prisma.feedback.findUnique({
       where: { id },
-      include: { submission: { select: { challenge_id: true } } },
+      include: { submission: { select: { challengeId: true } } },
     });
   }
 
   create(data) {
     return this.#prisma.feedback.create({
       data: {
-        submission_id: data.submissionId,
-        user_id: data.userId,
+        submissionId: data.submissionId,
+        userId: data.userId,
         content: data.content,
       },
     });
@@ -87,7 +87,7 @@ export class FeedbackRepository {
   block(id, isBlocked = true) {
     return this.#prisma.feedback.update({
       where: { id },
-      data: { is_blocked: isBlocked },
+      data: { isBlocked },
     });
   }
 }

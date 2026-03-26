@@ -36,7 +36,7 @@ export class FeedbackService {
       throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
 
     const challenge = await this.#challengeRepository.findById(
-      submission.challenge_id,
+      submission.challengeId,
     );
     if (challenge.status === 'CLOSED')
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_ALREADY_FINISHED);
@@ -48,7 +48,7 @@ export class FeedbackService {
     });
 
     await this.#notificationRepository.create({
-      userId: submission.user_id,
+      userId: submission.userId,
       type: 'FEEDBACK_CREATED',
       message: NOTIFICATION_MESSAGES.FEEDBACK_ADDED(challenge.title),
     });
@@ -62,15 +62,15 @@ export class FeedbackService {
       throw new NotFoundException(ERROR_MESSAGE.FEEDBACK_NOT_FOUND);
 
     const submission = await this.#submissionRepository.findById(
-      feedback.submission_id,
+      feedback.submissionId,
     );
     const challenge = await this.#challengeRepository.findById(
-      submission.challenge_id,
+      submission.challengeId,
     );
     if (challenge.status === 'CLOSED')
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_ALREADY_FINISHED);
 
-    const isOwner = feedback.user_id === userId;
+    const isOwner = feedback.userId === userId;
     const isStaff = role === 'ADMIN' || role === 'MASTER';
     if (!isOwner && !isStaff) {
       throw new ForbiddenException(ERROR_MESSAGE.FEEDBACK_ACCESS_DENIED);
@@ -83,7 +83,7 @@ export class FeedbackService {
 
     if (!isOwner && isStaff) {
       await this.#notificationRepository.create({
-        userId: feedback.user_id,
+        userId: feedback.userId,
         type: 'FEEDBACK_UPDATED',
         message: NOTIFICATION_MESSAGES.FEEDBACK_MODIFIED(challenge.title),
       });
@@ -97,14 +97,14 @@ export class FeedbackService {
     if (!feedback)
       throw new NotFoundException(ERROR_MESSAGE.FEEDBACK_NOT_FOUND);
 
-    const isOwner = feedback.user_id === userId;
+    const isOwner = feedback.userId === userId;
     const isStaff = role === 'ADMIN' || role === 'MASTER';
     if (!isOwner && !isStaff)
       throw new ForbiddenException(ERROR_MESSAGE.FEEDBACK_ACCESS_DENIED);
 
     if (!isOwner && isStaff) {
       await this.#notificationRepository.create({
-        userId: feedback.user_id,
+        userId: feedback.userId,
         type: 'ADMIN_ACTION',
         message: NOTIFICATION_MESSAGES.FEEDBACK_DELETED,
       });

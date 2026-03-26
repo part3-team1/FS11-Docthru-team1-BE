@@ -13,12 +13,12 @@ export class UserRepository {
       sortBy,
       sortOrder,
       allowedFields: [
-        'created_at',
+        'createdAt',
         'nickname',
-        'participation_count',
-        'best_selection_count',
+        'participationCount',
+        'bestSelectionCount',
       ],
-      defaultField: 'created_at',
+      defaultField: 'createdAt',
     });
 
     return this.#prisma.user.findMany({
@@ -35,11 +35,11 @@ export class UserRepository {
         role: true,
         grade: true,
         status: true,
-        is_banned: true,
-        participation_count: true,
-        best_selection_count: true,
-        created_at: true,
-        deleted_at: true,
+        isBanned: true,
+        participationCount: true,
+        bestSelectionCount: true,
+        createdAt: true,
+        deletedAt: true,
       },
     });
   }
@@ -54,11 +54,11 @@ export class UserRepository {
         role: true,
         grade: true,
         status: true,
-        is_banned: true,
-        participation_count: true,
-        best_selection_count: true,
-        refresh_token: true,
-        created_at: true,
+        isBanned: true,
+        participationCount: true,
+        bestSelectionCount: true,
+        refreshToken: true,
+        createdAt: true,
       },
     });
   }
@@ -73,10 +73,10 @@ export class UserRepository {
         role: true,
         grade: true,
         status: true,
-        is_banned: true,
-        participation_count: true,
-        best_selection_count: true,
-        ...(includePassword ? { password_hash: true } : {}),
+        isBanned: true,
+        participationCount: true,
+        bestSelectionCount: true,
+        ...(includePassword ? { passwordHash: true } : {}),
       },
     });
   }
@@ -92,10 +92,10 @@ export class UserRepository {
     return this.#prisma.user.create({
       data: {
         email: data.email,
-        password_hash: data.passwordHash,
+        passwordHash: data.passwordHash,
         nickname: data.nickname,
         provider: data.provider || 'LOCAL',
-        provider_id: data.providerId || null,
+        providerId: data.providerId || null,
         grade: 'NORMAL',
         status: 'ACTIVE',
       },
@@ -114,16 +114,16 @@ export class UserRepository {
       data: {
         nickname: data.nickname,
         grade: data.grade,
-        participation_count: data.participationCount,
-        best_selection_count: data.bestSelectionCount,
+        participationCount: data.participationCount,
+        bestSelectionCount: data.bestSelectionCount,
       },
       select: {
         id: true,
         email: true,
         nickname: true,
         grade: true,
-        participation_count: true,
-        best_selection_count: true,
+        participationCount: true,
+        bestSelectionCount: true,
       },
     });
   }
@@ -134,10 +134,10 @@ export class UserRepository {
       where: { id },
       data: {
         status: 'WITHDRAWN',
-        deleted_at: deletedAt,
+        deletedAt,
         nickname, //'탈퇴한 사용자'로 변경
         email,
-        refresh_token: null, //강제 로그아웃
+        refreshToken: null, //강제 로그아웃
       },
     });
   }
@@ -156,8 +156,8 @@ export class UserRepository {
       where: { id },
       data: {
         status,
-        is_banned: isBanned,
-        ...(isBanned && { refresh_token: null }), //접속 차단
+        isBanned,
+        ...(isBanned && { refreshToken: null }), //접속 차단
       },
     });
   }
@@ -166,7 +166,7 @@ export class UserRepository {
   updateRefreshToken(id, refreshToken) {
     return this.#prisma.user.update({
       where: { id },
-      data: { refresh_token: refreshToken },
+      data: { refreshToken },
     });
   }
 
@@ -175,7 +175,7 @@ export class UserRepository {
     return this.#prisma.user.findFirst({
       where: {
         provider,
-        provider_id: String(providerId),
+        providerId: String(providerId),
         status: { not: 'WITHDRAWN' },
       },
     });
@@ -184,7 +184,7 @@ export class UserRepository {
   connectSocialAccount(userId, { provider, providerId }) {
     return this.#prisma.user.update({
       where: { id: userId },
-      data: { provider, provider_id: String(providerId) },
+      data: { provider, providerId: String(providerId) },
     });
   }
 
@@ -194,7 +194,7 @@ export class UserRepository {
         email: data.email,
         nickname: data.nickname || data.name,
         provider: data.provider,
-        provider_id: String(data.providerId),
+        providerId: String(data.providerId),
         grade: 'NORMAL',
         status: 'ACTIVE',
       },

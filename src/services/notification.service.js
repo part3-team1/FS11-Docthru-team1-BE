@@ -35,7 +35,7 @@ export class NotificationService {
       throw new NotFoundException(ERROR_MESSAGE.NOTIFICATION_NOT_FOUND);
     }
 
-    if (notification.user_id !== userId) {
+    if (notification.userId !== userId) {
       throw new ForbiddenException(ERROR_MESSAGE.NOTIFICATION_ACCESS_DENIED);
     }
 
@@ -49,7 +49,7 @@ export class NotificationService {
       throw new NotFoundException(ERROR_MESSAGE.NOTIFICATION_NOT_FOUND);
     }
 
-    if (notification.user_id !== userId) {
+    if (notification.userId !== userId) {
       throw new ForbiddenException(ERROR_MESSAGE.NOTIFICATION_ACCESS_DENIED);
     }
 

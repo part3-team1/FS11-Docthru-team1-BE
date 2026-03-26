@@ -13,7 +13,7 @@ export class TokenProvider {
   generateAccessToken(user) {
     return jwt.sign(
       {
-        user_id: user.id,
+        userId: user.id,
         role: user.role,
         grade: user.grade,
       },
@@ -23,15 +23,15 @@ export class TokenProvider {
   }
 
   generateRefreshToken(user) {
-    return jwt.sign({ user_id: user.id }, this.#refreshSecret, {
+    return jwt.sign({ userId: user.id }, this.#refreshSecret, {
       expiresIn: '7d',
     });
   }
 
   generateTokens(user) {
     return {
-      access_token: this.generateAccessToken(user),
-      refresh_token: this.generateRefreshToken(user),
+      accessToken: this.generateAccessToken(user),
+      refreshToken: this.generateRefreshToken(user),
     };
   }
 

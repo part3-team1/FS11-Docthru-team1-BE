@@ -10,14 +10,14 @@ export class ChallengeRequestRepository {
   create(data) {
     return this.#prisma.challengeRequest.create({
       data: {
-        requested_by: data.userId,
+        requestedBy: data.userId,
         title: data.title,
-        doc_url: data.docUrl,
+        docUrl: data.docUrl,
         description: data.description,
         category: data.category,
-        document_type: data.documentType,
-        due_date: new Date(data.dueDate),
-        max_participants: Number(data.maxParticipants),
+        documentType: data.documentType,
+        dueDate: new Date(data.dueDate),
+        maxParticipants: Number(data.maxParticipants),
         status: 'PENDING',
       },
     });
@@ -29,14 +29,14 @@ export class ChallengeRequestRepository {
     take = 10,
     keyword,
     status,
-    sortBy = 'created_at',
+    sortBy = 'createdAt',
     sortOrder = 'desc',
   } = {}) {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
       sortOrder,
-      allowedFields: ['created_at', 'due_date', 'status', 'title'],
-      defaultField: 'created_at',
+      allowedFields: ['createdAt', 'dueDate', 'status', 'title'],
+      defaultField: 'createdAt',
     });
 
     const queryOptions = {
@@ -70,7 +70,7 @@ export class ChallengeRequestRepository {
   }
 
   findAllByRequesterId(userId, { skip = 0, take = 10 } = {}) {
-    const queryOptions = { requested_by: userId, status: { not: 'DELETED' } };
+    const queryOptions = { requestedBy: userId, status: { not: 'DELETED' } };
 
     return this.#prisma
       .$transaction([
@@ -78,7 +78,7 @@ export class ChallengeRequestRepository {
           where: queryOptions,
           skip: Number(skip),
           take: Number(take),
-          orderBy: { created_at: 'desc' },
+          orderBy: { createdAt: 'desc' },
         }),
         this.#prisma.challengeRequest.count({ where: queryOptions }),
       ])
@@ -92,7 +92,7 @@ export class ChallengeRequestRepository {
       where: { id },
       data: {
         status,
-        ...(rejectionReason && { rejection_reason: rejectionReason }),
+        ...(rejectionReason && { rejectionReason: rejectionReason }),
       },
     });
   }

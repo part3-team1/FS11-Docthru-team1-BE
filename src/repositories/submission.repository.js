@@ -15,14 +15,14 @@ export class SubmissionRepository {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
       sortOrder,
-      allowedFields: ['heart_count', 'created_at'],
-      defaultField: 'heart_count',
+      allowedFields: ['heartCount', 'createdAt'],
+      defaultField: 'heartCount',
     });
 
     const whereCondition = {
-      challenge_id: challengeId,
-      is_blocked: false,
-      is_deleted: false,
+      challengeId,
+      isBlocked: false,
+      isDeleted: false,
     };
 
     return this.#prisma
@@ -31,7 +31,7 @@ export class SubmissionRepository {
           where: whereCondition,
           skip: Number(skip),
           take: Number(take),
-          orderBy: [{ [safeSortBy]: safeSortOrder }, { created_at: 'desc' }],
+          orderBy: [{ [safeSortBy]: safeSortOrder }, { createdAt: 'desc' }],
           include: {
             user: {
               select: { nickname: true, grade: true, status: true },
@@ -50,16 +50,16 @@ export class SubmissionRepository {
     return this.#prisma
       .$transaction([
         this.#prisma.submission.findMany({
-          where: { user_id: userId, is_deleted: false },
+          where: { userId: userId, isDeleted: false },
           skip: Number(skip),
           take: Number(take),
-          orderBy: { created_at: 'desc' },
+          orderBy: { createdAt: 'desc' },
           include: {
             challenge: { select: { title: true, status: true } },
           },
         }),
         this.#prisma.submission.count({
-          where: { user_id: userId, is_deleted: false },
+          where: { userId, isDeleted: false },
         }),
       ])
       .then(([submissions, totalCount]) => {
@@ -71,15 +71,15 @@ export class SubmissionRepository {
   findTopRankings(challengeId, limit = 5) {
     return this.#prisma.submission.findMany({
       where: {
-        challenge_id: challengeId,
-        is_blocked: false,
-        is_deleted: false,
+        challengeId,
+        isBlocked: false,
+        isDeleted: false,
       },
       take: Number(limit),
       orderBy: [
-        { is_best: 'desc' },
-        { heart_count: 'desc' },
-        { created_at: 'desc' },
+        { isBest: 'desc' },
+        { heartCount: 'desc' },
+        { createdAt: 'desc' },
       ],
       include: {
         user: { select: { nickname: true, grade: true, status: true } },
@@ -92,7 +92,7 @@ export class SubmissionRepository {
       where: { id },
       include: {
         user: { select: { nickname: true, grade: true, status: true } },
-        challenge: { select: { title: true, doc_url: true, status: true } },
+        challenge: { select: { title: true, docUrl: true, status: true } },
       },
     });
   }
@@ -100,8 +100,8 @@ export class SubmissionRepository {
   create(data) {
     return this.#prisma.submission.create({
       data: {
-        challenge_id: data.challengeId,
-        user_id: data.userId,
+        challengeId: data.challengeId,
+        userId: data.userId,
         title: data.title,
         content: data.content,
       },
@@ -118,7 +118,7 @@ export class SubmissionRepository {
   delete(id) {
     return this.#prisma.submission.update({
       where: { id },
-      data: { is_deleted: true },
+      data: { isDeleted: true },
     });
   }
 
@@ -126,7 +126,7 @@ export class SubmissionRepository {
   updateBestStatus(id, isBest) {
     return this.#prisma.submission.update({
       where: { id },
-      data: { is_best: isBest },
+      data: { isBest },
     });
   }
 
@@ -134,7 +134,7 @@ export class SubmissionRepository {
   updateBlockStatus(id, isBlocked) {
     return this.#prisma.submission.update({
       where: { id },
-      data: { is_blocked: isBlocked },
+      data: { isBlocked },
     });
   }
 }

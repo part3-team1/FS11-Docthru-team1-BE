@@ -553,13 +553,13 @@ export const openApiDocument = createDocument({
             description: '가져올 개수',
           },
           {
-            name: 'sort_by',
+            name: 'sortBy',
             in: 'query',
             schema: { type: 'string' },
             description: '정렬 기준',
           },
           {
-            name: 'sort_order',
+            name: 'sortOrder',
             in: 'query',
             schema: { type: 'string' },
             description: '정렬 방향',
@@ -665,8 +665,8 @@ export const openApiDocument = createDocument({
           },
           { name: 'skip', in: 'query', schema: { type: 'string' } },
           { name: 'take', in: 'query', schema: { type: 'string' } },
-          { name: 'sort_by', in: 'query', schema: { type: 'string' } },
-          { name: 'sort_order', in: 'query', schema: { type: 'string' } },
+          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+          { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
         ],
         responses: {
           200: {
@@ -852,8 +852,8 @@ export const openApiDocument = createDocument({
         parameters: [
           { name: 'skip', in: 'query', schema: { type: 'string' } },
           { name: 'take', in: 'query', schema: { type: 'string' } },
-          { name: 'sort_by', in: 'query', schema: { type: 'string' } },
-          { name: 'sort_order', in: 'query', schema: { type: 'string' } },
+          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+          { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
         ],
         responses: {
           200: {
@@ -1042,7 +1042,7 @@ export const openApiDocument = createDocument({
           { name: 'sortBy', in: 'query', schema: { type: 'string' } },
           { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
           {
-            name: 'report_type',
+            name: 'reportType',
             in: 'query',
             schema: { type: 'string' },
             description: '신고 타입 (CHALLENGE, SUBMISSION, FEEDBACK)',
@@ -1128,7 +1128,7 @@ export const openApiDocument = createDocument({
       },
     },
 
-    '/api/notifications/unread-count': {
+    '/api/notifications/unreadCount': {
       get: {
         tags: ['Notification'],
         summary: '읽지 않은 알림 개수 조회',

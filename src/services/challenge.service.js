@@ -47,15 +47,15 @@ export class ChallengeService {
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
     }
 
-    if (challenge.request.requested_by !== userId) {
+    if (challenge.request.requestedBy !== userId) {
       throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN);
     }
 
-    if (new Date(challenge.due_date) < new Date()) {
+    if (new Date(challenge.dueDate) < new Date()) {
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_EXPIRED);
     }
 
-    if (challenge.current_participants > 0) {
+    if (challenge.currentParticipants > 0) {
       throw new BadRequestException(
         ERROR_MESSAGE.CHALLENGE_EDIT_RESTRICTED_WITH_PARTICIPANTS,
       );
@@ -70,20 +70,20 @@ export class ChallengeService {
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
     }
 
-    const isOwner = challenge.request.requested_by === userId;
+    const isOwner = challenge.request.requestedBy === userId;
     const isStaff = role === 'ADMIN' || role === 'MASTER';
 
     if (!isOwner && !isStaff) {
       throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN);
     }
 
-    if (new Date(challenge.due_date) < new Date()) {
+    if (new Date(challenge.dueDate) < new Date()) {
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_EXPIRED);
     }
 
     if (!isOwner && isStaff) {
       await this.#notificationRepository.create({
-        userId: challenge.request.requested_by,
+        userId: challenge.request.requestedBy,
         type: 'ADMIN_ACTION',
         message: NOTIFICATION_MESSAGES.CHALLENGE_DELETED(challenge.title),
       });
@@ -99,9 +99,9 @@ export class ChallengeService {
 
     if (challenge.status !== 'OPENED')
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_NOT_OPENED);
-    if (new Date(challenge.due_date) < new Date())
+    if (new Date(challenge.dueDate) < new Date())
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_EXPIRED);
-    if (challenge.current_participants >= challenge.max_participants)
+    if (challenge.currentParticipants >= challenge.maxParticipants)
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_FULL);
 
     const isAlreadyJoined = await this.#challengeRepository.isParticipating(
@@ -117,7 +117,7 @@ export class ChallengeService {
     const result = await this.#challengeRepository.join(userId, challengeId);
 
     await this.#notificationRepository.create({
-      userId: challenge.request.requested_by,
+      userId: challenge.request.requestedBy,
       type: 'CHALLENGE_PARTICIPATED',
       message: NOTIFICATION_MESSAGES.CHALLENGE_PARTICIPATED(challenge.title),
     });
@@ -130,7 +130,7 @@ export class ChallengeService {
     if (!challenge)
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
 
-    if (new Date(challenge.due_date) < new Date()) {
+    if (new Date(challenge.dueDate) < new Date()) {
       throw new BadRequestException(ERROR_MESSAGE.CANNOT_LEAVE_CHALLENGE);
     }
 

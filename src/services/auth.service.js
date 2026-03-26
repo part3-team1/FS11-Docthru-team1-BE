@@ -42,7 +42,7 @@ export class AuthService {
 
     await this.#userRepository.updateRefreshToken(
       user.id,
-      tokens.refresh_token,
+      tokens.refreshToken,
     );
 
     return { user, tokens };
@@ -56,13 +56,13 @@ export class AuthService {
       throw new UnauthorizedException(ERROR_MESSAGE.INVALID_LOGIN);
     }
 
-    if (authUser.status === 'BANNED' || authUser.is_banned) {
+    if (authUser.status === 'BANNED' || authUser.isBanned) {
       throw new ForbiddenException(ERROR_MESSAGE.USER_BANNED);
     }
 
     const isPasswordValid = await this.#passwordProvider.compare(
       password,
-      authUser.password_hash,
+      authUser.passwordHash,
     );
 
     if (!isPasswordValid) {
@@ -74,10 +74,10 @@ export class AuthService {
 
     await this.#userRepository.updateRefreshToken(
       finalUser.id,
-      tokens.refresh_token,
+      tokens.refreshToken,
     );
 
-    delete finalUser.password_hash;
+    delete finalUser.passwordHash;
     return { user: finalUser, tokens };
   }
 
@@ -111,15 +111,15 @@ export class AuthService {
       throw new UnauthorizedException(ERROR_MESSAGE.INVALID_TOKEN);
     }
 
-    const user = await this.#userRepository.findById(payload.user_id);
+    const user = await this.#userRepository.findById(payload.userId);
     if (!user) {
       throw new NotFoundException(ERROR_MESSAGE.ACCOUNT_NOT_FOUND);
     }
-    if (user.status !== 'ACTIVE' || user.is_banned) {
+    if (user.status !== 'ACTIVE' || user.isBanned) {
       throw new ForbiddenException(ERROR_MESSAGE.INACTIVE_ACCOUNT);
     }
 
-    if (user.refresh_token !== refreshToken) {
+    if (user.refreshToken !== refreshToken) {
       throw new UnauthorizedException(ERROR_MESSAGE.TOKEN_MISMATCH);
     }
 
@@ -128,7 +128,7 @@ export class AuthService {
 
     await this.#userRepository.updateRefreshToken(
       finalUser.id,
-      tokens.refresh_token,
+      tokens.refreshToken,
     );
 
     return { user: finalUser, tokens };
@@ -147,8 +147,8 @@ export class AuthService {
     if (user.grade !== 'NORMAL') return user;
 
     if (
-      user.participation_count >= UP_GRADE_CONDITION.PRTICIPATION_COUNT &&
-      user.best_selection_count >= UP_GRADE_CONDITION.BEST_SELECTION_COUNT
+      user.participationCount >= UP_GRADE_CONDITION.PRTICIPATION_COUNT &&
+      user.bestSelectionCount >= UP_GRADE_CONDITION.BEST_SELECTION_COUNT
     ) {
       await this.#userRepository.updateUser(user.id, {
         grade: 'EXPERT',

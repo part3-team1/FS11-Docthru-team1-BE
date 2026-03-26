@@ -21,19 +21,14 @@ export class ChallengeRepository {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
       sortOrder,
-      allowedFields: [
-        'approved_at',
-        'due_date',
-        'current_participants',
-        'title',
-      ],
-      defaultField: 'approved_at',
+      allowedFields: ['approvedAt', 'dueDate', 'currentParticipants', 'title'],
+      defaultField: 'approvedAt',
     });
 
     const queryOptions = {
       ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }),
       ...(category && { category }),
-      ...(documentType && { document_type: documentType }),
+      ...(documentType && { documentType: documentType }),
       status: status ? status : { not: 'DELETED' },
     };
 
@@ -61,7 +56,7 @@ export class ChallengeRepository {
 
   findAllParticipating(userId, { skip = 0, take = 10, status } = {}) {
     const whereCondition = {
-      user_id: userId,
+      userId: userId,
       ...(status && { challenge: { status } }),
     };
 
@@ -84,7 +79,7 @@ export class ChallengeRepository {
   isParticipating(userId, challengeId) {
     return this.#prisma.participation.findUnique({
       where: {
-        challenge_id_user_id: { challengeId, userId },
+        challengeId_userId: { challengeId, userId },
       },
     });
   }
@@ -97,7 +92,7 @@ export class ChallengeRepository {
       }),
       this.#prisma.challenge.update({
         where: { id: challengeId },
-        data: { current_participants: { increment: 1 } },
+        data: { currentParticipants: { increment: 1 } },
       }),
     ]);
   }
@@ -107,12 +102,12 @@ export class ChallengeRepository {
     return this.#prisma.$transaction([
       this.#prisma.participation.delete({
         where: {
-          challenge_id_user_id: { userId, challengeId },
+          challengeId_userId: { userId, challengeId },
         },
       }),
       this.#prisma.challenge.update({
         where: { id: challengeId },
-        data: { current_participants: { decrement: 1 } },
+        data: { currentParticipants: { decrement: 1 } },
       }),
     ]);
   }
@@ -121,16 +116,16 @@ export class ChallengeRepository {
   create(data) {
     return this.#prisma.challenge.create({
       data: {
-        request_id: data.requestId,
+        requestId: data.requestId,
         title: data.title,
-        doc_url: data.docUrl,
+        docUrl: data.docUrl,
         description: data.description,
         category: data.category,
-        document_type: data.documentType,
-        due_date: new Date(data.dueDate),
-        max_participants: Number(data.maxParticipants),
+        documentType: data.documentType,
+        dueDate: new Date(data.dueDate),
+        maxParticipants: Number(data.maxParticipants),
         status: 'OPENED',
-        approved_at: new Date(),
+        approvedAt: new Date(),
       },
     });
   }
@@ -140,13 +135,13 @@ export class ChallengeRepository {
       where: { id },
       data: {
         title: data.title,
-        doc_url: data.docUrl,
+        docUrl: data.docUrl,
         description: data.description,
         category: data.category,
-        document_type: data.documentType,
+        documentType: data.documentType,
         status: data.status,
-        due_date: data.dueDate ? new Date(data.dueDate) : undefined,
-        max_participants: data.maxParticipants
+        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+        maxParticipants: data.maxParticipants
           ? Number(data.maxParticipants)
           : undefined,
       },

@@ -33,9 +33,9 @@ export class ReportController extends BaseController {
       const {
         skip,
         take,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        report_type: reportType,
+        sortBy,
+        sortOrder,
+        reportType,
       } = req.query;
       const result = await this.#reportService.getReports({
         skip,

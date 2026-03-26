@@ -79,70 +79,70 @@ enum NotificationType {
 }
 
 model User {
-  id                   String     @id @default(cuid())
-  email                String     @unique
-  password_hash        String?
-  nickname             String     @unique
-  role                 Role       @default(USER)
-  grade                Grade      @default(NORMAL)
-  status               UserStatus @default(ACTIVE)
-  is_banned            Boolean    @default(false)
-  participation_count  Int        @default(0)
-  best_selection_count Int        @default(0)
-  provider             Provider   @default(LOCAL)
-  provider_id          String?
-  refresh_token        String?
-  created_at           DateTime   @default(now())
-  deleted_at           DateTime?
+  id                 String     @id @default(cuid())
+  email              String     @unique
+  passwordHash       String?    @map("password_hash")
+  nickname           String     @unique
+  role               Role       @default(USER)
+  grade              Grade      @default(NORMAL)
+  status             UserStatus @default(ACTIVE)
+  isBanned           Boolean    @default(false) @map("is_banned")
+  participationCount Int        @default(0) @map("participation_count")
+  bestSelectionCount Int        @default(0) @map("best_selection_count")
+  provider           Provider   @default(LOCAL)
+  providerId         String?    @map("provider_id")
+  refreshToken       String?    @map("refresh_token")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  deletedAt          DateTime?  @map("deleted_at")
 
-  challenge_requests ChallengeRequest[]
-  participations     Participation[]
-  submissions        Submission[]
-  feedbacks          Feedback[]
-  hearts             Heart[]
-  notifications      Notification[]
-  drafts             Draft[]
-  reports_made       Report[]           @relation("Reporter")
-  reports_received   Report[]           @relation("TargetUser")
+  challengeRequests ChallengeRequest[]
+  participations    Participation[]
+  submissions       Submission[]
+  feedbacks         Feedback[]
+  hearts            Heart[]
+  notifications     Notification[]
+  drafts            Draft[]
+  reportsMade       Report[]           @relation("Reporter")
+  reportsReceived   Report[]           @relation("TargetUser")
 
   @@map("users")
 }
 
 model ChallengeRequest {
-  id               String        @id @default(cuid())
-  requested_by     String
-  title            String
-  doc_url          String
-  description      String?       @db.Text
-  category         Category
-  document_type    DocumentType
-  due_date         DateTime
-  max_participants Int
-  status           RequestStatus @default(PENDING)
-  rejection_reason String?       @db.Text
-  created_at       DateTime      @default(now())
+  id              String        @id @default(cuid())
+  requestedBy     String        @map("requested_by")
+  title           String
+  docUrl          String        @map("doc_url")
+  description     String?       @db.Text
+  category        Category
+  documentType    DocumentType  @map("document_type")
+  dueDate         DateTime      @map("due_date")
+  maxParticipants Int           @map("max_participants")
+  status          RequestStatus @default(PENDING)
+  rejectionReason String?       @map("rejection_reason") @db.Text
+  createdAt       DateTime      @default(now()) @map("created_at")
 
-  user      User       @relation(fields: [requested_by], references: [id])
+  user      User       @relation(fields: [requestedBy], references: [id])
   challenge Challenge?
 
   @@map("challenge_requests")
 }
 
 model Challenge {
-  id                   String          @id @default(cuid())
-  request_id           String          @unique
-  title                String
-  doc_url              String
-  description          String?         @db.Text
-  category             Category
-  document_type        DocumentType
-  due_date             DateTime
-  max_participants     Int
-  current_participants Int             @default(0)
-  status               ChallengeStatus @default(OPENED)
-  approved_at          DateTime        @default(now())
+  id                  String          @id @default(cuid())
+  requestId           String          @unique @map("request_id")
+  title               String
+  docUrl              String          @map("doc_url")
+  description         String?         @db.Text
+  category            Category
+  documentType        DocumentType    @map("document_type")
+  dueDate             DateTime        @map("due_date")
+  maxParticipants     Int             @map("max_participants")
+  currentParticipants Int             @default(0) @map("current_participants")
+  status              ChallengeStatus @default(OPENED)
+  approvedAt          DateTime        @default(now()) @map("approved_at")
 
-  request        ChallengeRequest @relation(fields: [request_id], references: [id])
+  request        ChallengeRequest @relation(fields: [requestId], references: [id])
   participations Participation[]
   submissions    Submission[]
   drafts         Draft[]
@@ -151,116 +151,114 @@ model Challenge {
 }
 
 model Draft {
-  id           String   @id @default(cuid())
-  user_id      String
-  challenge_id String
-  title        String
-  content      Json
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  challengeId String   @map("challenge_id")
+  title       String
+  content     Json
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user      User      @relation(fields: [user_id], references: [id])
-  challenge Challenge @relation(fields: [challenge_id], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  challenge Challenge @relation(fields: [challengeId], references: [id])
 
-  @@index([user_id])
-  @@index([challenge_id])
+  @@index([userId])
+  @@index([challengeId])
   @@map("drafts")
 }
 
-
-
 model Participation {
-  id           String   @id @default(cuid())
-  challenge_id String
-  user_id      String
-  joined_at    DateTime @default(now())
+  id          String   @id @default(cuid())
+  challengeId String   @map("challenge_id")
+  userId      String   @map("user_id")
+  joinedAt    DateTime @default(now()) @map("joined_at")
 
-  challenge Challenge @relation(fields: [challenge_id], references: [id])
-  user      User      @relation(fields: [user_id], references: [id])
+  challenge Challenge @relation(fields: [challengeId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 
-  @@unique([challenge_id, user_id])
-  @@index([user_id])
+  @@unique([challengeId, userId])
+  @@index([userId])
   @@map("participations")
 }
 
 model Submission {
-  id           String   @id @default(cuid())
-  challenge_id String
-  user_id      String
-  title        String
-  content      Json
-  heart_count  Int      @default(0)
-  is_best      Boolean  @default(false)
-  is_blocked   Boolean  @default(false)
-  is_deleted   Boolean  @default(false)
-  created_at   DateTime @default(now())
+  id          String   @id @default(cuid())
+  challengeId String   @map("challenge_id")
+  userId      String   @map("user_id")
+  title       String
+  content     Json
+  heartCount  Int      @default(0) @map("heart_count")
+  isBest      Boolean  @default(false) @map("is_best")
+  isBlocked   Boolean  @default(false) @map("is_blocked")
+  isDeleted   Boolean  @default(false) @map("is_deleted")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  challenge Challenge  @relation(fields: [challenge_id], references: [id])
-  user      User       @relation(fields: [user_id], references: [id])
+  challenge Challenge  @relation(fields: [challengeId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
   feedbacks Feedback[]
   hearts    Heart[]
 
-  @@index([challenge_id])
-  @@index([user_id])
+  @@index([challengeId])
+  @@index([userId])
   @@map("submissions")
 }
 
 model Feedback {
-  id            String   @id @default(cuid())
-  submission_id String
-  user_id       String
-  content       String   @db.Text
-  is_blocked    Boolean  @default(false)
-  created_at    DateTime @default(now())
+  id           String   @id @default(cuid())
+  submissionId String   @map("submission_id")
+  userId       String   @map("user_id")
+  content      String   @db.Text
+  isBlocked    Boolean  @default(false) @map("is_blocked")
+  createdAt    DateTime @default(now()) @map("created_at")
 
-  submission Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
-  user       User       @relation(fields: [user_id], references: [id])
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id])
 
-  @@index([submission_id])
-  @@index([user_id])
+  @@index([submissionId])
+  @@index([userId])
   @@map("feedbacks")
 }
 
 model Heart {
-  id            String   @id @default(cuid())
-  submission_id String
-  user_id       String
-  created_at    DateTime @default(now())
+  id           String   @id @default(cuid())
+  submissionId String   @map("submission_id")
+  userId       String   @map("user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
 
-  submission Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
-  user       User       @relation(fields: [user_id], references: [id])
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id])
 
-  @@unique([submission_id, user_id])
+  @@unique([submissionId, userId])
   @@map("hearts")
 }
 
 model Notification {
-  id         String           @id @default(cuid())
-  user_id    String
-  type       NotificationType
-  message    String?
-  reason     String?          @db.Text
-  is_read    Boolean          @default(false)
-  created_at DateTime         @default(now())
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  message   String?
+  reason    String?          @db.Text
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
 
-  user User @relation(fields: [user_id], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
-  @@index([user_id])
+  @@index([userId])
   @@map("notifications")
 }
 
 model Report {
-  id             String     @id @default(cuid())
-  reporter_id    String
-  target_user_id String?
-  target_id      String
-  report_type    ReportType
-  reason         String     @db.VarChar(100)
-  created_at     DateTime   @default(now())
+  id           String     @id @default(cuid())
+  reporterId   String     @map("reporter_id")
+  targetUserId String?    @map("target_user_id")
+  targetId     String     @map("target_id")
+  reportType   ReportType @map("report_type")
+  reason       String     @db.VarChar(100)
+  createdAt    DateTime   @default(now()) @map("created_at")
 
-  reporter    User  @relation("Reporter", fields: [reporter_id], references: [id])
-  target_user User? @relation("TargetUser", fields: [target_user_id], references: [id])
+  reporter   User  @relation("Reporter", fields: [reporterId], references: [id])
+  targetUser User? @relation("TargetUser", fields: [targetUserId], references: [id])
 
-  @@index([target_id])
+  @@index([targetId])
   @@map("reports")
 }

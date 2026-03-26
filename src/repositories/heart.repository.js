@@ -9,10 +9,10 @@ export class HeartRepository {
     return this.#prisma
       .$transaction([
         this.#prisma.heart.findMany({
-          where: { user_id: userId },
+          where: { userId: userId },
           skip: Number(skip),
           take: Number(take),
-          orderBy: { created_at: 'desc' },
+          orderBy: { createdAt: 'desc' },
           include: {
             submission: {
               include: {
@@ -22,7 +22,7 @@ export class HeartRepository {
             },
           },
         }),
-        this.#prisma.heart.count({ where: { user_id: userId } }),
+        this.#prisma.heart.count({ where: { userId: userId } }),
       ])
       .then(([hearts, totalCount]) => {
         return { hearts, totalCount };
@@ -32,11 +32,11 @@ export class HeartRepository {
   create(userId, submissionId) {
     return this.#prisma.$transaction([
       this.#prisma.heart.create({
-        data: { user_id: userId, submission_id: submissionId },
+        data: { userId, submissionId },
       }),
       this.#prisma.submission.update({
         where: { id: submissionId },
-        data: { heart_count: { increment: 1 } },
+        data: { heartCount: { increment: 1 } },
       }),
     ]);
   }
@@ -45,15 +45,12 @@ export class HeartRepository {
     return this.#prisma.$transaction([
       this.#prisma.heart.delete({
         where: {
-          submission_id_user_id: {
-            user_id: userId,
-            submission_id: submissionId,
-          },
+          submissionId_userId: { userId, submissionId },
         },
       }),
       this.#prisma.submission.update({
         where: { id: submissionId },
-        data: { heart_count: { decrement: 1 } },
+        data: { heartCount: { decrement: 1 } },
       }),
     ]);
   }
@@ -62,7 +59,7 @@ export class HeartRepository {
   checkDuplicate(userId, submissionId) {
     return this.#prisma.heart.findUnique({
       where: {
-        submission_id_user_id: { user_id: userId, submission_id: submissionId },
+        submissionId_userId: { userId, submissionId },
       },
     });
   }

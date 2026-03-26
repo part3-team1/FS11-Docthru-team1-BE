@@ -30,7 +30,7 @@ export class SocialAuthService {
 
     await this.#userRepository.updateRefreshToken(
       updatedUser.id,
-      tokens.refresh_token,
+      tokens.refreshToken,
     );
 
     return { user: updatedUser, tokens };
@@ -98,24 +98,12 @@ export class SocialAuthService {
     switch (provider) {
       case 'google':
         return this.#getGoogleProfile(code);
-      case 'kakao':
-        return this.#getKakaoProfile(code);
-      case 'naver':
-        return this.#getNaverProfile(code, state);
       default:
         throw new BadRequestException(ERROR_MESSAGE.UNSUPPORTED_PROVIDER);
     }
   }
 
   async #getGoogleProfile(code) {
-    //구현 예정
-  }
-
-  async #getKakaoProfile(code) {
-    //구현 예정
-  }
-
-  async #getNaverProfile(code, state) {
     //구현 예정
   }
 

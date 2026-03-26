@@ -8,7 +8,7 @@ export class NotificationRepository {
   create(data) {
     return this.#prisma.notification.create({
       data: {
-        user_id: data.userId,
+        userId: data.userId,
         type: data.type,
         message: data.message,
         reason: data.reason,
@@ -20,20 +20,20 @@ export class NotificationRepository {
     return this.#prisma
       .$transaction([
         this.#prisma.notification.findMany({
-          where: { user_id: userId },
+          where: { userId: userId },
           skip: Number(skip),
           take: Number(take),
-          orderBy: { created_at: 'desc' },
+          orderBy: { createdAt: 'desc' },
           select: {
             id: true,
             type: true,
             message: true,
             reason: true,
-            is_read: true,
-            created_at: true,
+            isRead: true,
+            createdAt: true,
           },
         }),
-        this.#prisma.notification.count({ where: { user_id: userId } }),
+        this.#prisma.notification.count({ where: { userId: userId } }),
       ])
       .then(([notifications, totalCount]) => {
         return { notifications, totalCount };
@@ -44,14 +44,14 @@ export class NotificationRepository {
   markAsRead(id) {
     return this.#prisma.notification.update({
       where: { id },
-      data: { is_read: true },
+      data: { isRead: true },
     });
   }
 
   //안 읽은 알림 표시(종모양 배지에 활용)
   countUnread(userId) {
     return this.#prisma.notification.count({
-      where: { user_id: userId, is_read: false },
+      where: { userId, isRead: false },
     });
   }
 

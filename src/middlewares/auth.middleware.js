@@ -21,9 +21,9 @@ export class AuthMiddleware {
         ? this.#tokenProvider.verifyAccessToken(accessToken)
         : null;
 
-      if (decoded?.user_id) {
+      if (decoded?.userId) {
         req.user = {
-          id: decoded.user_id,
+          id: decoded.userId,
           role: decoded.role,
           grade: decoded.grade,
         };
