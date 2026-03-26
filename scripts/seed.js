@@ -57,6 +57,9 @@ class Seeder {
       nickname: '갓은결',
       password_hash: this.#hashedPassword,
       role: 'MASTER',
+      grade: 'EXPERT',
+      status: 'ACTIVE',
+      provider: 'LOCAL',
     });
 
     return await this.#prisma.user.createManyAndReturn({
