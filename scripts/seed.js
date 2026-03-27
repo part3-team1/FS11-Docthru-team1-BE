@@ -22,7 +22,7 @@ class Seeder {
   #makeUserInput() {
     return {
       email: faker.internet.email(),
-      nickname: faker.internet.username().slice(0, 10) + faker.number.int(1000),
+      nickname: `${faker.word.adjective()}${faker.word.noun()}${faker.number.int(999)}`,
       passwordHash: this.#hashedPassword,
       role: 'USER',
       grade: faker.helpers.arrayElement(['NORMAL', 'EXPERT']),
@@ -119,10 +119,7 @@ class Seeder {
               'MODERNJS',
               'WEB',
             ]),
-            documentType: faker.helpers.arrayElement([
-              'DOCUMENTATION',
-              'BLOG',
-            ]),
+            documentType: faker.helpers.arrayElement(['DOCUMENTATION', 'BLOG']),
             dueDate: faker.date.future({ years: 1 }),
             maxParticipants: faker.number.int({ min: 5, max: 20 }),
             status: faker.helpers.arrayElement(randomStatus),

@@ -50,7 +50,11 @@ export class ChallengeRepository {
     return this.#prisma.challenge.findUnique({
       where: { id },
       include: {
-        request: true,
+        request: {
+          include: {
+            user: { select: { id: true, nickname: true, grade: true } },
+          },
+        },
         participations: {
           include: {
             user: { select: { id: true, nickname: true, grade: true } },
@@ -58,7 +62,9 @@ export class ChallengeRepository {
         },
         submissions: {
           where: { isDeleted: false, isBlocked: false },
-          include: { user: { select: { id: true, nickname: true } } },
+          include: {
+            user: { select: { id: true, nickname: true, grade: true } },
+          },
         },
       },
     });
