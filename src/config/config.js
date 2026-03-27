@@ -9,6 +9,10 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
   CORS_ORIGINS: z.string().optional().default(''),
+  API_BASE_URL: z.string().optional().default('http://localhost:5001'),
+  CLIENT_BASE_URL: z.string().optional().default('http://localhost:3000'),
+  GOOGLE_CLIENT_ID: z.string().trim().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().trim().min(1),
 });
 
 const parseEnvironment = () => {
@@ -20,6 +24,10 @@ const parseEnvironment = () => {
       JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
       JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
       CORS_ORIGINS: process.env.CORS_ORIGINS,
+      API_BASE_URL: process.env.API_BASE_URL,
+      CLIENT_BASE_URL: process.env.CLIENT_BASE_URL,
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

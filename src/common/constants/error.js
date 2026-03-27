@@ -10,19 +10,24 @@ export const ERROR_MESSAGE = {
   USER_BANNED: '운영 정책 위반으로 계정이 정지되었습니다.',
   USER_WITHDRAWN: '계정이 탈퇴 처리되었습니다.',
   UNSUPPORTED_PROVIDER: '지원하지 않는 소셜 제공자입니다.',
-  INVALID_SOCIAL_AUTH: '소셜 인증 정보가 유효하지 않습니다.',
   DUPLICATE_EMAIL: '이미 사용 중인 이메일입니다.',
   DUPLICATE_NICKNAME: '이미 사용 중인 닉네임입니다.',
   INVALID_LOGIN: '이메일 또는 비밀번호가 올바르지 않습니다.',
   INVALID_TOKEN: '유효하지 않거나 만료된 토큰입니다.',
   TOKEN_MISMATCH: '보안 인증 정보가 일치하지 않습니다.',
+  LOGIN_REQUIRED: '로그인이 필요합니다.',
+  USER_NOT_FOUND: '유저를 찾을 수 없습니다.',
   ACCOUNT_NOT_FOUND: '계정을 찾을 수 없습니다.',
   INACTIVE_ACCOUNT: '사용 권한이 없는 계정입니다.',
-  USER_NOT_FOUND: '유저를 찾을 수 없습니다.',
   CANNOT_BAN_MASTER: '마스터 계정은 정지하거나 차단할 수 없습니다.',
   AUTH_CODE_REQUIRED: '인증코드는 필수입니다.',
   AUTH_CODE_EMPTY: '인증코드가 비어있습니다.',
-  LOGIN_REQUIRED: '로그인이 필요합니다.',
+
+  //소셜 인증 관련
+  INVALID_SOCIAL_AUTH: '소셜 인증 정보가 유효하지 않습니다.',
+  FAILED_SOCIAL_AUTH: '소셜 인증에 실패했습니다',
+  CANNOT_GET_GOOGLE_TOKEN: 'Google 토큰 요청에 실패했습니다.',
+  CANNOT_GET_GOOGEL_PROFILE: 'Google 프로필 조회에 실패했습니다.',
 
   // 챌린지 관련
   CHALLENGE_NOT_FOUND: '챌린지를 찾을 수 없습니다.',

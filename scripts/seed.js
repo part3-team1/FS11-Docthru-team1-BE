@@ -305,7 +305,7 @@ class Seeder {
     const users = await this.#seedUsers();
     console.log(`${users.length}명의 유저가 생성되었습니다.`);
 
-    const challengeIds = await this.#seedChallenges(users.slice(0, 10));
+    const challengeIds = await this.#seedChallenges(users);
     console.log(`${challengeIds.length}개의 챌린지가 생성되었습니다.`);
 
     if (challengeIds.length > 0) {

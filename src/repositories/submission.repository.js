@@ -91,7 +91,15 @@ export class SubmissionRepository {
       where: { id },
       include: {
         user: { select: { nickname: true, grade: true, status: true } },
-        challenge: { select: { title: true, docUrl: true, status: true } },
+        challenge: {
+          select: {
+            title: true,
+            docUrl: true,
+            status: true,
+            category: true,
+            documentType: true,
+          },
+        },
       },
     });
   }

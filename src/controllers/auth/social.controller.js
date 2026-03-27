@@ -1,7 +1,9 @@
 import { BaseController } from '#controllers/base.controller.js';
-import { HTTP_STATUS } from '#constants';
 import { validate } from '#middlewares';
+import { HTTP_STATUS, ERROR_MESSAGE } from '#constants';
+import { config } from '#config';
 import { socialLoginSchema } from '#schemas/validation.schema.js';
+import { BadRequestException } from '#exceptions';
 
 export class SocialAuthController extends BaseController {
   #socialAuthService;

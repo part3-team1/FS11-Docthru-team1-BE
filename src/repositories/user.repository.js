@@ -194,8 +194,8 @@ export class UserRepository {
         nickname: data.nickname || data.name,
         provider: data.provider,
         providerId: String(data.providerId),
-        grade: 'NORMAL',
-        status: 'ACTIVE',
+        grade: data.grade || 'NORMAL',
+        status: data.status || 'ACTIVE',
       },
     });
   }
