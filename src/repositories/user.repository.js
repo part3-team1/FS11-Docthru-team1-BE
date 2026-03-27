@@ -8,7 +8,7 @@ export class UserRepository {
   }
 
   //페이지네이션 포함
-  findAll({ skip = 0, take = 10, status, sortBy, sortOrder } = {}) {
+  async findAll({ skip = 0, take = 10, status, sortBy, sortOrder } = {}) {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
       sortOrder,
@@ -20,27 +20,42 @@ export class UserRepository {
       ],
     });
 
-    return this.#prisma.user.findMany({
-      where: { ...(status && { status }) },
-      skip: Number(skip),
-      take: Number(take),
-      orderBy: {
-        [safeSortBy]: safeSortOrder,
-      },
-      select: {
-        id: true,
-        email: true,
-        nickname: true,
-        role: true,
-        grade: true,
-        status: true,
-        isBanned: true,
-        participationCount: true,
-        bestSelectionCount: true,
-        createdAt: true,
-        deletedAt: true,
-      },
-    });
+    const where = { ...(status && { status }) };
+
+    const [users, totalCount] = await Promise.all([
+      this.#prisma.user.findMany({
+        where,
+        skip: Number(skip),
+        take: Number(take),
+        orderBy: {
+          [safeSortBy]: safeSortOrder,
+        },
+        select: {
+          id: true,
+          email: true,
+          nickname: true,
+          role: true,
+          grade: true,
+          status: true,
+          isBanned: true,
+          participationCount: true,
+          bestSelectionCount: true,
+          createdAt: true,
+          deletedAt: true,
+          participations: {
+            orderBy: { joinedAt: 'desc' },
+            select: {
+              challenge: {
+                select: { title: true },
+              },
+            },
+          },
+        },
+      }),
+      this.#prisma.user.count({ where }),
+    ]);
+
+    return { users, totalCount };
   }
 
   findById(id) {
