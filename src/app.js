@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import { config } from '#config';
 import { errorHandler, cors, logger } from '#middlewares';
 import { registerSwagger } from '#docs/swagger.js';
+import { initScheduler } from '#utils/scheduler.util.js';
 
 export class App {
   constructor(controller, authMiddleware) {
@@ -33,6 +34,8 @@ export class App {
   }
 
   listen(port) {
+    initScheduler();
+
     return this.app.listen(port, () => {
       console.log(
         `[${config.NODE_ENV}] Swagger running at http://localhost:${port}/api/docs`,

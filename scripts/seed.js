@@ -62,6 +62,16 @@ class Seeder {
       provider: 'LOCAL',
     });
 
+    data.push({
+      email: 'admin@test.com',
+      nickname: '도담님관리자',
+      passwordHash: this.#hashedPassword,
+      role: 'ADMIN',
+      grade: 'EXPERT',
+      status: 'ACTIVE',
+      provider: 'LOCAL',
+    });
+
     return await this.#prisma.user.createManyAndReturn({
       data,
       select: { id: true },
