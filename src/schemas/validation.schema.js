@@ -99,7 +99,11 @@ export const reportSchema = z
     description: '콘텐츠 신고 요청 데이터',
   });
 
-export const socialLoginSchema = z
+export const roleUpdateSchema = z
+  .object({ role: z.enum(['USER', 'ADMIN']) })
+  .meta({ id: 'RoleUpdateRequest' });
+
+export const socialCallbackSchema = z
   .object({
     code: z
       .string({ required_error: ERROR_MESSAGE.AUTH_CODE_REQUIRED })
@@ -111,6 +115,10 @@ export const socialLoginSchema = z
     description: '소셜 로그인 인증 코드 및 상태 값',
   });
 
-export const roleUpdateSchema = z
-  .object({ role: z.enum(['USER', 'ADMIN']) })
-  .meta({ id: 'RoleUpdateRequest' });
+export const socialProviderSchema = z.object({
+  provider: z.enum(['google']),
+});
+
+export const socialLoginSchema = z.object({
+  next: z.string().optional().default('/'),
+});

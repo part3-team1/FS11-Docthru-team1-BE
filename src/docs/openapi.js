@@ -295,36 +295,70 @@ export const openApiDocument = createDocument({
       },
     },
 
-    '/api/auth/login/{provider}': {
-      post: {
+    '/api/auth/social/{provider}/login': {
+      get: {
         tags: ['Auth'],
-        summary: '소셜 로그인 (OAuth)',
-        description:
-          '제공자(구글 등)로부터 받은 인가 코드를 이용해 로그인/회원가입을 진행하고 쿠키를 굽습니다.',
+        summary: '소셜 로그인 시작 (리다이렉트)',
+        description: '제공자(구글)의 로그인 페이지로 브라우저를 이동시킵니다.',
         parameters: [
           {
             name: 'provider',
             in: 'path',
             required: true,
-            schema: {
-              type: 'string',
-            },
-            description: '소셜 로그인 제공자 이름 (goole, kakao, naver)',
+            schema: { type: 'string', enum: ['google'] },
+            description: '소셜 로그인 제공자 이름',
+          },
+          {
+            name: 'next',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', default: '/' },
+            description: '로그인 완료 후 이동할 경로',
           },
         ],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': { schema: socialLoginSchema },
+        responses: {
+          302: {
+            description: '소셜 로그인 페이지로 리다이렉트',
           },
         },
-        responses: {
-          200: {
-            description: '소셜 로그인(또는 회원가입) 성공 및 토큰 발급 완료',
-            content: { 'application/json': { schema: successResponseSchema } },
+      },
+    },
+
+    '/api/auth/social/callback/{provider}': {
+      get: {
+        tags: ['Auth'],
+        summary: '소셜 로그인 콜백 처리',
+        description:
+          '구글로부터 받은 인가 코드를 처리하여 로그인/회원가입을 완료합니다.',
+        parameters: [
+          {
+            name: 'provider',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', enum: ['google'] },
+            description: '소셜 로그인 제공자 이름',
           },
-          400: {
-            description: '인가 코드 누락 등 입력값 오류',
+          {
+            name: 'code',
+            in: 'query',
+            required: true,
+            schema: { type: 'string' },
+            description: '제공자로부터 받은 인가 코드',
+          },
+          {
+            name: 'state',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            description: '상태 유지 및 보안용 문자열',
+          },
+        ],
+        responses: {
+          302: {
+            description: '인증 완료 후 서비스 페이지(next)로 리다이렉트',
+          },
+          401: {
+            description: '인증 실패 또는 잘못된 인가 코드',
             content: { 'application/json': { schema: errorResponseSchema } },
           },
         },
