@@ -22,40 +22,42 @@ export class UserRepository {
 
     const where = { ...(status && { status }) };
 
-    const [users, totalCount] = await Promise.all([
-      this.#prisma.user.findMany({
-        where,
-        skip: Number(skip),
-        take: Number(take),
-        orderBy: {
-          [safeSortBy]: safeSortOrder,
-        },
-        select: {
-          id: true,
-          email: true,
-          nickname: true,
-          role: true,
-          grade: true,
-          status: true,
-          isBanned: true,
-          participationCount: true,
-          bestSelectionCount: true,
-          createdAt: true,
-          deletedAt: true,
-          participations: {
-            orderBy: { joinedAt: 'desc' },
-            select: {
-              challenge: {
-                select: { title: true },
+    return this.#prisma
+      .$transaction([
+        this.#prisma.user.findMany({
+          where,
+          skip: Number(skip),
+          take: Number(take),
+          orderBy: {
+            [safeSortBy]: safeSortOrder,
+          },
+          select: {
+            id: true,
+            email: true,
+            nickname: true,
+            role: true,
+            grade: true,
+            status: true,
+            isBanned: true,
+            participationCount: true,
+            bestSelectionCount: true,
+            createdAt: true,
+            deletedAt: true,
+            participations: {
+              orderBy: { joinedAt: 'desc' },
+              select: {
+                challenge: {
+                  select: { title: true },
+                },
               },
             },
           },
-        },
-      }),
-      this.#prisma.user.count({ where }),
-    ]);
-
-    return { users, totalCount };
+        }),
+        this.#prisma.user.count({ where }),
+      ])
+      .then(([users, totalCount]) => {
+        return { users, totalCount };
+      });
   }
 
   findById(id) {
