@@ -10,6 +10,7 @@ import {
   submissionSchema,
   feedbackSchema,
   socialLoginSchema,
+  draftSchema,
 } from '#schemas/validation.schema.js';
 
 const successResponseSchema = z
@@ -66,6 +67,94 @@ export const openApiDocument = createDocument({
   },
   paths: {
     //[draft] 추가 필요!!
+    '/api/drafts/challenges/{challengeId}': {
+      get: {
+        tags: ['Draft'],
+        summary: '임시저장 목록 조회',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'challengeId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '챌린지 ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: '임시저장 목록 조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+
+      post: {
+        tags: ['Draft'],
+        summary: '임시저장 생성',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'challengeId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '챌린지 ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: draftSchema } },
+        },
+        responses: {
+          201: {
+            description: '임시저장 생성 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
+
+    '/api/drafts/{id}': {
+      get: {
+        tags: ['Draft'],
+        summary: '임시저장 상세 조회',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '조회할 임시저장 ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: '임시저장 상세 조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+
+      delete: {
+        tags: ['Draft'],
+        summary: '임시저장 삭제',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '삭제할 임시저장 ID',
+          },
+        ],
+        responses: {
+          204: { description: '임시저장 삭제 성공' },
+        },
+      },
+    },
 
     '/api/admin/requests/{id}/approve': {
       patch: {
