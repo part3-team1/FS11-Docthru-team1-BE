@@ -16,7 +16,23 @@ export class FeedbackRepository {
           take: Number(take),
           orderBy: { createdAt: 'desc' },
           include: {
-            submission: { select: { id: true, title: true } },
+            submission: {
+              select: {
+                id: true,
+                title: true,
+                heartCount: true,
+                challenge: {
+                  select: {
+                    title: true,
+                    category: true,
+                    documentType: true,
+                  },
+                },
+                user: {
+                  select: { nickname: true },
+                },
+              },
+            },
           },
         }),
         this.#prisma.feedback.count({ where: { userId: userId } }),

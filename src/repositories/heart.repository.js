@@ -17,7 +17,7 @@ export class HeartRepository {
             submission: {
               include: {
                 user: { select: { nickname: true } },
-                challenge: { select: { title: true } },
+                challenge: { select: { title: true,category:true,documentType:true } },
               },
             },
           },
