@@ -84,6 +84,27 @@ export const submissionSchema = z
     description: '챌린지 작업물 제출 요청 데이터',
   });
 
+export const draftSchema = z
+  .object({
+    title: z.string().max(50, VALIDATION_ERROR.MAX_TITLE).nullish(),
+    content: z.object({}).nullish(),
+  })
+  .refine(
+    (data) => {
+      const hasTitle = data.title && data.title.trim().length > 0;
+      const hasContent = data.content && Object.keys(data.content).length > 0;
+      return hasTitle || hasContent;
+    },
+    {
+      message: '제목이나 내용 중 최소 하나는 입력해야 합니다.',
+      path: ['title'],
+    },
+  )
+  .meta({
+    id: 'DraftRequest',
+    description: '챌린지 작업물 임시저장 요청 데이터',
+  });
+
 export const reportSchema = z
   .object({
     reportType: z.enum(['CHALLENGE', 'SUBMISSION', 'FEEDBACK'], {

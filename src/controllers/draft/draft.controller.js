@@ -1,6 +1,7 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
-import { needsLogin } from '#middlewares';
+import { needsLogin, validate } from '#middlewares';
+import { draftSchema } from '#schemas/validation.schema.js';
 
 export class DraftController extends BaseController {
   #draftService;
@@ -12,18 +13,16 @@ export class DraftController extends BaseController {
 
   routes() {
     this.router.get('/challenges/:challengeId', needsLogin, (req, res, next) =>
-      this.getListDraft(req, res, next),
-    );
-    this.router.get(
-      '/challenges/:challengeId/latest',
-      needsLogin,
-      (req, res, next) => this.getLatestDraft(req, res, next),
+      this.getDraftList(req, res, next),
     );
     this.router.get('/:id', needsLogin, (req, res, next) =>
       this.getDraft(req, res, next),
     );
-    this.router.post('/challenges/:challengeId', needsLogin, (req, res, next) =>
-      this.saveDraft(req, res, next),
+    this.router.post(
+      '/challenges/:challengeId',
+      needsLogin,
+      validate('body', draftSchema),
+      (req, res, next) => this.saveDraft(req, res, next),
     );
     this.router.delete('/:id', needsLogin, (req, res, next) =>
       this.deleteDraft(req, res, next),
@@ -32,17 +31,14 @@ export class DraftController extends BaseController {
     return this.router;
   }
 
-  async getListDraft(req, res, next) {
+  async getDraftList(req, res, next) {
     try {
-      //로직 작성
-    } catch (error) {
-      next(error);
-    }
-  }
+      const { id: userId } = req.user;
+      const { challengeId } = req.params;
 
-  async getLatestDraft(req, res, next) {
-    try {
-      //로직 작성
+      const drafts = await this.#draftService.getDraftList(userId, challengeId);
+
+      res.status(HTTP_STATUS.OK).json({ success: true, data: drafts });
     } catch (error) {
       next(error);
     }
@@ -50,7 +46,12 @@ export class DraftController extends BaseController {
 
   async getDraft(req, res, next) {
     try {
-      //로직 작성
+      const { id: userId } = req.user;
+      const { id: draftId } = req.params;
+
+      const draft = await this.#draftService.getDraftById(userId, draftId);
+
+      res.status(HTTP_STATUS.OK).json({ success: true, data: draft });
     } catch (error) {
       next(error);
     }
@@ -58,7 +59,16 @@ export class DraftController extends BaseController {
 
   async saveDraft(req, res, next) {
     try {
-      //로직 작성
+      const { id: userId } = req.user;
+      const { challengeId } = req.params;
+      const { title, content } = req.body;
+
+      const draft = await this.#draftService.saveDraft(userId, challengeId, {
+        title,
+        content,
+      });
+
+      res.status(HTTP_STATUS.CREATED).json({ success: true, data: draft });
     } catch (error) {
       next(error);
     }
@@ -66,7 +76,12 @@ export class DraftController extends BaseController {
 
   async deleteDraft(req, res, next) {
     try {
-      //로직 작성
+      const { id: userId } = req.user;
+      const { id: draftId } = req.params;
+
+      await this.#draftService.deleteDraft(userId, draftId);
+
+      res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       next(error);
     }

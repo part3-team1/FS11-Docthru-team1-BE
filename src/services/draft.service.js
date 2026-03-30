@@ -1,5 +1,9 @@
-import { ERROR_MESSAGE } from '#constants';
-import { NotFoundException } from '#exceptions';
+import { DRAFT_LIMIT, ERROR_MESSAGE } from '#constants';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '#exceptions';
 
 export class DraftService {
   #draftRepository;
@@ -8,28 +12,55 @@ export class DraftService {
     this.#draftRepository = draftRepository;
   }
 
-  async getListDraft(userId, challengeId) {
-    // //모달 내 목록 조회 시 (예시입니다. 주석 해제 후 확인해주세요!)
-    // const drafts = await this.#draftRepository.findByUserAndChallenge(
-    //   userId,
-    //   challengeId,
-    // );
-    // return { items: drafts, totalCount: drafts.length};
+  async getDraftList(userId, challengeId) {
+    //모달 내 목록 조회 시
+    const drafts = await this.#draftRepository.findByUserAndChallenge(
+      userId,
+      challengeId,
+    );
+
+    return { items: drafts, totalCount: drafts.length };
   }
 
-  async getLatestDraft(userId, challengeId) {
-    //페이지 진입 시 '이전 작업물을 불러오시겠어요?' 모달에 사용
-  }
-
-  async getDraft(id) {
+  async getDraftById(userId, id) {
     //특정 임시저장본 상세조회
+    const draft = await this.#draftRepository.findById(id);
+    if (!draft) {
+      throw new NotFoundException(ERROR_MESSAGE.DRAFT_NOT_FOUND);
+    }
+
+    if (draft.userId !== userId) {
+      throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN);
+    }
+
+    return draft;
   }
 
   async saveDraft(userId, challengeId, data) {
     //임시 저장 시
+    const drafts = await this.#draftRepository.findByUserAndChallenge(
+      userId,
+      challengeId,
+    );
+
+    if (drafts.length >= DRAFT_LIMIT) {
+      throw new BadRequestException(ERROR_MESSAGE.DRAFT_LIMIT_EXCEEDED);
+    }
+
+    const title = data.title || '제목 없음';
+
+    return await this.#draftRepository.create({
+      ...data,
+      title,
+      userId,
+      challengeId,
+    });
   }
 
   async deleteDraft(userId, id) {
     //모달 내에서 특정 임시저장 삭제 시
+    const draft = await this.getDraftById(userId, id);
+
+    return await this.#draftRepository.delete(draft.id);
   }
 }

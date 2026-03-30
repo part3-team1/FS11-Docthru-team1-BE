@@ -21,7 +21,7 @@ export const ERROR_MESSAGE = {
   CANNOT_BAN_MASTER: '마스터 계정은 정지하거나 차단할 수 없습니다.',
   AUTH_CODE_REQUIRED: '인증코드는 필수입니다.',
   AUTH_CODE_EMPTY: '인증코드가 비어있습니다.',
-  
+
   //소셜 인증 관련
   INVALID_SOCIAL_AUTH: '소셜 인증 정보가 유효하지 않습니다.',
   FAILED_SOCIAL_AUTH: '소셜 인증에 실패했습니다',
@@ -48,6 +48,10 @@ export const ERROR_MESSAGE = {
   SUBMISSION_NOT_FOUND: '작업물을 찾을 수 없습니다.',
   SUBMISSION_ACCESS_DENIED: '작업물에 접근 권한이 없습니다.',
   CANNOT_LIKE_OWN_SUBMISSION: '본인의 작업물에는 좋아요를 누를 수 없습니다.',
+
+  // 임시저장 관련
+  DRAFT_NOT_FOUND: '임시저장된 기록을 찾을 수 없습니다.',
+  DRAFT_LIMIT_EXCEEDED: '임시저장은 최대 5개까지 가능합니다.',
 
   // 신고 관련
   REPORT_ALREADY_EXISTS: '이미 신고한 내역이 있습니다.',
