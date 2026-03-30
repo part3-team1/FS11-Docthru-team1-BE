@@ -1,0 +1,264 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
+  WITHDRAWN
+}
+
+enum ReportType {
+  CHALLENGE
+  SUBMISSION
+  FEEDBACK
+}
+
+enum Role {
+  USER
+  ADMIN
+  MASTER
+}
+
+enum Grade {
+  NORMAL
+  EXPERT
+}
+
+enum Provider {
+  LOCAL
+  GOOGLE
+  KAKAO
+  NAVER
+}
+
+enum Category {
+  NEXTJS
+  API
+  CAREER
+  MODERNJS
+  WEB
+  DOCUMENTATION
+  BLOG
+}
+
+enum DocumentType {
+  DOCUMENTATION
+  BLOG
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DELETED
+}
+
+enum ChallengeStatus {
+  OPENED
+  CLOSED
+  DELETED
+}
+
+enum NotificationType {
+  CHALLENGE_APPROVED
+  CHALLENGE_REJECTED
+  CHALLENGE_DELETED
+  CHALLENGE_CLOSED
+  CHALLENGE_PARTICIPATED
+  SUBMISSION_CREATED
+  SUBMISSION_UPDATED
+  FEEDBACK_CREATED
+  FEEDBACK_UPDATED
+  ADMIN_ACTION
+  AUTO_BLOCKED
+}
+
+model User {
+  id                 String     @id @default(cuid())
+  email              String     @unique
+  passwordHash       String?    @map("password_hash")
+  nickname           String     @unique
+  role               Role       @default(USER)
+  grade              Grade      @default(NORMAL)
+  status             UserStatus @default(ACTIVE)
+  isBanned           Boolean    @default(false) @map("is_banned")
+  participationCount Int        @default(0) @map("participation_count")
+  bestSelectionCount Int        @default(0) @map("best_selection_count")
+  provider           Provider   @default(LOCAL)
+  providerId         String?    @map("provider_id")
+  refreshToken       String?    @map("refresh_token")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  deletedAt          DateTime?  @map("deleted_at")
+
+  challengeRequests ChallengeRequest[]
+  participations    Participation[]
+  submissions       Submission[]
+  feedbacks         Feedback[]
+  hearts            Heart[]
+  notifications     Notification[]
+  drafts            Draft[]
+  reportsMade       Report[]           @relation("Reporter")
+  reportsReceived   Report[]           @relation("TargetUser")
+
+  @@map("users")
+}
+
+model ChallengeRequest {
+  id              String        @id @default(cuid())
+  requestedBy     String        @map("requested_by")
+  title           String
+  docUrl          String        @map("doc_url")
+  description     String?       @db.Text
+  category        Category
+  documentType    DocumentType  @map("document_type")
+  dueDate         DateTime      @map("due_date")
+  maxParticipants Int           @map("max_participants")
+  status          RequestStatus @default(PENDING)
+  rejectionReason String?       @map("rejection_reason") @db.Text
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  user      User       @relation(fields: [requestedBy], references: [id])
+  challenge Challenge?
+
+  @@map("challenge_requests")
+}
+
+model Challenge {
+  id                  String          @id @default(cuid())
+  requestId           String          @unique @map("request_id")
+  title               String
+  docUrl              String          @map("doc_url")
+  description         String?         @db.Text
+  category            Category
+  documentType        DocumentType    @map("document_type")
+  dueDate             DateTime        @map("due_date")
+  maxParticipants     Int             @map("max_participants")
+  currentParticipants Int             @default(0) @map("current_participants")
+  status              ChallengeStatus @default(OPENED)
+  approvedAt          DateTime        @default(now()) @map("approved_at")
+
+  request        ChallengeRequest @relation(fields: [requestId], references: [id])
+  participations Participation[]
+  submissions    Submission[]
+  drafts         Draft[]
+
+  @@map("challenges")
+}
+
+model Draft {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  challengeId String   @map("challenge_id")
+  title       String
+  content     Json
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id])
+  challenge Challenge @relation(fields: [challengeId], references: [id])
+
+  @@index([userId])
+  @@index([challengeId])
+  @@map("drafts")
+}
+
+model Participation {
+  id          String   @id @default(cuid())
+  challengeId String   @map("challenge_id")
+  userId      String   @map("user_id")
+  joinedAt    DateTime @default(now()) @map("joined_at")
+
+  challenge Challenge @relation(fields: [challengeId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([challengeId, userId])
+  @@index([userId])
+  @@map("participations")
+}
+
+model Submission {
+  id          String   @id @default(cuid())
+  challengeId String   @map("challenge_id")
+  userId      String   @map("user_id")
+  title       String
+  content     Json
+  heartCount  Int      @default(0) @map("heart_count")
+  isBest      Boolean  @default(false) @map("is_best")
+  isBlocked   Boolean  @default(false) @map("is_blocked")
+  isDeleted   Boolean  @default(false) @map("is_deleted")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  challenge Challenge  @relation(fields: [challengeId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
+  feedbacks Feedback[]
+  hearts    Heart[]
+
+  @@index([challengeId])
+  @@index([userId])
+  @@map("submissions")
+}
+
+model Feedback {
+  id           String   @id @default(cuid())
+  submissionId String   @map("submission_id")
+  userId       String   @map("user_id")
+  content      String   @db.Text
+  isBlocked    Boolean  @default(false) @map("is_blocked")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@index([submissionId])
+  @@index([userId])
+  @@map("feedbacks")
+}
+
+model Heart {
+  id           String   @id @default(cuid())
+  submissionId String   @map("submission_id")
+  userId       String   @map("user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@unique([submissionId, userId])
+  @@map("hearts")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  message   String?
+  reason    String?          @db.Text
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model Report {
+  id           String     @id @default(cuid())
+  reporterId   String     @map("reporter_id")
+  targetUserId String?    @map("target_user_id")
+  targetId     String     @map("target_id")
+  reportType   ReportType @map("report_type")
+  reason       String     @db.VarChar(100)
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  reporter   User  @relation("Reporter", fields: [reporterId], references: [id])
+  targetUser User? @relation("TargetUser", fields: [targetUserId], references: [id])
+
+  @@index([targetId])
+  @@map("reports")
+}
