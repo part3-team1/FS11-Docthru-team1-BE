@@ -9,7 +9,6 @@ import {
   userUpdateSchema,
   submissionSchema,
   feedbackSchema,
-  socialLoginSchema,
   draftSchema,
 } from '#schemas/validation.schema.js';
 
@@ -66,7 +65,6 @@ export const openApiDocument = createDocument({
     },
   },
   paths: {
-    //[draft] 추가 필요!!
     '/api/drafts/challenges/{challengeId}': {
       get: {
         tags: ['Draft'],
@@ -359,7 +357,7 @@ export const openApiDocument = createDocument({
         responses: {
           200: {
             description: '정보 조회 성공',
-            content: { 'application/json': { schema: successResponseSchema } }, // 실제로는 data에 user 객체가 들어감
+            content: { 'application/json': { schema: successResponseSchema } },
           },
           401: {
             description: '인증되지 않은 사용자 (토큰 만료/없음)',

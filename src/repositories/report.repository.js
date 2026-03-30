@@ -18,7 +18,6 @@ export class ReportRepository {
     });
   }
 
-  //어드민 or 마스터 관련, 페이지네이션 포함
   findAll({ skip = 0, take = 10, sortBy, sortOrder, reportType } = {}) {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
@@ -61,14 +60,12 @@ export class ReportRepository {
     });
   }
 
-  //신고 누적 카운트
   countByTarget(targetId) {
     return this.#prisma.report.count({
       where: { targetId },
     });
   }
 
-  //중복신고 방지
   checkDuplicate(reporterId, targetId) {
     return this.#prisma.report.findFirst({
       where: { reporterId, targetId },

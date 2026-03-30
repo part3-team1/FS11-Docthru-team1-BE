@@ -7,7 +7,6 @@ export class ChallengeRepository {
     this.#prisma = prisma;
   }
 
-  //페이지네이션, 필터링, 분류 포함
   findAll({
     skip = 0,
     take = 10,
@@ -91,7 +90,6 @@ export class ChallengeRepository {
       });
   }
 
-  //중복 참여 방지
   isParticipating(userId, challengeId) {
     return this.#prisma.participation.findUnique({
       where: {
@@ -100,7 +98,6 @@ export class ChallengeRepository {
     });
   }
 
-  //챌린지 상세페이지 '작업 도전하기' 버튼 부분(참여 생성 + 인원 증가)
   join(userId, challengeId) {
     return this.#prisma.$transaction([
       this.#prisma.participation.create({
@@ -113,7 +110,6 @@ export class ChallengeRepository {
     ]);
   }
 
-  //챌린지 나가기(포기 + 인원 감소)
   leave(userId, challengeId) {
     return this.#prisma.$transaction([
       this.#prisma.participation.delete({
@@ -128,7 +124,6 @@ export class ChallengeRepository {
     ]);
   }
 
-  //어드민 관련 (맨 아래 까지)
   create(data) {
     return this.#prisma.challenge.create({
       data: {

@@ -11,7 +11,7 @@ export class AdminController extends BaseController {
   }
 
   routes() {
-    this.router.use(needsAdmin); //어드민만 이 파일의 api 이용가능
+    this.router.use(needsAdmin);
 
     this.router.patch('/requests/:id/approve', (req, res, next) =>
       this.approveRequest(req, res, next),

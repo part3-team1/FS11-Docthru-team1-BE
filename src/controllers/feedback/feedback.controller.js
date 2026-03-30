@@ -1,5 +1,5 @@
 import { BaseController } from '#controllers/base.controller.js';
-import { ERROR_MESSAGE, HTTP_STATUS } from '#constants';
+import { HTTP_STATUS } from '#constants';
 import { needsLogin, validate } from '#middlewares';
 import { feedbackSchema } from '#schemas/validation.schema.js';
 

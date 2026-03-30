@@ -55,7 +55,6 @@ export class HeartRepository {
     ]);
   }
 
-  //중복 체크(유저 1명당 제출물에 1회 가능)
   checkDuplicate(userId, submissionId) {
     return this.#prisma.heart.findUnique({
       where: {

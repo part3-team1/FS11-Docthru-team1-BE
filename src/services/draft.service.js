@@ -13,7 +13,6 @@ export class DraftService {
   }
 
   async getDraftList(userId, challengeId) {
-    //모달 내 목록 조회 시
     const drafts = await this.#draftRepository.findByUserAndChallenge(
       userId,
       challengeId,
@@ -23,7 +22,6 @@ export class DraftService {
   }
 
   async getDraftById(userId, id) {
-    //특정 임시저장본 상세조회
     const draft = await this.#draftRepository.findById(id);
     if (!draft) {
       throw new NotFoundException(ERROR_MESSAGE.DRAFT_NOT_FOUND);
@@ -37,7 +35,6 @@ export class DraftService {
   }
 
   async saveDraft(userId, challengeId, data) {
-    //임시 저장 시
     const drafts = await this.#draftRepository.findByUserAndChallenge(
       userId,
       challengeId,
@@ -58,7 +55,6 @@ export class DraftService {
   }
 
   async deleteDraft(userId, id) {
-    //모달 내에서 특정 임시저장 삭제 시
     const draft = await this.getDraftById(userId, id);
 
     return await this.#draftRepository.delete(draft.id);

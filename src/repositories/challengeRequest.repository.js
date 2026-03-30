@@ -23,7 +23,6 @@ export class ChallengeRequestRepository {
     });
   }
 
-  //어드민 관련 (맨 아래 까지)
   findAll({
     skip = 0,
     take = 10,

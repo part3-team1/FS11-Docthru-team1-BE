@@ -7,7 +7,6 @@ export class UserRepository {
     this.#prisma = prisma;
   }
 
-  //페이지네이션 포함
   async findAll({ skip = 0, take = 10, status, sortBy, sortOrder } = {}) {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
       sortBy,
@@ -144,21 +143,19 @@ export class UserRepository {
     });
   }
 
-  //자진 탈퇴
   deleteUser(id, { nickname, email, deletedAt }) {
     return this.#prisma.user.update({
       where: { id },
       data: {
         status: 'WITHDRAWN',
         deletedAt,
-        nickname, //'탈퇴한 사용자'로 변경
+        nickname,
         email,
-        refreshToken: null, //강제 로그아웃
+        refreshToken: null,
       },
     });
   }
 
-  //마스터의 어드민 승격용
   updateRole(id, role) {
     return this.#prisma.user.update({
       where: { id },
@@ -166,19 +163,17 @@ export class UserRepository {
     });
   }
 
-  //강제 정지 및 탈퇴
   updateStatus(id, { status, isBanned }) {
     return this.#prisma.user.update({
       where: { id },
       data: {
         status,
         isBanned,
-        ...(isBanned && { refreshToken: null }), //접속 차단
+        ...(isBanned && { refreshToken: null }),
       },
     });
   }
 
-  //리프레시 토큰 저장용
   updateRefreshToken(id, refreshToken) {
     return this.#prisma.user.update({
       where: { id },
@@ -186,7 +181,6 @@ export class UserRepository {
     });
   }
 
-  //소셜로그인 관련
   findBySocialAccount(provider, providerId) {
     return this.#prisma.user.findFirst({
       where: {

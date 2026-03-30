@@ -8,7 +8,6 @@ export class NotificationService {
     this.#notificationRepository = notificationRepository;
   }
 
-  //알림 목록
   async getMyNotifications(userId, query) {
     const [result, unreadCount] = await Promise.all([
       this.#notificationRepository.findAllByUserId(userId, query),
@@ -22,12 +21,10 @@ export class NotificationService {
     };
   }
 
-  //안읽은 알림 카운트 (배지용)
   async getUnreadCount(userId) {
     return await this.#notificationRepository.countUnread(userId);
   }
 
-  //읽음 처리 관련
   async markAsRead(userId, notificationId) {
     const notification =
       await this.#notificationRepository.findById(notificationId);

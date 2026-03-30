@@ -40,7 +40,6 @@ export class NotificationRepository {
       });
   }
 
-  //알림 클릭 했을때 읽은 알람 표시용
   markAsRead(id) {
     return this.#prisma.notification.update({
       where: { id },
@@ -48,7 +47,6 @@ export class NotificationRepository {
     });
   }
 
-  //안 읽은 알림 표시(종모양 배지에 활용)
   countUnread(userId) {
     return this.#prisma.notification.count({
       where: { userId, isRead: false },

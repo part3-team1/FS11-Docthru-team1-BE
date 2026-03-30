@@ -26,8 +26,6 @@ export class AdminService {
     this.#feedbackRepository = feedbackRepository;
   }
 
-  //유저 서비스에도 어드민 로직이 있습니다. 확인해주세요!
-  //챌린지, 피드백, 서브미션 수정/삭제/차단은 각 서비스 로직 확인.
   async approveRequest(requestId) {
     const request = await this.#challengeRequestRepository.findById(requestId);
     if (!request) throw new NotFoundException(ERROR_MESSAGE.NOT_FOUND);

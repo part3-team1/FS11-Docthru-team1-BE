@@ -7,7 +7,6 @@ export class SubmissionRepository {
     this.#prisma = prisma;
   }
 
-  //페이지네이션 포함
   findAllByChallengeId(
     challengeId,
     { skip = 0, take = 5, sortBy, sortOrder } = {},
@@ -44,7 +43,6 @@ export class SubmissionRepository {
       });
   }
 
-  //마이페이지용 내 작업물 모아보기
   findAllByUserId(userId, { skip = 0, take = 10 } = {}) {
     return this.#prisma
       .$transaction([
@@ -66,7 +64,6 @@ export class SubmissionRepository {
       });
   }
 
-  //상위 5위 조회 시
   findTopRankings(challengeId, limit = 5) {
     return this.#prisma.submission.findMany({
       where: {
@@ -129,7 +126,6 @@ export class SubmissionRepository {
     });
   }
 
-  //어드민 관련 (1등 왕관 표시용)
   updateBestStatus(id, isBest) {
     return this.#prisma.submission.update({
       where: { id },
@@ -137,7 +133,6 @@ export class SubmissionRepository {
     });
   }
 
-  //자동차단용
   updateBlockStatus(id, isBlocked) {
     return this.#prisma.submission.update({
       where: { id },

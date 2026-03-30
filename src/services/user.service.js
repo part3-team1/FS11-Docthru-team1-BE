@@ -25,7 +25,6 @@ export class UserService {
     this.#feedbackRepository = feedbackRepository;
   }
 
-  //어드민/마스터 전용
   async getUsers(query) {
     return await this.#userRepository.findAll(query);
   }
@@ -39,7 +38,6 @@ export class UserService {
     return user;
   }
 
-  //마스터의 어드민 승격/강등 로직
   async changeUserRole(requesterId, targetUserId, newRole) {
     const requester = await this.#userRepository.findById(requesterId);
     if (!requester || requester.role !== 'MASTER') {
@@ -60,7 +58,6 @@ export class UserService {
     return { message: `유저의 권한이 [${newRole}](으)로 변경 되었습니다.` };
   }
 
-  //일반 유저용
   async getUserProfile(userId) {
     const user = await this.#userRepository.findById(userId);
     if (!user) {
