@@ -36,6 +36,20 @@ const reasonBodySchema = z
     description: '거절/차단/삭제 사유 요청 데이터',
   });
 
+const submissionDetailResponseSchema = successResponseSchema
+  .extend({
+    data: z.intersection(
+      z.any(),
+      z.object({
+        isHearted: z.boolean().description('현재 로그인한 유저의 좋아요 여부'),
+      }),
+    ),
+  })
+  .meta({
+    id: 'SubmissionDetailResponse',
+    description: '작업물 상세 조회 성공 응답',
+  });
+
 export const openApiDocument = createDocument({
   openapi: '3.1.0',
   info: {
@@ -854,6 +868,7 @@ export const openApiDocument = createDocument({
       get: {
         tags: ['Submission'],
         summary: '작업물 상세 조회',
+        security: [{ accessTokenCookie: [] }, {}],
         parameters: [
           {
             name: 'id',
@@ -865,7 +880,9 @@ export const openApiDocument = createDocument({
         responses: {
           200: {
             description: '상세 조회 성공',
-            content: { 'application/json': { schema: successResponseSchema } },
+            content: {
+              'application/json': { schema: submissionDetailResponseSchema },
+            },
           },
         },
       },

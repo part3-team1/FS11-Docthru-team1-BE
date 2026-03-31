@@ -61,13 +61,20 @@ export class SubmissionService {
     );
   }
 
-  async getSubmissionById(id) {
+  async getSubmissionById(id, userId = null) {
     const submission = await this.#submissionRepository.findById(id);
+
     if (!submission || submission.isDeleted || submission.isBlocked) {
       throw new NotFoundException(ERROR_MESSAGE.SUBMISSION_NOT_FOUND);
     }
 
-    return submission;
+    const existingHeart = await this.#heartRepository.checkDuplicate(
+      userId,
+      id,
+    );
+    const isHearted = userId ? !!existingHeart : false;
+
+    return { ...submission, isHearted };
   }
 
   async getTopRankings(challengeId, limit) {

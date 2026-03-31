@@ -69,7 +69,12 @@ export class SubmissionController extends BaseController {
   async getSubmissionById(req, res, next) {
     try {
       const { id } = req.params;
-      const submission = await this.#submissionService.getSubmissionById(id);
+      const userId = req.user?.id;
+
+      const submission = await this.#submissionService.getSubmissionById(
+        id,
+        userId,
+      );
 
       res.status(HTTP_STATUS.OK).json({ success: true, data: submission });
     } catch (error) {

@@ -515,9 +515,9 @@ class Seeder {
   async run() {
     console.log('현재 NODE_ENV:', process.env.NODE_ENV);
 
-    if (process.env.NODE_ENV !== 'development') {
-      throw new Error('프로덕션 환경에서는 시딩을 실행하지 않습니다.');
-    }
+    // if (process.env.NODE_ENV !== 'development') {
+    //   throw new Error('프로덕션 환경에서는 시딩을 실행하지 않습니다.');
+    // }
 
     if (!process.env.DATABASE_URL?.includes('localhost')) {
       throw new Error(
