@@ -38,8 +38,9 @@ export class SocialAuthService {
   }
 
   async #resolveUser({ provider, profile }) {
+    const upperProvider = provider.toUpperCase();
     const socialUser = await this.#userRepository.findBySocialAccount(
-      provider,
+      upperProvider,
       profile.id,
     );
 
@@ -58,7 +59,7 @@ export class SocialAuthService {
       return this.#userRepository.createWithSocialAccount({
         email,
         nickname: profile.nickname || `User_${Date.now().toString().slice(-4)}`,
-        provider: provider.toUpperCase(),
+        provider: upperProvider,
         providerId: String(profile.id),
         grade: 'NORMAL',
         status: 'ACTIVE',
