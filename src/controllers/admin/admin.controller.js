@@ -13,6 +13,12 @@ export class AdminController extends BaseController {
   routes() {
     this.router.use(needsAdmin);
 
+    this.router.get('/requests', (req, res, next) =>
+      this.getRequests(req, res, next),
+    );
+    this.router.get('/requests/:id', (req, res, next) =>
+      this.getRequestById(req, res, next),
+    );
     this.router.patch('/requests/:id/approve', (req, res, next) =>
       this.approveRequest(req, res, next),
     );
@@ -30,6 +36,33 @@ export class AdminController extends BaseController {
     );
 
     return this.router;
+  }
+
+  async getRequests(req, res, next) {
+    try {
+      const { skip, take, keyword, status, sortBy, sortOrder } = req.query;
+      const result = await this.#adminService.getRequests({
+        skip,
+        take,
+        keyword,
+        status,
+        sortBy,
+        sortOrder,
+      });
+      res.status(HTTP_STATUS.OK).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getRequestById(req, res, next) {
+    try {
+      const { id } = req.params;
+      const request = await this.#adminService.getRequestById(id);
+      res.status(HTTP_STATUS.OK).json({ success: true, data: request });
+    } catch (error) {
+      next(error);
+    }
   }
 
   async approveRequest(req, res, next) {

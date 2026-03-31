@@ -17,11 +17,11 @@ export class ChallengeRepository {
     sortBy,
     sortOrder,
   } = {}) {
-    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort(
       sortBy,
       sortOrder,
-      allowedFields: ['approvedAt', 'dueDate', 'currentParticipants', 'title'],
-    });
+      ['approvedAt', 'dueDate', 'currentParticipants', 'title'],
+    );
 
     const queryOptions = {
       ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }),
