@@ -8,7 +8,7 @@ export class CookieProvider {
     const commonOptions = {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
     };
 
@@ -27,7 +27,7 @@ export class CookieProvider {
     const clearOptions = {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
     };
 
