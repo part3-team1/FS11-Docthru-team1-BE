@@ -65,5 +65,15 @@
         >Swagger 바로가기</a
       >
     </div>
+    <script>
+      window.onload = function () {
+        const currentOrigin = window.location.origin;
+        const swaggerBtn = document.querySelector('swagger-btn');
+
+        if (swaggerBtn) {
+          swaggerBtn.href = currentOrigin + '/api/docs';
+        }
+      };
+    </script>
   </body>
 </html>
