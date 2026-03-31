@@ -23,6 +23,7 @@ export class FeedbackRepository {
                 heartCount: true,
                 challenge: {
                   select: {
+                    id: true,
                     title: true,
                     category: true,
                     documentType: true,
