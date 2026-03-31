@@ -123,6 +123,16 @@ class Seeder {
       provider: 'LOCAL',
     });
 
+    data.push({
+      email: 'general@test.com',
+      nickname: '나는일반인',
+      passwordHash: this.#hashedPassword,
+      role: 'USER',
+      grade: 'NORMAL',
+      status: 'ACTIVE',
+      provider: 'LOCAL',
+    });
+
     return await this.#prisma.user.createManyAndReturn({
       data,
       select: { id: true },
@@ -512,6 +522,12 @@ class Seeder {
     return await this.#prisma.draft.createMany({ data: drafts });
   }
 
+  async #seedNotifications(userIds, challengeIds) {
+    console.log('알림 데이터 생성 중...');
+
+    //내용 추가
+  }
+
   async run() {
     console.log('현재 NODE_ENV:', process.env.NODE_ENV);
 
@@ -548,6 +564,9 @@ class Seeder {
 
       await this.#seedDrafts(users, challengeIds);
       console.log('임시저장이 생성 완료되었습니다.');
+
+      await this.#seedNotifications(users, challengeIds);
+      console.log('알림이 생성 완료되었습니다.');
     }
 
     console.log(`마스터 계정: master@test.com / 비밀번호: ${SEED_PASSWORD}`);
