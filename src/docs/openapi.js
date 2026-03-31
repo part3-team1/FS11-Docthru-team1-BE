@@ -41,7 +41,7 @@ const submissionDetailResponseSchema = successResponseSchema
     data: z.intersection(
       z.any(),
       z.object({
-        isHearted: z.boolean().description('현재 로그인한 유저의 좋아요 여부'),
+        isHearted: z.boolean().describe('현재 로그인한 유저의 좋아요 여부'),
       }),
     ),
   })

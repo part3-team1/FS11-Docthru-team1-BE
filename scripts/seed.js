@@ -519,11 +519,11 @@ class Seeder {
     //   throw new Error('프로덕션 환경에서는 시딩을 실행하지 않습니다.');
     // }
 
-    if (!process.env.DATABASE_URL?.includes('localhost')) {
-      throw new Error(
-        'localhost 데이터베이스에서만 시딩을 실행할 수 있습니다.',
-      );
-    }
+    // if (!process.env.DATABASE_URL?.includes('localhost')) {
+    //   throw new Error(
+    //     'localhost 데이터베이스에서만 시딩을 실행할 수 있습니다.',
+    //   );
+    // }
 
     console.log('시딩 시작...');
 
