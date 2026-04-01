@@ -127,18 +127,20 @@ export class AdminService {
     });
   }
 
-  async adminBlockFeedback(feedbackId, reason) {
+  async adminBlockFeedback(feedbackId, isBlocked) { //블럭처리에는 이유가 아니라 불린으로 처리되서 바꿨씁니다.
     const feedback = await this.#feedbackRepository.findById(feedbackId);
     if (!feedback)
       throw new NotFoundException(ERROR_MESSAGE.FEEDBACK_NOT_FOUND);
 
-    await this.#feedbackRepository.block(feedbackId, true);
+    await this.#feedbackRepository.block(feedbackId, isBlocked); //블럭처리에는 이유가 아니라 불린으로 처리되서 바꿨씁니다.
 
-    await this.#notificationRepository.create({
-      userId: feedback.userId,
-      type: 'ADMIN_ACTION',
-      message: NOTIFICATION_MESSAGES.FEEDBACK_BANNED,
-      reason,
-    });
+    //블럭처러시만 알림가게 했습니다
+    if (isBlocked) {
+      await this.#notificationRepository.create({
+        userId: feedback.userId,
+        type: 'ADMIN_ACTION',
+        message: NOTIFICATION_MESSAGES.FEEDBACK_BANNED,
+      });
+    }
   }
 }

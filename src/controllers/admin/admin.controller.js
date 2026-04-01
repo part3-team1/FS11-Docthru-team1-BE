@@ -122,9 +122,9 @@ export class AdminController extends BaseController {
   async blockFeedback(req, res, next) {
     try {
       const { id: feedbackId } = req.params;
-      const { reason } = req.body;
-
-      await this.#adminService.adminBlockFeedback(feedbackId, reason);
+      const { isBlocked } = req.body;
+      //블럭처리에는 이유가 아니라 불린으로 처리되서 바꿨씁니다.
+      await this.#adminService.adminBlockFeedback(feedbackId, isBlocked);
       res
         .status(HTTP_STATUS.OK)
         .json({ success: true, message: ERROR_MESSAGE.FEEDBACK_BANNED });

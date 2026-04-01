@@ -55,7 +55,7 @@ export class ChallengeController extends BaseController {
       res.status(HTTP_STATUS.OK).json({
         success: true,
         data: {
-          challenges: result.challenges,
+          challenges: result.items, //서비스에서는 items로 변환하는데 여기서는 challenge여서 바꿨습니다.!
           totalCount: result.totalCount,
         },
       });
