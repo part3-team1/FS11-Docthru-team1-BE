@@ -26,6 +26,23 @@ export class AdminService {
     this.#feedbackRepository = feedbackRepository;
   }
 
+  async getRequests({ skip, take, keyword, status, sortBy, sortOrder }) {
+    return this.#challengeRequestRepository.findAll({
+      skip,
+      take,
+      keyword,
+      status,
+      sortBy,
+      sortOrder,
+    });
+  }
+
+  async getRequestById(requestId) {
+    const request = await this.#challengeRequestRepository.findById(requestId);
+    if (!request) throw new NotFoundException(ERROR_MESSAGE.NOT_FOUND);
+    return request;
+  }
+
   async approveRequest(requestId) {
     const request = await this.#challengeRequestRepository.findById(requestId);
     if (!request) throw new NotFoundException(ERROR_MESSAGE.NOT_FOUND);

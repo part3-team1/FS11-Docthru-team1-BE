@@ -170,7 +170,7 @@ export class UserController extends BaseController {
 
   async getUsers(req, res, next) {
     try {
-      const { skip, take, sortBy, sortOrder, role, status } = req.query;
+      const { skip, take, sortBy, sortOrder, role, status, keyword } = req.query;
 
       const result = await this.#userService.getUsers({
         skip,
@@ -179,6 +179,7 @@ export class UserController extends BaseController {
         sortOrder,
         role,
         status,
+        keyword,
       });
 
       res.status(HTTP_STATUS.OK).json({

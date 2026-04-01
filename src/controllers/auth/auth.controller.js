@@ -24,7 +24,7 @@ export class AuthController extends BaseController {
       validate('body', loginSchema),
       (req, res, next) => this.login(req, res, next),
     );
-    this.router.post('/logout', needsLogin, (req, res, next) =>
+    this.router.post('/logout', (req, res, next) =>
       this.logout(req, res, next),
     );
     this.router.get('/me', needsLogin, (req, res, next) =>
@@ -61,8 +61,8 @@ export class AuthController extends BaseController {
 
   async logout(req, res, next) {
     try {
-      const userId = req.user.id;
-      await this.#authService.logout(userId);
+      const userId = req.user?.id;
+      if (userId) await this.#authService.logout(userId);
 
       this.#cookieProvider.clearAuthCookies(res);
       res.status(HTTP_STATUS.NO_CONTENT).send();

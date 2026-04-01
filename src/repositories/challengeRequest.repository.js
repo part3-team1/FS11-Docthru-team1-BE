@@ -31,11 +31,11 @@ export class ChallengeRequestRepository {
     sortBy = 'createdAt',
     sortOrder = 'desc',
   } = {}) {
-    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort(
       sortBy,
       sortOrder,
-      allowedFields: ['createdAt', 'dueDate', 'status', 'title'],
-    });
+      ['createdAt', 'dueDate', 'status', 'title'],
+    );
 
     const queryOptions = {
       ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }),

@@ -7,19 +7,25 @@ export class UserRepository {
     this.#prisma = prisma;
   }
 
-  async findAll({ skip = 0, take = 10, status, sortBy, sortOrder } = {}) {
-    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+  async findAll({ skip = 0, take = 10, status, keyword, role, sortBy, sortOrder } = {}) {
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort(
       sortBy,
       sortOrder,
-      allowedFields: [
-        'createdAt',
-        'nickname',
-        'participationCount',
-        'bestSelectionCount',
-      ],
-    });
+      ['createdAt', 'nickname', 'participationCount', 'bestSelectionCount'],
+    );
 
-    const where = { ...(status && { status }) };
+    const roleWhere = (() => {
+      if (role === 'ADMIN') return { role: { in: ['ADMIN', 'MASTER'] } };
+      if (role === 'EXPERT') return { role: 'USER', grade: 'EXPERT' };
+      if (role === 'USER') return { role: 'USER', grade: 'NORMAL' };
+      return {};
+    })();
+
+    const where = {
+      ...(status && { status }),
+      ...(keyword && { nickname: { contains: keyword, mode: 'insensitive' } }),
+      ...roleWhere,
+    };
 
     return this.#prisma
       .$transaction([
