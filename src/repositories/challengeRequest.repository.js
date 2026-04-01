@@ -26,7 +26,7 @@ export class ChallengeRequestRepository {
   findAll({
     skip = 0,
     take = 10,
-    keyword,
+    keyword = '',
     status,
     sortBy = 'createdAt',
     sortOrder = 'desc',
@@ -39,7 +39,7 @@ export class ChallengeRequestRepository {
 
     const queryOptions = {
       ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }),
-      status: status ? status : { not: 'DELETED' },
+      status: status ?? { not: 'DELETED' },
     };
 
     return this.#prisma
@@ -67,8 +67,28 @@ export class ChallengeRequestRepository {
     });
   }
 
-  findAllByRequesterId(userId, { skip = 0, take = 10 } = {}) {
-    const queryOptions = { requestedBy: userId, status: { not: 'DELETED' } };
+  findAllByRequesterId(
+    userId,
+    {
+      skip = 0,
+      take = 10,
+      keyword = '',
+      status,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = {},
+  ) {
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+      sortBy,
+      sortOrder,
+      allowedFields: ['createdAt', 'dueDate', 'status', 'title'],
+    });
+
+    const queryOptions = {
+      requestedBy: userId,
+      status: status ?? { not: 'DELETED' },
+      ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }),
+    };
 
     return this.#prisma
       .$transaction([
@@ -76,7 +96,7 @@ export class ChallengeRequestRepository {
           where: queryOptions,
           skip: Number(skip),
           take: Number(take),
-          orderBy: { createdAt: 'desc' },
+          orderBy: { [safeSortBy]: safeSortOrder },
         }),
         this.#prisma.challengeRequest.count({ where: queryOptions }),
       ])
