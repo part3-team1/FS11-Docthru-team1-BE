@@ -53,7 +53,7 @@ export class FeedbackRepository {
       allowedFields: ['createdAt'],
     });
 
-    const whereCondition = { submissionId, isBlocked: false };
+    const whereCondition = { submissionId };
 
     return this.#prisma
       .$transaction([

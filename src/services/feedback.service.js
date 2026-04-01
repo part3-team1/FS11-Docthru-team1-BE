@@ -112,4 +112,21 @@ export class FeedbackService {
 
     return await this.#feedbackRepository.delete(feedbackId);
   }
+
+  async blockFeedback(feedbackId, isBlocked, role) {
+    const isStaff = role === 'ADMIN' || role === 'MASTER';
+    if (!isStaff) {
+      throw new ForbiddenException(ERROR_MESSAGE.FEEDBACK_ACCESS_DENIED)
+    }
+
+    const feedback = await this.#feedbackRepository.findById(feedbackId);
+    if (!feedback) {
+      throw new NotFoundException(ERROR_MESSAGE.FEEDBACK_NOT_FOUND)
+    }
+
+    return await this.#feedbackRepository.block(feedbackId,isBlocked)
+  }
+
+
+
 }

@@ -21,6 +21,9 @@ export class FeedbackController extends BaseController {
       validate('body', feedbackSchema),
       (req, res, next) => this.createFeedback(req, res, next),
     );
+    this.router.patch('/feedbacks/:id/block', needsLogin, (req, res, next) =>
+      this.blockFeedback(req, res, next),
+    );
     this.router.patch(
       '/feedbacks/:id',
       needsLogin,
@@ -98,6 +101,24 @@ export class FeedbackController extends BaseController {
       await this.#feedbackService.deleteFeedback(userId, feedbackId, role);
 
       res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async blockFeedback(req, res, next) {
+    try {
+      const { role } = req.user;
+      const { id: feedbackId } = req.params;
+      const { isBlocked } = req.body;
+
+      const result = await this.#feedbackService.blockFeedback(
+        feedbackId,
+        isBlocked,
+        role,
+      );
+
+      res.status(HTTP_STATUS.OK).json({ success: true, data: result });
     } catch (error) {
       next(error);
     }
