@@ -11,11 +11,11 @@ export class SubmissionRepository {
     challengeId,
     { skip = 0, take = 5, sortBy, sortOrder } = {},
   ) {
-    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort(
       sortBy,
       sortOrder,
-      allowedFields: ['createdAt', 'heartCount'],
-    });
+      ['createdAt', 'heartCount'],
+    );
 
     const whereCondition = {
       challengeId,

@@ -30,6 +30,15 @@ export class FeedbackService {
     );
   }
 
+  async getMyFeedbacks(userId, query) {
+    const result = await this.#feedbackRepository.findAllByUserId(
+      userId,
+      query,
+    );
+
+    return { items: result.feedbacks, totalCount: result.totalCount };
+  }
+
   async createFeedback(userId, submissionId, content) {
     const submission = await this.#submissionRepository.findById(submissionId);
     if (!submission)

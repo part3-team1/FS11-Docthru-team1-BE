@@ -7,7 +7,15 @@ export class UserRepository {
     this.#prisma = prisma;
   }
 
-  async findAll({ skip = 0, take = 10, status, keyword, role, sortBy, sortOrder } = {}) {
+  async findAll({
+    skip = 0,
+    take = 10,
+    status,
+    keyword,
+    role,
+    sortBy,
+    sortOrder,
+  } = {}) {
     const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort(
       sortBy,
       sortOrder,

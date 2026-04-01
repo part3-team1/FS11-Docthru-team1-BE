@@ -3,26 +3,9 @@ import { NotFoundException, ForbiddenException } from '#exceptions';
 
 export class UserService {
   #userRepository;
-  #submissionRepository;
-  #challengeRepository;
-  #challengeRequestRepository;
-  #heartRepository;
-  #feedbackRepository;
 
-  constructor({
-    userRepository,
-    submissionRepository,
-    challengeRepository,
-    challengeRequestRepository,
-    heartRepository,
-    feedbackRepository,
-  }) {
+  constructor({ userRepository }) {
     this.#userRepository = userRepository;
-    this.#submissionRepository = submissionRepository;
-    this.#challengeRepository = challengeRepository;
-    this.#challengeRequestRepository = challengeRequestRepository;
-    this.#heartRepository = heartRepository;
-    this.#feedbackRepository = feedbackRepository;
   }
 
   async getUsers(query) {
@@ -78,42 +61,5 @@ export class UserService {
     });
 
     return updatedUser;
-  }
-
-  async getMySubmissions(userId, query) {
-    return await this.#submissionRepository.findAllByUserId(userId, query);
-  }
-
-  async getMyChallenges(userId, query) {
-    const result = await this.#challengeRepository.findAllParticipating(
-      userId,
-      query,
-    );
-
-    return { items: result.participations, totalCount: result.totalCount };
-  }
-
-  async getMyChallengeRequests(userId, query) {
-    const result = await this.#challengeRequestRepository.findAllByRequesterId(
-      userId,
-      query,
-    );
-
-    return { items: result.requests, totalCount: result.totalCount };
-  }
-
-  async getMyHearts(userId, query) {
-    const result = await this.#heartRepository.findAllByUserId(userId, query);
-
-    return { items: result.hearts, totalCount: result.totalCount };
-  }
-
-  async getMyFeedbacks(userId, query) {
-    const result = await this.#feedbackRepository.findAllByUserId(
-      userId,
-      query,
-    );
-
-    return { items: result.feedbacks, totalCount: result.totalCount };
   }
 }

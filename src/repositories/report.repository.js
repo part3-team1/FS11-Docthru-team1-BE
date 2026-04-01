@@ -19,11 +19,11 @@ export class ReportRepository {
   }
 
   findAll({ skip = 0, take = 10, sortBy, sortOrder, reportType } = {}) {
-    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort(
       sortBy,
       sortOrder,
-      allowedFields: ['createdAt'],
-    });
+      ['createdAt'],
+    );
 
     const queryOptions = {
       ...(reportType && { reportType: reportType }),

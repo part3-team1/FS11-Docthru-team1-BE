@@ -41,6 +41,7 @@ export class AdminController extends BaseController {
   async getRequests(req, res, next) {
     try {
       const { skip, take, keyword, status, sortBy, sortOrder } = req.query;
+      
       const result = await this.#adminService.getRequests({
         skip,
         take,
@@ -49,6 +50,7 @@ export class AdminController extends BaseController {
         sortBy,
         sortOrder,
       });
+
       res.status(HTTP_STATUS.OK).json({ success: true, data: result });
     } catch (error) {
       next(error);
@@ -58,6 +60,7 @@ export class AdminController extends BaseController {
   async getRequestById(req, res, next) {
     try {
       const { id } = req.params;
+
       const request = await this.#adminService.getRequestById(id);
       res.status(HTTP_STATUS.OK).json({ success: true, data: request });
     } catch (error) {
