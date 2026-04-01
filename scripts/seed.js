@@ -535,7 +535,7 @@ class Seeder {
       userId: req.requestedBy,
       type:
         req.status === 'APPROVED' ? 'CHALLENGE_APPROVED' : 'CHALLENGE_REJECTED',
-      content: `신청하신 [${req.title}]이 ${req.status === 'APPROVED' ? '승인' : '거절'}되었습니다.`,
+      message: `신청하신 [${req.title}]이 ${req.status === 'APPROVED' ? '승인' : '거절'}되었습니다.`,
       isRead: faker.datatype.boolean(0.5),
       createdAt: req.createdAt,
     }));
@@ -548,7 +548,7 @@ class Seeder {
     const closedNotifications = closedChallenges.map((challenge) => ({
       userId: challenge.request.requestedBy,
       type: 'CHALLENGE_CLOSED',
-      content: `[${challenge.title}]이 마감되었습니다.`,
+      message: `[${challenge.title}]이 마감되었습니다.`,
       isRead: faker.datatype.boolean(0.5),
       createdAt: faker.date.recent({ days: 2 }),
     }));
@@ -560,7 +560,7 @@ class Seeder {
     const submissionNotifications = submissions.map((sub) => ({
       userId: sub.challenge.request.requestedBy,
       type: 'SUBMISSION_CREATED',
-      content: `[${sub.challenge.title}]에 작업물이 추가되었습니다.`,
+      message: `[${sub.challenge.title}]에 작업물이 추가되었습니다.`,
       isRead: faker.datatype.boolean(0.5),
       createdAt: sub.createdAt,
     }));
@@ -572,7 +572,7 @@ class Seeder {
     const feedbackNotifications = feedbacks.map((feed) => ({
       userId: feed.submission.userId,
       type: 'FEEDBACK_CREATED',
-      content: `[${feed.submission.challenge.title}]에 도전한 작업물에 피드백이 추가되었습니다.`,
+      message: `[${feed.submission.challenge.title}]에 도전한 작업물에 피드백이 추가되었습니다.`,
       isRead: faker.datatype.boolean(0.5),
       createdAt: feed.createdAt,
     }));
@@ -584,7 +584,7 @@ class Seeder {
     const heartNotifications = hearts.map((heart) => ({
       userId: heart.submission.userId,
       type: 'SUBMISSION_UPDATED',
-      content: `[${heart.submission.challenge.title}]에 도전한 작업물에 하트❤️가 추가되었습니다.`,
+      message: `[${heart.submission.challenge.title}]에 도전한 작업물에 하트❤️가 추가되었습니다.`,
       isRead: faker.datatype.boolean(0.5),
       createdAt: heart.createdAt,
     }));
