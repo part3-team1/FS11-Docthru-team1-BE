@@ -168,6 +168,103 @@ export const openApiDocument = createDocument({
       },
     },
 
+    '/admin/requests': {
+      get: {
+        tags: ['Admin'],
+        summary: '관리자용 모든 개설 요청 목록 조회',
+        description:
+          '페이지네이션, 검색어, 상태별 필터링을 통해 개설 요청 목록을 조회합니다.',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'skip',
+            in: 'query',
+            schema: { type: 'integer', default: 0 },
+            description: '건너뛸 개수',
+          },
+          {
+            name: 'take',
+            in: 'query',
+            schema: { type: 'integer', default: 10 },
+            description: '가져올 개수',
+          },
+          {
+            name: 'keyword',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '검색 키워드',
+          },
+          {
+            name: 'status',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '상태 필터 (예: PENDING, APPROVED, REJECTED)',
+          },
+          {
+            name: 'sortBy',
+            in: 'query',
+            schema: { type: 'string', default: 'createdAt' },
+            description: '정렬 기준 필드',
+          },
+          {
+            name: 'sortOrder',
+            in: 'query',
+            schema: { type: 'string', enum: ['asc', 'desc'], default: 'desc' },
+            description: '정렬 순서',
+          },
+        ],
+        responses: {
+          200: {
+            description: '성공적으로 목록을 불러옴',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { type: 'array', items: { type: 'object' } }, // 실제 데이터 구조에 맞게 수정 가능
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/admin/requests/{id}': {
+      get: {
+        tags: ['Admin'],
+        summary: '관리자용 특정 개설 요청 상세 조회',
+        description: 'ID를 통해 특정 개설 요청의 상세 정보를 조회합니다.',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '요청 ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: '상공적으로 정보를 불러옴',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { type: 'object' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+
     '/api/admin/requests/{id}/approve': {
       patch: {
         tags: ['Admin'],
@@ -1103,6 +1200,39 @@ export const openApiDocument = createDocument({
           200: {
             description: '조회 성공',
             content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
+
+    '/users/me/challengeRequests/{id}': {
+      delete: {
+        tags: ['User'],
+        summary: '승인 대기중인 챌린지 개설 요청 취소',
+        description:
+          '본인이 신청한 챌린지 중 승인대기 중인 개설 요청을 취소합니다.',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '취소할 신청(Request)의 ID',
+          },
+        ],
+        responses: {
+          204: {
+            description: '취소 성공 (응답 데이터 없음)',
+          },
+          401: {
+            description: '로그인 필요',
+          },
+          404: {
+            description: '해당 요청을 찾을 수 없음',
+          },
+          500: {
+            description: '서버 오류',
           },
         },
       },

@@ -43,24 +43,18 @@ export class NotificationRepository {
   findById(id) {
     return this.#prisma.notification.findUnique({
       where: { id },
-    });
-  }
-  
-  markAsRead(id) {
-    return this.#prisma.notification.update({
-      where: { id },
-      data: { isRead: true },
-    });
-  }
-
-  findById(id) {
-    return this.#prisma.notification.findUnique({
-      where: { id },
       select: {
         id: true,
         userId: true,
         isRead: true,
       },
+    });
+  }
+
+  markAsRead(id) {
+    return this.#prisma.notification.update({
+      where: { id },
+      data: { isRead: true },
     });
   }
 

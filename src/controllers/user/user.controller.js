@@ -50,7 +50,7 @@ export class UserController extends BaseController {
     this.router.get('/me/feedbacks', needsLogin, (req, res, next) =>
       this.getMyFeedbacks(req, res, next),
     );
-    this.router.get('/me/challengeRequests/:id', needsLogin, (req, res, next) =>
+    this.router.delete('/me/challengeRequests/:id', needsLogin, (req, res, next) =>
       this.cancelChallengeRequest(req, res, next),
     );
 
