@@ -60,7 +60,15 @@ export class SubmissionRepository {
           take: Number(take),
           orderBy: { createdAt: 'desc' },
           include: {
-            challenge: { select: { title: true, status: true } },
+            challenge: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                category: true,
+                documentType: true,
+              },
+            },
           },
         }),
         this.#prisma.submission.count({ where: queryOptions }),
