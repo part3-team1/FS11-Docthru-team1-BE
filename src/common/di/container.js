@@ -24,6 +24,7 @@ import {
   ChallengeService,
   DraftService,
   FeedbackService,
+  HeartService,
   NotificationService,
   ReportService,
   SubmissionService,
@@ -92,6 +93,7 @@ export const createContainer = () => {
     }),
     draftService: asClass(DraftService, { lifetime: Lifetime.SINGLETON }),
     feedbackService: asClass(FeedbackService, { lifetime: Lifetime.SINGLETON }),
+    heartService: asClass(HeartService, { lifetime: Lifetime.SINGLETON }),
     notificationService: asClass(NotificationService, {
       lifetime: Lifetime.SINGLETON,
     }),

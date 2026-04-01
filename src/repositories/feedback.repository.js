@@ -47,11 +47,11 @@ export class FeedbackRepository {
     submissionId,
     { skip = 0, take = 10, sortBy, sortOrder } = {},
   ) {
-    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
+    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort(
       sortBy,
       sortOrder,
-      allowedFields: ['createdAt'],
-    });
+      ['createdAt'],
+    );
 
     const whereCondition = { submissionId, isBlocked: false };
 

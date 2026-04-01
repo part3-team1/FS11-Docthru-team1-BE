@@ -40,6 +40,12 @@ export class NotificationRepository {
       });
   }
 
+  findById(id) {
+    return this.#prisma.notification.findUnique({
+      where: { id },
+    });
+  }
+  
   markAsRead(id) {
     return this.#prisma.notification.update({
       where: { id },

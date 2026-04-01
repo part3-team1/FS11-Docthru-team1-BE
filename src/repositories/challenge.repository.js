@@ -81,7 +81,17 @@ export class ChallengeRepository {
           where: whereCondition,
           skip: Number(skip),
           take: Number(take),
-          include: { challenge: true },
+          include: {
+            challenge: {
+              include: {
+                submissions: {
+                  where: { userId, isDeleted: false },
+                  select: { id: true },
+                  orderBy: { createdAt: 'desc' },
+                },
+              },
+            },
+          },
         }),
         this.#prisma.participation.count({ where: whereCondition }),
       ])

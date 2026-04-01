@@ -37,8 +37,36 @@ export class ChallengeService {
     return request;
   }
 
+  async getMyChallengeRequests(userId, query) {
+    const result = await this.#challengeRequestRepository.findAllByRequesterId(
+      userId,
+      query,
+    );
+
+    return { items: result.requests, totalCount: result.totalCount };
+  }
+
+  async cancelChallengeRequest(userId, requestId) {
+    const request = await this.#challengeRequestRepository.findById(requestId);
+    if (!request) {
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_REQUEST_NOT_FOUND);
+    }
+
+    if (request.requestedBy !== userId) {
+      throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN);
+    }
+
+    if (request.status !== 'PENDING') {
+      throw new BadRequestException(ERROR_MESSAGE.CANNOT_CANCLE_REQUEST);
+    }
+
+    return await this.#challengeRequestRepository.delete(requestId);
+  }
+
   async getChallenges(query) {
-    return await this.#challengeRepository.findAll(query);
+    const result = await this.#challengeRepository.findAll(query);
+
+    return { items: result.challenges, totalCount: result.totalCount };
   }
 
   async getChallengeById(id) {
@@ -47,6 +75,25 @@ export class ChallengeService {
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
 
     return challenge;
+  }
+
+  async getMyChallenges(userId, query) {
+    const { participations, totalCount } =
+      await this.#challengeRepository.findAllParticipating(userId, query);
+
+    const formattedData = participations.map((p) => {
+      const challengeInfo = p.challenge;
+      const submissionId =
+        challengeInfo.submissions?.length > 0
+          ? challengeInfo.submissions[0].id
+          : null;
+
+      const { submissions, ...cleanChallengeInfo } = challengeInfo;
+
+      return { ...cleanChallengeInfo, submissionId };
+    });
+
+    return { items: formattedData, totalCount };
   }
 
   async updateChallenge(userId, challengeId, updateData) {

@@ -54,6 +54,15 @@ export class SubmissionService {
     return submission;
   }
 
+  async getMySubmissions(userId, query) {
+    const result = await this.#submissionRepository.findAllByUserId(
+      userId,
+      query,
+    );
+
+    return { items: result.submissions, totalCount: result.totalCount };
+  }
+
   async getSubmissionsByChallenge(challengeId, query) {
     return await this.#submissionRepository.findAllByChallengeId(
       challengeId,
