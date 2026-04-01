@@ -30,7 +30,7 @@ export const ERROR_MESSAGE = {
   CANNOT_GET_GOOGEL_PROFILE: 'Google 프로필 조회에 실패했습니다.',
 
   // 챌린지 관련
-  CHALLENGE_NOT_FOUND: '챌린지를 찾을 수 없습니다.',
+  CHALLENGE_NOT_FOUND: '해당 챌린지를 찾을 수 없습니다.',
   CHALLENGE_ALREADY_CLOSED: '이미 마감된 챌린지입니다.',
   CHALLENGE_ALREADY_FINISHED: '이미 완료된 챌린지입니다.',
   CHALLENGE_ALREADY_DELETED: '이미 삭제된 챌린지입니다.',
@@ -38,6 +38,7 @@ export const ERROR_MESSAGE = {
   CHALLENGE_NOT_OPENED: '현재 참여가능한 상태의 챌린지가 아닙니다.',
   CHALLENGE_EXPIRED: '챌린지의 기간이 이미 종료되었습니다.',
   CHALLENGE_FULL: '참여 인원이 초과되었습니다.',
+  CHALLENGE_REQUEST_NOT_FOUND: '해당 챌린지 신청 내역을 찾을 수 없습니다.',
   ALREADY_PARTICIPATING_CHALLENGE: '이미 참여 중인 챌린지입니다.',
   CHALLENGE_EDIT_RESTRICTED_WITH_PARTICIPANTS:
     '참여 인원이 있는 챌린지는 수정할 수 없습니다',

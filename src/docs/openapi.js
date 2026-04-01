@@ -660,6 +660,32 @@ export const openApiDocument = createDocument({
       },
     },
 
+    '/api/challengeRequests/{id}': {
+      get: {
+        tags: ['Challenge'],
+        summary: '특정 챌린지 개설 요청 상세 조회',
+        description:
+          '주어진 ID에 해당하는 챌린지 개설 요청의 상세 정보와 신청자 정보를 조회합니다.',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            description: '조회할 챌린지 요청의 고유 ID',
+            schema: { type: 'string' },
+          },
+        ],
+        responses: {
+          200: {
+            description: '상세 조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+          404: { description: '해당 챌린지 요청을 찾을 수 없음' },
+        },
+      },
+    },
+
     '/api/submissions/{submissionId}/feedbacks': {
       get: {
         tags: ['Feedback'],

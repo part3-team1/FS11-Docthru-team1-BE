@@ -29,6 +29,14 @@ export class ChallengeService {
     return request;
   }
 
+  async getChallengeRequestById(id) {
+    const request = await this.#challengeRequestRepository.findById(id);
+    if (!request)
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_REQUEST_NOT_FOUND);
+
+    return request;
+  }
+
   async getChallenges(query) {
     return await this.#challengeRepository.findAll(query);
   }
