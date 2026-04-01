@@ -2,7 +2,6 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { fakerKO as faker } from '@faker-js/faker';
 import bcrypt from 'bcrypt';
-import { request } from 'express';
 
 const SEED_PASSWORD = 'Test1234!';
 
@@ -554,10 +553,53 @@ class Seeder {
       createdAt: faker.date.recent({ days: 2 }),
     }));
 
-    //
+    const submissions = await this.#prisma.submission.findMany({
+      include: { challenge: { include: { request: true } } },
+    });
+
+    const submissionNotifications = submissions.map((sub) => ({
+      userId: sub.challenge.request.requestedBy,
+      type: 'SUBMISSION_CREATED',
+      content: `[${sub.challenge.title}]에 작업물이 추가되었습니다.`,
+      isRead: faker.datatype.boolean(0.5),
+      createdAt: sub.createdAt,
+    }));
+
+    const feedbacks = await this.#prisma.feedback.findMany({
+      include: { submission: { include: { challenge: true } } },
+    });
+
+    const feedbackNotifications = feedbacks.map((feed) => ({
+      userId: feed.submission.userId,
+      type: 'FEEDBACK_CREATED',
+      content: `[${feed.submission.challenge.title}]에 도전한 작업물에 피드백이 추가되었습니다.`,
+      isRead: faker.datatype.boolean(0.5),
+      createdAt: feed.createdAt,
+    }));
+
+    const hearts = await this.#prisma.heart.findMany({
+      iinclude: { submission: { include: { challenge: true } } },
+    });
+
+    const heartNotifications = hearts.map((heart) => ({
+      userId: heart.submission.userId,
+      type: 'SUBMISSION_UPDATED',
+      content: `[${heart.submission.challenge.title}]에 도전한 작업물에 하트❤️가 추가되었습니다.`,
+      isRead: faker.datatype.boolean(0.5),
+      createdAt: heart.createdAt,
+    }));
 
     allNotifications.push(...requestNotifications);
     allNotifications.push(...closedNotifications);
+    allNotifications.push(...submissionNotifications);
+    allNotifications.push(...feedbackNotifications);
+    allNotifications.push(...heartNotifications);
+
+    if (allNotifications.length > 0) {
+      return await this.#prisma.notification.createMany({
+        data: allNotifications,
+      });
+    }
   }
 
   async run() {
