@@ -87,12 +87,19 @@ export const submissionSchema = z
 export const draftSchema = z
   .object({
     title: z.string().max(50, VALIDATION_ERROR.MAX_TITLE).nullish(),
-    content: z.object({}).nullish(),
+    content: z.any().nullish(),
   })
   .refine(
     (data) => {
       const hasTitle = data.title && data.title.trim().length > 0;
-      const hasContent = data.content && Object.keys(data.content).length > 0;
+      const hasContent =
+        data.content &&
+        typeof data.content === 'object' &&
+        Array.isArray(data.content.content) &&
+        data.content.content.some(
+          (node) => node.content || node.type !== 'paragraph',
+        );
+
       return hasTitle || hasContent;
     },
     {
