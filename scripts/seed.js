@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { fakerKO as faker } from '@faker-js/faker';
 import bcrypt from 'bcrypt';
+import { request } from 'express';
 
 const SEED_PASSWORD = 'Test1234!';
 
@@ -525,7 +526,38 @@ class Seeder {
   async #seedNotifications(userIds, challengeIds) {
     console.log('알림 데이터 생성 중...');
 
-    //내용 추가
+    const allNotifications = [];
+
+    const challengeRequests = await this.#prisma.challengeRequest.findMany({
+      where: { status: { in: ['APPROVED', 'REJECTED'] } },
+    });
+
+    const requestNotifications = challengeRequests.map((req) => ({
+      userId: req.requestedBy,
+      type:
+        req.status === 'APPROVED' ? 'CHALLENGE_APPROVED' : 'CHALLENGE_REJECTED',
+      content: `신청하신 [${req.title}]이 ${req.status === 'APPROVED' ? '승인' : '거절'}되었습니다.`,
+      isRead: faker.datatype.boolean(0.5),
+      createdAt: req.createdAt,
+    }));
+
+    const closedChallenges = await this.#prisma.challenge.findMany({
+      where: { status: 'CLOSED' },
+      include: { request: true },
+    });
+
+    const closedNotifications = closedChallenges.map((challenge) => ({
+      userId: challenge.request.requestedBy,
+      type: 'CHALLENGE_CLOSED',
+      content: `[${req.title}]이 마감되었습니다.`,
+      isRead: faker.datatype.boolean(0.5),
+      createdAt: faker.date.recent({ days: 2 }),
+    }));
+
+    //
+
+    allNotifications.push(...requestNotifications);
+    allNotifications.push(...closedNotifications);
   }
 
   async run() {

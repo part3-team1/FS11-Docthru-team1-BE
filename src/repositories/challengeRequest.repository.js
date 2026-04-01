@@ -78,12 +78,6 @@ export class ChallengeRequestRepository {
       sortOrder = 'desc',
     } = {},
   ) {
-    const { sortBy: safeSortBy, sortOrder: safeSortOrder } = validateSort({
-      sortBy,
-      sortOrder,
-      allowedFields: ['createdAt', 'dueDate', 'status', 'title'],
-    });
-
     const queryOptions = {
       requestedBy: userId,
       status: status ?? { not: 'DELETED' },
@@ -96,7 +90,7 @@ export class ChallengeRequestRepository {
           where: queryOptions,
           skip: Number(skip),
           take: Number(take),
-          orderBy: { [safeSortBy]: safeSortOrder },
+          orderBy: { [sortBy]: sortOrder },
         }),
         this.#prisma.challengeRequest.count({ where: queryOptions }),
       ])
