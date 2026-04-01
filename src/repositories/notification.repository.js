@@ -47,6 +47,17 @@ export class NotificationRepository {
     });
   }
 
+  findById(id) {
+    return this.#prisma.notification.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        userId: true,
+        isRead: true,
+      },
+    });
+  }
+
   countUnread(userId) {
     return this.#prisma.notification.count({
       where: { userId, isRead: false },
