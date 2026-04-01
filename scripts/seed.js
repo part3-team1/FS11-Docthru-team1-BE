@@ -548,7 +548,7 @@ class Seeder {
     const closedNotifications = closedChallenges.map((challenge) => ({
       userId: challenge.request.requestedBy,
       type: 'CHALLENGE_CLOSED',
-      content: `[${req.title}]이 마감되었습니다.`,
+      content: `[${challenge.title}]이 마감되었습니다.`,
       isRead: faker.datatype.boolean(0.5),
       createdAt: faker.date.recent({ days: 2 }),
     }));
@@ -578,7 +578,7 @@ class Seeder {
     }));
 
     const hearts = await this.#prisma.heart.findMany({
-      iinclude: { submission: { include: { challenge: true } } },
+      include: { submission: { include: { challenge: true } } },
     });
 
     const heartNotifications = hearts.map((heart) => ({
