@@ -43,11 +43,19 @@ export class SubmissionRepository {
       });
   }
 
-  findAllByUserId(userId, { skip = 0, take = 10 } = {}) {
+  findAllByUserId(userId, { skip = 0, take = 10, keyword = '' } = {}) {
+    const queryOptions = {
+      userId: userId,
+      isDeleted: false,
+      ...(keyword && {
+        title: { contains: keyword, mode: 'insensitive' },
+      }),
+    };
+
     return this.#prisma
       .$transaction([
         this.#prisma.submission.findMany({
-          where: { userId: userId, isDeleted: false },
+          where: queryOptions,
           skip: Number(skip),
           take: Number(take),
           orderBy: { createdAt: 'desc' },
@@ -55,9 +63,7 @@ export class SubmissionRepository {
             challenge: { select: { title: true, status: true } },
           },
         }),
-        this.#prisma.submission.count({
-          where: { userId, isDeleted: false },
-        }),
+        this.#prisma.submission.count({ where: queryOptions }),
       ])
       .then(([submissions, totalCount]) => {
         return { submissions, totalCount };

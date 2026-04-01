@@ -78,13 +78,14 @@ export class UserController extends BaseController {
   async getMySubmissions(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { skip, take, sortBy, sortOrder } = req.query;
+      const { skip, take, sortBy, sortOrder, keyword } = req.query;
 
       const result = await this.#userService.getMySubmissions(userId, {
         skip,
         take,
         sortBy,
         sortOrder,
+        keyword,
       });
 
       res.status(HTTP_STATUS.OK).json({ success: true, data: result });

@@ -102,7 +102,7 @@ class Seeder {
       this.#makeUserInput(),
     );
 
-    //테스트용 마스터 계정
+    //테스트용 마스터 계정 + 어드민, 일반 유저 계정
     data.push({
       email: 'master@test.com',
       nickname: '갓은결',
@@ -522,7 +522,7 @@ class Seeder {
     return await this.#prisma.draft.createMany({ data: drafts });
   }
 
-  async #seedNotifications(userIds, challengeIds) {
+  async #seedNotifications() {
     console.log('알림 데이터 생성 중...');
 
     const allNotifications = [];
@@ -537,7 +537,7 @@ class Seeder {
         req.status === 'APPROVED' ? 'CHALLENGE_APPROVED' : 'CHALLENGE_REJECTED',
       message: `신청하신 [${req.title}]이 ${req.status === 'APPROVED' ? '승인' : '거절'}되었습니다.`,
       isRead: faker.datatype.boolean(0.5),
-      createdAt: req.createdAt,
+      createdAt: faker.date.recent({ days: 2 }),
     }));
 
     const closedChallenges = await this.#prisma.challenge.findMany({
@@ -639,7 +639,7 @@ class Seeder {
       await this.#seedDrafts(users, challengeIds);
       console.log('임시저장이 생성 완료되었습니다.');
 
-      await this.#seedNotifications(users, challengeIds);
+      await this.#seedNotifications();
       console.log('알림이 생성 완료되었습니다.');
     }
 
