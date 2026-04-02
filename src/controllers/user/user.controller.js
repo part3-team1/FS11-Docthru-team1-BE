@@ -41,17 +41,22 @@ export class UserController extends BaseController {
     this.router.get('/me/challenges', needsLogin, (req, res, next) =>
       this.getMyChallenges(req, res, next),
     );
-    this.router.get('/me/challengeRequests', needsLogin, (req, res, next) =>
-      this.getMyChallengeRequests(req, res, next),
-    );
     this.router.get('/me/hearts', needsLogin, (req, res, next) =>
       this.getMyHearts(req, res, next),
     );
     this.router.get('/me/feedbacks', needsLogin, (req, res, next) =>
       this.getMyFeedbacks(req, res, next),
     );
-    this.router.delete('/me/challengeRequests/:id', needsLogin, (req, res, next) =>
-      this.cancelChallengeRequest(req, res, next),
+    this.router.get('/me/challengeRequests', needsLogin, (req, res, next) =>
+      this.getMyChallengeRequests(req, res, next),
+    );
+    this.router.get('/me/challengeRequests/:id', needsLogin, (req, res, next) =>
+      this.getMyChallengeRequestById(req, res, next),
+    );
+    this.router.delete(
+      '/me/challengeRequests/:id',
+      needsLogin,
+      (req, res, next) => this.cancelChallengeRequest(req, res, next),
     );
 
     this.router.get('/', needsAdmin, (req, res, next) =>
@@ -124,22 +129,6 @@ export class UserController extends BaseController {
     }
   }
 
-  async getMyChallengeRequests(req, res, next) {
-    try {
-      const { id: userId } = req.user;
-      const query = req.query;
-
-      const result = await this.#challengeService.getMyChallengeRequests(
-        userId,
-        query,
-      );
-
-      res.status(HTTP_STATUS.OK).json({ success: true, data: result });
-    } catch (error) {
-      next(error);
-    }
-  }
-
   async getMyHearts(req, res, next) {
     try {
       const { id: userId } = req.user;
@@ -161,6 +150,41 @@ export class UserController extends BaseController {
       const result = await this.#feedbackService.getMyFeedbacks(userId, query);
 
       res.status(HTTP_STATUS.OK).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMyChallengeRequests(req, res, next) {
+    try {
+      const { id: userId } = req.user;
+      const query = req.query;
+
+      const result = await this.#challengeService.getMyChallengeRequests(
+        userId,
+        query,
+      );
+
+      res.status(HTTP_STATUS.OK).json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMyChallengeRequestById(req, res, next) {
+    try {
+      const { id: userId } = req.user;
+      const { id } = req.params;
+
+      const result = await this.#challengeService.getMyChallengeRequestById(
+        id,
+        userId,
+      );
+
+      res.status(HTTP_STATUS.OK).json({
+        success: true,
+        data: result,
+      });
     } catch (error) {
       next(error);
     }

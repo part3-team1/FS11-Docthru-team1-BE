@@ -32,10 +32,14 @@ export class ChallengeService {
     return request;
   }
 
-  async getChallengeRequestById(id) {
+  async getChallengeRequestById(id, userId) {
     const request = await this.#challengeRequestRepository.findById(id);
     if (!request)
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_REQUEST_NOT_FOUND);
+
+    if (request.userId !== userId) {
+      throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN_REQUEST);
+    }
 
     return request;
   }

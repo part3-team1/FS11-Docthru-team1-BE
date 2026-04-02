@@ -1145,26 +1145,6 @@ export const openApiDocument = createDocument({
       },
     },
 
-    '/api/users/me/challengeRequests': {
-      get: {
-        tags: ['User'],
-        summary: '내가 보낸 챌린지 개설 요청 목록',
-        security: [{ accessTokenCookie: [] }],
-        parameters: [
-          { name: 'skip', in: 'query', schema: { type: 'string' } },
-          { name: 'take', in: 'query', schema: { type: 'string' } },
-          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
-          { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
-        ],
-        responses: {
-          200: {
-            description: '조회 성공',
-            content: { 'application/json': { schema: successResponseSchema } },
-          },
-        },
-      },
-    },
-
     '/api/users/me/hearts': {
       get: {
         tags: ['User'],
@@ -1200,6 +1180,58 @@ export const openApiDocument = createDocument({
           200: {
             description: '조회 성공',
             content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
+
+    '/api/users/me/challengeRequests': {
+      get: {
+        tags: ['User'],
+        summary: '내가 보낸 챌린지 개설 요청 목록',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          { name: 'skip', in: 'query', schema: { type: 'string' } },
+          { name: 'take', in: 'query', schema: { type: 'string' } },
+          { name: 'sortBy', in: 'query', schema: { type: 'string' } },
+          { name: 'sortOrder', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
+
+    '/api/users/me/challengeRequests/{id}': {
+      get: {
+        tags: ['User'],
+        summary: '내가 보낸 특정 챌린지 요청 상세 조회',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: '상세 조회할 챌린지 요청글의 ID',
+          },
+        ],
+        responses: {
+          200: {
+            description: '조회 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+          401: {
+            description: '인증 실패 (로그인이 필요)',
+          },
+          403: {
+            description: '권한 없음 (본인이 작성한 신청이 아님)',
+          },
+          404: {
+            description: '찾을 수 없음 (존재하지 않거나 삭제됨)',
           },
         },
       },

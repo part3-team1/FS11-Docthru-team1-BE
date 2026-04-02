@@ -39,6 +39,7 @@ export const ERROR_MESSAGE = {
   CHALLENGE_EXPIRED: '챌린지의 기간이 이미 종료되었습니다.',
   CHALLENGE_FULL: '참여 인원이 초과되었습니다.',
   CHALLENGE_REQUEST_NOT_FOUND: '해당 챌린지 신청 내역을 찾을 수 없습니다.',
+  FORBIDDEN_REQUEST: '해당 챌린지 신청에 접근할 권한이 없습니다.',
   CANNOT_CANCLE_REQUEST: '대기 중인 챌린지 신청만 취소할 수 있습니다.',
   ALREADY_PARTICIPATING_CHALLENGE: '이미 참여 중인 챌린지입니다.',
   CHALLENGE_EDIT_RESTRICTED_WITH_PARTICIPANTS:
