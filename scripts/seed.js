@@ -345,7 +345,7 @@ class Seeder {
       challengeIds.map(async (challengeId) => {
         const participants = faker.helpers.arrayElements(userIds, {
           min: 1,
-          max: 3,
+          max: 5,
         });
 
         return Promise.all(
@@ -376,9 +376,9 @@ class Seeder {
                 content: { blocks: template.blocks },
                 heartCount: faker.number.int({ min: 0, max: 9999 }),
                 isBest: faker.datatype.boolean(0.1),
-                isBlocked: false,
-                isDeleted: false,
-                createdAt: faker.date.recent({ days: 7 }),
+                isBlocked: faker.datatype.boolean(0.05),
+                isDeleted: faker.datatype.boolean(0.05),
+                createdAt: faker.date.recent({ days: 60 }),
               },
             });
           }),
@@ -418,7 +418,7 @@ class Seeder {
                 userId: user.id,
                 content: faker.helpers.arrayElement(comments),
                 isBlocked: false,
-                createdAt: faker.date.recent({ days: 7 }),
+                createdAt: faker.date.recent({ days: 60 }),
               },
             });
           }),
@@ -538,7 +538,7 @@ class Seeder {
         req.status === 'APPROVED' ? 'CHALLENGE_APPROVED' : 'CHALLENGE_REJECTED',
       message: `신청하신 [${req.title}]이 ${req.status === 'APPROVED' ? '승인' : '거절'}되었습니다.`,
       isRead: faker.datatype.boolean(0.5),
-      createdAt: faker.date.recent({ days: 2 }),
+      createdAt: faker.date.recent({ days: 3 }),
     }));
 
     const closedChallenges = await this.#prisma.challenge.findMany({
@@ -551,7 +551,7 @@ class Seeder {
       type: 'CHALLENGE_CLOSED',
       message: `[${challenge.title}]이 마감되었습니다.`,
       isRead: faker.datatype.boolean(0.5),
-      createdAt: faker.date.recent({ days: 2 }),
+      createdAt: faker.date.recent({ days: 3 }),
     }));
 
     const submissions = await this.#prisma.submission.findMany({
