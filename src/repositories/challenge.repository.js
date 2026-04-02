@@ -70,10 +70,15 @@ export class ChallengeRepository {
     });
   }
 
-  findAllParticipating(userId, { skip = 0, take = 10, status } = {}) {
+  findAllParticipating(userId, { skip = 0, take = 10, status, keyword } = {}) {
     const whereCondition = {
       userId: userId,
       ...(status && { challenge: { status } }),
+      ...(keyword && {
+        challenge: {
+          title: { contains: keyword, mode: 'insensitive' },
+        },
+      }),
     };
 
     return this.#prisma
