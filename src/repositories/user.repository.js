@@ -7,7 +7,7 @@ export class UserRepository {
     this.#prisma = prisma;
   }
 
-  async findAll({
+  findAll({
     skip = 0,
     take = 10,
     status,

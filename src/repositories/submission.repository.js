@@ -115,6 +115,13 @@ export class SubmissionRepository {
     });
   }
 
+  findByUserAndChallenge(userId, challengeId) {
+    return this.#prisma.submission.findFirst({
+      where: { userId, challengeId, isDeleted: false },
+      select: { id: true },
+    });
+  }
+
   create(data) {
     return this.#prisma.submission.create({
       data: {

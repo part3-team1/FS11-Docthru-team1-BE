@@ -67,8 +67,12 @@ export class ChallengeController extends BaseController {
   async getChallengeById(req, res, next) {
     try {
       const { id: challengeId } = req.params;
-      const challenge =
-        await this.#challengeService.getChallengeById(challengeId);
+      const userId = req.user?.id;
+
+      const challenge = await this.#challengeService.getChallengeById(
+        challengeId,
+        userId,
+      );
 
       res.status(HTTP_STATUS.OK).json({
         success: true,

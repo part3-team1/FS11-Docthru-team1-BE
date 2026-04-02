@@ -36,6 +36,17 @@ export class SubmissionService {
       throw new BadRequestException(ERROR_MESSAGE.CHALLENGE_ALREADY_CLOSED);
     }
 
+    const existingSubmission =
+      await this.#submissionRepository.findByUserAndChallenge(
+        userId,
+        challengeId,
+      );
+    if (existingSubmission) {
+      throw new BadRequestException(
+        '이미 지금 챌린지에 작업물을 제출하였습니다.',
+      );
+    }
+
     const submission = await this.#submissionRepository.create({
       userId,
       challengeId,

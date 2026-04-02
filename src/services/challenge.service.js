@@ -8,15 +8,18 @@ import {
 export class ChallengeService {
   #challengeRepository;
   #challengeRequestRepository;
+  #submissionRepository;
   #notificationRepository;
 
   constructor({
     challengeRepository,
     challengeRequestRepository,
+    submissionRepository,
     notificationRepository,
   }) {
     this.#challengeRepository = challengeRepository;
     this.#challengeRequestRepository = challengeRequestRepository;
+    this.#submissionRepository = submissionRepository;
     this.#notificationRepository = notificationRepository;
   }
 
@@ -69,12 +72,23 @@ export class ChallengeService {
     return { items: result.challenges, totalCount: result.totalCount };
   }
 
-  async getChallengeById(id) {
+  async getChallengeById(id, userId = null) {
     const challenge = await this.#challengeRepository.findById(id);
     if (!challenge)
       throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_NOT_FOUND);
 
-    return challenge;
+    const [participation, submission] = userId
+      ? await Promise.all([
+          this.#challengeRepository.isParticipating(userId, id),
+          this.#submissionRepository.findByUserAndChallenge(userId, id),
+        ])
+      : [null, null];
+
+    return {
+      ...challenge,
+      isParticipating: !!participation,
+      hasSubmitted: !!submission,
+    };
   }
 
   async getMyChallenges(userId, query) {
