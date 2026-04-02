@@ -18,9 +18,9 @@ const updateExpiredChallenge = async () => {
   }
 };
 
-export const initScheduler = () => {
+export const initScheduler = async () => {
   try {
-    updateExpiredChallenge();
+    await updateExpiredChallenge();
 
     cron.schedule('0 0 * * *', updateExpiredChallenge);
 
