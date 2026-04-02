@@ -50,8 +50,13 @@ export class UserController extends BaseController {
     this.router.get('/me/feedbacks', needsLogin, (req, res, next) =>
       this.getMyFeedbacks(req, res, next),
     );
-    this.router.delete('/me/challengeRequests/:id', needsLogin, (req, res, next) =>
-      this.cancelChallengeRequest(req, res, next),
+    this.router.get('/me/challengeRequests/:id', needsLogin, (req, res, next) =>
+      this.getMyChallengeRequestById(req, res, next),
+    );
+    this.router.delete(
+      '/me/challengeRequests/:id',
+      needsLogin,
+      (req, res, next) => this.cancelChallengeRequest(req, res, next),
     );
 
     this.router.get('/', needsAdmin, (req, res, next) =>
@@ -139,6 +144,17 @@ export class UserController extends BaseController {
       next(error);
     }
   }
+
+async getMyChallengeRequestById(req, res, next) {
+  try {
+    const { id: userId } = req.user;
+    const { id } = req.params;
+    const result = await this.#challengeService.getChallengeRequestById(id);
+    res.status(HTTP_STATUS.OK).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
 
   async getMyHearts(req, res, next) {
     try {
