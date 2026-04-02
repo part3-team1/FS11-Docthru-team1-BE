@@ -55,7 +55,7 @@ export class ChallengeController extends BaseController {
       res.status(HTTP_STATUS.OK).json({
         success: true,
         data: {
-          challenges: result.challenges,
+          challenges: result.items,
           totalCount: result.totalCount,
         },
       });

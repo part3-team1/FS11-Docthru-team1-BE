@@ -122,9 +122,9 @@ export class AdminController extends BaseController {
   async blockFeedback(req, res, next) {
     try {
       const { id: feedbackId } = req.params;
-      const { reason } = req.body;
+      const { isBlocked } = req.body;
 
-      await this.#adminService.adminBlockFeedback(feedbackId, reason);
+      await this.#adminService.adminBlockFeedback(feedbackId, isBlocked);
       res
         .status(HTTP_STATUS.OK)
         .json({ success: true, message: ERROR_MESSAGE.FEEDBACK_BANNED });

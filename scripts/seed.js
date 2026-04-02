@@ -209,11 +209,7 @@ class Seeder {
               documentType: request.documentType,
               dueDate: request.dueDate,
               maxParticipants: request.maxParticipants,
-              status: faker.helpers.arrayElement([
-                'OPENED',
-                'CLOSED',
-                'DELETED',
-              ]),
+              status: request.dueDate < new Date() ? 'CLOSED' : 'OPENED',
               approvedAt: faker.date.recent({ days: 7 }),
             },
           });
@@ -363,6 +359,11 @@ class Seeder {
               },
               update: {},
               create: { challengeId: challengeId, userId: user.id },
+            });
+
+            await this.#prisma.challenge.update({
+              where: { id: challengeId },
+              data: { currentParticipants: { increment: 1 } },
             });
 
             const template = faker.helpers.arrayElement(submissionTemplates);

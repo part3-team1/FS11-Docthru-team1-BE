@@ -127,18 +127,20 @@ export class AdminService {
     });
   }
 
-  async adminBlockFeedback(feedbackId, reason) {
+  async adminBlockFeedback(feedbackId, isBlocked) {
     const feedback = await this.#feedbackRepository.findById(feedbackId);
     if (!feedback)
       throw new NotFoundException(ERROR_MESSAGE.FEEDBACK_NOT_FOUND);
 
-    await this.#feedbackRepository.block(feedbackId, true);
+    await this.#feedbackRepository.block(feedbackId, isBlocked);
 
-    await this.#notificationRepository.create({
-      userId: feedback.userId,
-      type: 'ADMIN_ACTION',
-      message: NOTIFICATION_MESSAGES.FEEDBACK_BANNED,
-      reason,
-    });
+    if (isBlocked) {
+      await this.#notificationRepository.create({
+        userId: feedback.userId,
+        type: 'ADMIN_ACTION',
+        message: NOTIFICATION_MESSAGES.FEEDBACK_BANNED,
+        reason,
+      });
+    }
   }
 }
