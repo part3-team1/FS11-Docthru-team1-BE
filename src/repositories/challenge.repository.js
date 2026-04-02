@@ -65,6 +65,7 @@ export class ChallengeRepository {
             user: { select: { id: true, nickname: true, grade: true } },
           },
         },
+        drafts: { select: { id: true, userId: true } },
       },
     });
   }

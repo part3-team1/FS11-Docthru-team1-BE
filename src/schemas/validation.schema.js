@@ -75,10 +75,24 @@ export const submissionSchema = z
   .object({
     title: z
       .string()
+      .trim()
       .min(10, VALIDATION_ERROR.MIN_TITLE)
       .max(50, VALIDATION_ERROR.MAX_TITLE),
+    content: z.any().refine(
+      (contentData) => {
+        if (!contentData || typeof contentData !== 'object') false;
+        if (!Array.isArray(contentData.content)) false;
+
+        return contentData.content.some(
+          (node) => node.content || node.type !== 'paragraph',
+        );
+      },
+      {
+        message: '내용을 입력해야 합니다.',
+      },
+    ),
   })
-  .passthrough()
+
   .meta({
     id: 'SubmissionRequest',
     description: '챌린지 작업물 제출 요청 데이터',
