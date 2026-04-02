@@ -34,8 +34,6 @@ export class App {
   }
 
   listen(port) {
-    initScheduler();
-
     return this.app.listen(port, () => {
       console.log(
         `[${config.NODE_ENV}] Swagger running at http://localhost:${port}/api/docs`,
@@ -43,6 +41,8 @@ export class App {
       console.log(
         `[${config.NODE_ENV}] Server running at http://localhost:${port}`,
       );
+
+      initScheduler();
     });
   }
 }
