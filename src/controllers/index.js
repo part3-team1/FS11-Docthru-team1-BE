@@ -12,6 +12,7 @@ export * from './notification/index.js';
 export * from './report/index.js';
 export * from './submission/index.js';
 export * from './user/index.js';
+export * from './image/index.js'
 
 export class Controller extends BaseController {
   #adminController;
@@ -25,6 +26,7 @@ export class Controller extends BaseController {
   #reportController;
   #submissionController;
   #userController;
+  #imageController;
 
   constructor({
     adminController,
@@ -38,6 +40,7 @@ export class Controller extends BaseController {
     reportController,
     submissionController,
     userController,
+    imageController,
   }) {
     super();
     this.#adminController = adminController;
@@ -51,6 +54,7 @@ export class Controller extends BaseController {
     this.#reportController = reportController;
     this.#submissionController = submissionController;
     this.#userController = userController;
+    this.#imageController = imageController;
   }
 
   routes() {
@@ -68,7 +72,8 @@ export class Controller extends BaseController {
     this.router.use('/reports', this.#reportController.routes());
     this.router.use('/', this.#feedbackController.routes());
     this.router.use('/', this.#submissionController.routes());
-
+    this.router.use('/images', this.#imageController.routes());
+    
     this.router.get('/ping', (req, res) => this.ping(req, res));
 
     return this.router;

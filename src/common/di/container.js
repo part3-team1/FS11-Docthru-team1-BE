@@ -43,6 +43,7 @@ import {
   ReportController,
   SubmissionController,
   UserController,
+  ImageController,
 } from '#controllers';
 import { PasswordProvider, TokenProvider, CookieProvider } from '#providers';
 import { AuthMiddleware } from '#middlewares';
@@ -130,6 +131,9 @@ export const createContainer = () => {
       lifetime: Lifetime.SINGLETON,
     }),
     userController: asClass(UserController, {
+      lifetime: Lifetime.SINGLETON,
+    }),
+    imageController: asClass(ImageController, {
       lifetime: Lifetime.SINGLETON,
     }),
 
