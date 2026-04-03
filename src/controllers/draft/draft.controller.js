@@ -27,6 +27,11 @@ export class DraftController extends BaseController {
     this.router.delete('/:id', needsLogin, (req, res, next) =>
       this.deleteDraft(req, res, next),
     );
+    this.router.delete(
+      '/challenges/:challengeId',
+      needsLogin,
+      (req, res, next) => this.deleteDraftList(req, res, next),
+    );
 
     return this.router;
   }
@@ -80,6 +85,19 @@ export class DraftController extends BaseController {
       const { id: draftId } = req.params;
 
       await this.#draftService.deleteDraft(userId, draftId);
+
+      res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteDraftList(req, res, next) {
+    try {
+      const { id: userId } = req.user;
+      const { challengeId } = req.params;
+
+      await this.#draftService.deleteDraftsByChallenge(userId, challengeId);
 
       res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
