@@ -23,6 +23,23 @@ export class ChallengeRequestRepository {
     });
   }
 
+  updateRequest(id, data) {
+    return this.#prisma.challengeRequest.update({
+      where: { id },
+      data: {
+        title: data.title,
+        docUrl: data.docUrl,
+        description: data.description,
+        category: data.category,
+        documentType: data.documentType,
+        ...(data.dueDate && { dueDate: new Date(data.dueDate) }),
+        ...(data.maxParticipants && {
+          maxParticipants: Number(data.maxParticipants),
+        }),
+      },
+    });
+  }
+
   findAll({
     skip = 0,
     take = 10,

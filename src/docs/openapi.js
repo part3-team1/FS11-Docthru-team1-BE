@@ -4,6 +4,7 @@ import {
   authSchema,
   loginSchema,
   challengeSchema,
+  challengeRequestSchema,
   reportSchema,
   roleUpdateSchema,
   userUpdateSchema,
@@ -67,6 +68,7 @@ export const openApiDocument = createDocument({
     { name: 'Report', description: '신고 기능 관련 API' },
     { name: 'Submission', description: '작업물 관련 API' },
     { name: 'User', description: '사용자 및 개인페이지 관련 API' },
+    { name: 'Image', description: '이미지 관련 API' },
   ],
   components: {
     securitySchemes: {
@@ -752,6 +754,48 @@ export const openApiDocument = createDocument({
           201: {
             description: '챌린지 개설 요청 성공',
             content: { 'application/json': { schema: successResponseSchema } },
+          },
+        },
+      },
+    },
+
+    '/api/challengeRequests/{id}': {
+      patch: {
+        tags: ['Challenge'],
+        summary: '챌린지 개설 요청 수정',
+        description:
+          '승인 대기(PENDING) 상태인 본인의 챌린지 신청 내용을 수정합니다.',
+        security: [{ accessTokenCookie: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' },
+            description: '수정할 챌린지 신청 ID',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: challengeRequestSchema,
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: '챌린지 신청 수정 성공',
+            content: { 'application/json': { schema: successResponseSchema } },
+          },
+          400: {
+            description: '잘못된 요청 (대기 중 상태가 아니거나 데이터 오류)',
+          },
+          403: {
+            description: '권한 없음',
+          },
+          404: {
+            description: '신청 정보를 찾을 수 없음',
           },
         },
       },
@@ -1485,6 +1529,61 @@ export const openApiDocument = createDocument({
             description: '읽음 처리 성공',
             content: { 'application/json': { schema: successResponseSchema } },
           },
+        },
+      },
+    },
+
+    '/api/images': {
+      post: {
+        tags: ['Image'],
+        summary: '이미지 업로드',
+        description:
+          '에디터 등에서 사용될 이미지를 업로드하고 접근 가능한 URL을 반환받습니다.',
+        security: [{ accessTokenCookie: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                properties: {
+                  image: {
+                    type: 'string',
+                    format: 'binary',
+                    description: '업로드할 이미지 파일 (jpg, png, gif, webp)',
+                  },
+                },
+                required: ['image'],
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: '이미지 업로드 성공',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        imageUrl: {
+                          type: 'string',
+                          example:
+                            'https://xxx.supabase.co/storage/v1/object/public/editor-images/171234567_123',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: { description: '이미지 파일이 누락되었거나 잘못된 형식' },
+          401: { description: '로그인 필요' },
         },
       },
     },

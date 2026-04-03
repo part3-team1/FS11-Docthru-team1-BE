@@ -1,7 +1,10 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { HTTP_STATUS } from '#constants';
 import { needsLogin, validate } from '#middlewares';
-import { challengeSchema } from '#schemas/validation.schema.js';
+import {
+  challengeSchema,
+  challengeRequestSchema,
+} from '#schemas/validation.schema.js';
 
 export class ChallengeRequestController extends BaseController {
   #challengeService;
@@ -18,6 +21,12 @@ export class ChallengeRequestController extends BaseController {
       validate('body', challengeSchema),
       (req, res, next) => this.createRequest(req, res, next),
     );
+    this.router.patch(
+      '/:id',
+      needsLogin,
+      validate('body', challengeRequestSchema),
+      (req, res, next) => this.updateRequest(req, res, next),
+    );
 
     return this.router;
   }
@@ -32,6 +41,23 @@ export class ChallengeRequestController extends BaseController {
       );
 
       res.status(HTTP_STATUS.CREATED).json({ success: true, data: request });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateRequest(req, res, next) {
+    try {
+      const { id: requestId } = req.params;
+      const { id: userId } = req.user;
+
+      const updatedRequest = await this.#challengeService.updateRequest(
+        userId,
+        requestId,
+        req.body,
+      );
+
+      res.status(HTTP_STATUS.OK).json({ success: true, data: updatedRequest });
     } catch (error) {
       next(error);
     }

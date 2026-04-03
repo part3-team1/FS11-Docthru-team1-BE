@@ -38,14 +38,17 @@ export const ERROR_MESSAGE = {
   CHALLENGE_NOT_OPENED: '현재 참여가능한 상태의 챌린지가 아닙니다.',
   CHALLENGE_EXPIRED: '챌린지의 기간이 이미 종료되었습니다.',
   CHALLENGE_FULL: '참여 인원이 초과되었습니다.',
-  CHALLENGE_REQUEST_NOT_FOUND: '해당 챌린지 신청 내역을 찾을 수 없습니다.',
-  FORBIDDEN_REQUEST: '해당 챌린지 신청에 접근할 권한이 없습니다.',
-  CANNOT_CANCLE_REQUEST: '대기 중인 챌린지 신청만 취소할 수 있습니다.',
   ALREADY_PARTICIPATING_CHALLENGE: '이미 참여 중인 챌린지입니다.',
   CHALLENGE_EDIT_RESTRICTED_WITH_PARTICIPANTS:
     '참여 인원이 있는 챌린지는 수정할 수 없습니다',
   NOT_PARTICIPATING_CHALLENGE: '참여 중인 챌린지가 아닙니다.',
   CANNOT_LEAVE_CHALLENGE: '마감된 챌린지는 참여 취소가 불가능합니다',
+
+  // 챌린지 신청 관련
+  CHALLENGE_REQUEST_NOT_FOUND: '해당 챌린지 신청 내역을 찾을 수 없습니다.',
+  FORBIDDEN_REQUEST: '해당 챌린지 신청에 접근할 권한이 없습니다.',
+  CANNOT_UPDATE_REQUEST: '대기 중인 챌린지 신청만 수정할 수 있습니다.',
+  CANNOT_CANCLE_REQUEST: '대기 중인 챌린지 신청만 취소할 수 있습니다.',
 
   // 작업물 관련
   SUBMISSION_NOT_FOUND: '작업물을 찾을 수 없습니다.',
@@ -109,4 +112,8 @@ export const VALIDATION_ERROR = {
   INVALID_DOCUMENT_TYPE: '유효하지 않은 리포트 형식입니다.',
   INVALID_REPORT_TYPE: '유효하지 않은 신고 형식입니다.',
   INVALID_REPORT_REASON: '유효하지 않은 신고 사유입니다.',
+  INVALID_URL: '올바른 URL 형식이 아닙니다.',
+  DUE_DATE_AFTER_TODAY: '마감 기한은 오늘 이후여야 합니다.',
+  REQUIRED_SUBMISSION_CONTENT: '챌린지 작업물 제출 요청 데이터',
+  REQUIRED_MIN_ONE_FIELD: '제목이나 내용 중 최소 하나는 입력해야 합니다.',
 };

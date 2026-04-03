@@ -32,6 +32,26 @@ export class ChallengeService {
     return request;
   }
 
+  async updateRequest(userId, requestId, data) {
+    const request = await this.#challengeRequestRepository.findById(requestId);
+    if (!request) {
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_REQUEST_NOT_FOUND);
+    }
+
+    if (request.requestedBy !== userId) {
+      throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN_REQUEST);
+    }
+
+    if (request.status !== 'PENDING') {
+      throw new BadRequestException(ERROR_MESSAGE.CANNOT_UPDATE_REQUEST);
+    }
+
+    return await this.#challengeRequestRepository.updateRequest(
+      requestId,
+      data,
+    );
+  }
+
   async getMyChallengeRequests(userId, query) {
     const result = await this.#challengeRequestRepository.findAllByRequesterId(
       userId,

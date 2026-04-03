@@ -39,7 +39,7 @@ export const challengeSchema = z
       .string()
       .min(10, VALIDATION_ERROR.MIN_TITLE)
       .max(50, VALIDATION_ERROR.MAX_TITLE),
-    docUrl: z.string().url(),
+    docUrl: z.string().url(VALIDATION_ERROR.INVALID_URL),
     description: z
       .string()
       .max(150, VALIDATION_ERROR.MAX_DESCRIPTION)
@@ -55,12 +55,22 @@ export const challengeSchema = z
     documentType: z.enum(['DOCUMENTATION', 'BLOG'], {
       errorMap: () => ({ message: VALIDATION_ERROR.INVALID_DOCUMENT_TYPE }),
     }),
-    dueDate: z.string().datetime(),
+    dueDate: z
+      .string()
+      .datetime()
+      .refine((value) => new Date(value) > new Date(), {
+        message: VALIDATION_ERROR.DUE_DATE_AFTER_TODAY,
+      }),
   })
   .meta({
     id: 'ChallengeRequest',
-    description: '신규 챌린지 생성 요청 데이터',
+    description: '챌린지 관련 요청 데이터',
   });
+
+export const challengeRequestSchema = challengeSchema.partial().meta({
+  id: 'challengeRequestRequest',
+  description: '챌린지 신청 관련 요청 데이터',
+});
 
 export const feedbackSchema = z
   .object({
@@ -88,7 +98,7 @@ export const submissionSchema = z
         );
       },
       {
-        message: '내용을 입력해야 합니다.',
+        message: VALIDATION_ERROR.REQUIRED_SUBMISSION_CONTENT,
       },
     ),
   })
@@ -117,7 +127,7 @@ export const draftSchema = z
       return hasTitle || hasContent;
     },
     {
-      message: '제목이나 내용 중 최소 하나는 입력해야 합니다.',
+      message: VALIDATION_ERROR.REQUIRED_MIN_ONE_FIELD,
       path: ['title'],
     },
   )
