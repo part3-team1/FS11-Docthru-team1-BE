@@ -97,7 +97,7 @@ pnpm run dev
 
 - **Architecture**: Awilix (Dependency Injection)
 
-- **Utilities**: Date-fns, Node-cron
+- **Utilities**: Date-fns, Node-cron, multer
 
 - **Development**: Faker (Seed Data), Nodemon
 
