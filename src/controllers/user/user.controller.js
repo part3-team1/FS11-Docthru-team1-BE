@@ -174,10 +174,10 @@ export class UserController extends BaseController {
   async getMyChallengeRequestById(req, res, next) {
     try {
       const { id: userId } = req.user;
-      const { id } = req.params;
+      const { id: requestId } = req.params;
 
       const result = await this.#challengeService.getMyChallengeRequestById(
-        id,
+        requestId,
         userId,
       );
 

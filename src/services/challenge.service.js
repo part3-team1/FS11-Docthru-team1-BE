@@ -32,18 +32,6 @@ export class ChallengeService {
     return request;
   }
 
-  async getChallengeRequestById(id, userId) {
-    const request = await this.#challengeRequestRepository.findById(id);
-    if (!request)
-      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_REQUEST_NOT_FOUND);
-
-    if (request.userId !== userId) {
-      throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN_REQUEST);
-    }
-
-    return request;
-  }
-
   async getMyChallengeRequests(userId, query) {
     const result = await this.#challengeRequestRepository.findAllByRequesterId(
       userId,
@@ -53,20 +41,17 @@ export class ChallengeService {
     return { items: result.requests, totalCount: result.totalCount };
   }
 
+  async getMyChallengeRequestById(requestId, userId) {
+    const request = await this.#challengeRequestRepository.findById(requestId);
+    if (!request)
+      throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_REQUEST_NOT_FOUND);
 
-  async getMyChallengeRequestById(id, userId) {
-  const request = await this.#challengeRequestRepository.findById(id);
-  if (!request)
-    throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_REQUEST_NOT_FOUND);
+    if (request.requestedBy !== userId) {
+      throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN_REQUEST);
+    }
 
-  if (request.requestedBy !== userId) {
-    throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN);
+    return request;
   }
-
-  return request;
-  }
-  
-  
 
   async cancelChallengeRequest(userId, requestId) {
     const request = await this.#challengeRequestRepository.findById(requestId);
