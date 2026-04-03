@@ -53,6 +53,21 @@ export class ChallengeService {
     return { items: result.requests, totalCount: result.totalCount };
   }
 
+
+  async getMyChallengeRequestById(id, userId) {
+  const request = await this.#challengeRequestRepository.findById(id);
+  if (!request)
+    throw new NotFoundException(ERROR_MESSAGE.CHALLENGE_REQUEST_NOT_FOUND);
+
+  if (request.requestedBy !== userId) {
+    throw new ForbiddenException(ERROR_MESSAGE.FORBIDDEN);
+  }
+
+  return request;
+  }
+  
+  
+
   async cancelChallengeRequest(userId, requestId) {
     const request = await this.#challengeRequestRepository.findById(requestId);
     if (!request) {
