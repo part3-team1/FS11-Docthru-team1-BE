@@ -53,12 +53,10 @@ export class FeedbackRepository {
       ['createdAt'],
     );
 
-    const whereCondition = { submissionId, isBlocked: false };
-
     return this.#prisma
       .$transaction([
         this.#prisma.feedback.findMany({
-          where: whereCondition,
+          where: { submissionId },
           skip: Number(skip),
           take: Number(take),
           orderBy: { [safeSortBy]: safeSortOrder },
@@ -67,7 +65,7 @@ export class FeedbackRepository {
           },
         }),
         this.#prisma.feedback.count({
-          where: whereCondition,
+          where: { submissionId },
         }),
       ])
       .then(([feedbacks, totalCount]) => {

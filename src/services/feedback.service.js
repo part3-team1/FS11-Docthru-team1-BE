@@ -24,10 +24,23 @@ export class FeedbackService {
   }
 
   async getFeedbacksBySubmission(submissionId, query) {
-    return await this.#feedbackRepository.findAllBySubmissionId(
+    const result = await this.#feedbackRepository.findAllBySubmissionId(
       submissionId,
       query,
     );
+
+    const pureFeedbacks = result.feedbacks.map((feedback) => {
+      if (feedback.isBlocked) {
+        return { ...feedback, content: ERROR_MESSAGE.FEEDBACK_BANNED };
+      }
+
+      return feedback;
+    });
+
+    return {
+      items: pureFeedbacks,
+      totalCount: result.totalCount,
+    };
   }
 
   async getMyFeedbacks(userId, query) {
