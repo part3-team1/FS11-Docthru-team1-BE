@@ -19,10 +19,6 @@ export class ChallengeRequestController extends BaseController {
       (req, res, next) => this.createRequest(req, res, next),
     );
 
-    this.router.get('/:id', needsLogin, (req, res, next) =>
-      this.getChallengeRequestById(req, res, next),
-    );
-
     return this.router;
   }
 
@@ -36,18 +32,6 @@ export class ChallengeRequestController extends BaseController {
       );
 
       res.status(HTTP_STATUS.CREATED).json({ success: true, data: request });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getChallengeRequestById(req, res, next) {
-    try {
-      const { id } = req.params;
-
-      const result = await this.#challengeService.getChallengeRequestById(id);
-
-      res.status(HTTP_STATUS.OK).json(result);
     } catch (error) {
       next(error);
     }
