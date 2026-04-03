@@ -38,7 +38,7 @@ export class FeedbackService {
     });
 
     return {
-      items: pureFeedbacks,
+      feedbacks: pureFeedbacks,
       totalCount: result.totalCount,
     };
   }
