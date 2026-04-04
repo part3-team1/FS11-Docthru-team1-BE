@@ -59,4 +59,8 @@ export class DraftService {
 
     return await this.#draftRepository.delete(draft.id);
   }
+
+  async deleteDraftsByChallenge(userId, challengeId) {
+    return await this.#draftRepository.deleteByChallenge(userId, challengeId);
+  }
 }
