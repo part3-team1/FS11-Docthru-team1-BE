@@ -102,7 +102,7 @@ class Seeder {
       this.#makeUserInput(),
     );
 
-    //테스트용 마스터 계정 + 어드민, 일반 유저 계정
+    //테스트용 마스터, 어드민, 일반 유저 계정
     data.push({
       email: 'master@test.com',
       nickname: '갓은결',
@@ -142,15 +142,52 @@ class Seeder {
   async #seedChallenges(userIds) {
     console.log('챌린지 데이터 생성 중...');
 
-    const challengeTitles = [
-      'Next.js 공식 문서 모아보기',
-      'TypeScript 핵심 개념 정리하기',
-      'React Server Components 마스터',
-      'App Router 마이그레이션 챌린지',
-      'Tailwind CSS로 클론 코딩하기',
-      'Prisma ORM 실전 활용법 연구',
-      'Next.js 성능 최적화 가이드 작성',
-      'API 라우트 보안 설정 체크리스트',
+    const realDocs = [
+      {
+        title: 'Next.js 공식 문서 번역 챌린지',
+        docUrl: 'https://nextjs.org/',
+        category: 'NEXTJS',
+      },
+      {
+        title: 'Prisma ORM 실전 가이드',
+        docUrl: 'https://www.prisma.io/',
+        category: 'API',
+      },
+      {
+        title: 'Modern JavaScript 튜토리얼',
+        docUrl: 'https://ko.javascript.info/',
+        category: 'MODERNJS',
+      },
+      {
+        title: 'MDN Web Docs 함께 읽기',
+        docUrl: 'https://developer.mozilla.org/ko/',
+        category: 'WEB',
+      },
+      {
+        title: 'React 공식 문서 마스터',
+        docUrl: 'https://ko.react.dev/',
+        category: 'MODERNJS',
+      },
+      {
+        title: 'Express.js 백엔드 입문',
+        docUrl: 'https://expressjs.com/ko/',
+        category: 'API',
+      },
+      {
+        title: 'Node.js 런타임 깊게 파기',
+        docUrl: 'https://nodejs.org/ko',
+        category: 'API',
+      },
+      {
+        title: 'TanStack Query 최신판 정리',
+        docUrl: 'https://tanstack.com/query/latest',
+        category: 'WEB',
+      },
+      {
+        title: 'Tailwind CSS 디자인 시스템',
+        docUrl: 'https://tailwindcss.com/',
+        category: 'WEB',
+      },
     ];
 
     const descriptions = [
@@ -177,19 +214,15 @@ class Seeder {
 
     const result = await Promise.all(
       userIds.map(async (user) => {
+        const selectedDoc = faker.helpers.arrayElement(realDocs);
+
         const request = await this.#prisma.challengeRequest.create({
           data: {
             requestedBy: user.id,
-            title: faker.helpers.arrayElement(challengeTitles),
-            docUrl: faker.internet.url(),
+            title: selectedDoc.title,
+            docUrl: selectedDoc.docUrl,
             description: faker.helpers.arrayElement(descriptions),
-            category: faker.helpers.arrayElement([
-              'NEXTJS',
-              'API',
-              'CAREER',
-              'MODERNJS',
-              'WEB',
-            ]),
+            category: selectedDoc.category,
             documentType: faker.helpers.arrayElement(['DOCUMENTATION', 'BLOG']),
             dueDate: faker.date.future({ years: 1 }),
             maxParticipants: faker.number.int({ min: 5, max: 20 }),
