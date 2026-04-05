@@ -139,7 +139,6 @@ export class AdminService {
         userId: feedback.userId,
         type: 'ADMIN_ACTION',
         message: NOTIFICATION_MESSAGES.FEEDBACK_BANNED,
-        reason,
       });
     }
   }
