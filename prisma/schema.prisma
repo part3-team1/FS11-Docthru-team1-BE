@@ -256,8 +256,8 @@ model Report {
   reason       String     @db.VarChar(100)
   createdAt    DateTime   @default(now()) @map("created_at")
 
-  reporter   User  @relation("Reporter", fields: [reporterId], references: [id])
-  targetUser User? @relation("TargetUser", fields: [targetUserId], references: [id])
+  reporter   User  @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetUser User? @relation("TargetUser", fields: [targetUserId], references: [id], onDelete: Cascade)
 
   @@index([targetId])
   @@map("reports")
