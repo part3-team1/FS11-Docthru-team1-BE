@@ -41,9 +41,7 @@ export class UserRepository {
           where,
           skip: Number(skip),
           take: Number(take),
-          orderBy: {
-            [safeSortBy]: safeSortOrder,
-          },
+          orderBy: [{ isBanned: 'asc' }, { [safeSortBy]: safeSortOrder }],
           select: {
             id: true,
             email: true,
