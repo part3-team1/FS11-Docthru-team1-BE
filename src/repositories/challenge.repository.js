@@ -25,7 +25,7 @@ export class ChallengeRepository {
 
     const queryOptions = {
       ...(keyword && { title: { contains: keyword, mode: 'insensitive' } }),
-      ...(category && { category }),
+      ...(category && { category: { in: category.split(',') } }),
       ...(documentType && { documentType: documentType }),
       status: status ? status : { not: 'DELETED' },
     };

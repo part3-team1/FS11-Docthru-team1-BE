@@ -39,14 +39,23 @@ export class ChallengeController extends BaseController {
 
   async getChallenges(req, res, next) {
     try {
-      const { skip, take, keyword, category, status, sortBy, sortOrder } =
-        req.query;
+      const {
+        skip,
+        take,
+        keyword,
+        category,
+        documentType,
+        status,
+        sortBy,
+        sortOrder,
+      } = req.query;
 
       const result = await this.#challengeService.getChallenges({
         skip,
         take,
         keyword,
         category,
+        documentType,
         status,
         sortBy,
         sortOrder,
