@@ -1,6 +1,6 @@
 import { BaseController } from '#controllers/base.controller.js';
 import { ERROR_MESSAGE, HTTP_STATUS } from '#constants';
-import { validate, needsLogin } from '#middlewares';
+import { validate, needsLogin, authRateLimiter } from '#middlewares';
 import { authSchema, loginSchema } from '#schemas/validation.schema.js';
 
 export class AuthController extends BaseController {
@@ -16,11 +16,13 @@ export class AuthController extends BaseController {
   routes() {
     this.router.post(
       '/signup',
+      authRateLimiter,
       validate('body', authSchema),
       (req, res, next) => this.signup(req, res, next),
     );
     this.router.post(
       '/login',
+      authRateLimiter,
       validate('body', loginSchema),
       (req, res, next) => this.login(req, res, next),
     );

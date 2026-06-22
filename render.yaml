@@ -1,0 +1,40 @@
+# Render Blueprint — snack(Docthru) 백엔드 배포 설정
+# 적용: Render 대시보드 → New → Blueprint → 이 레포 연결
+#
+# 시크릿(DATABASE_URL, JWT_*, GOOGLE_* 등)은 sync: false 로 두어
+# 이 파일이 아니라 Render 대시보드 Environment 탭에서만 입력한다.
+# (절대 이 파일에 실제 값을 적지 말 것 — 커밋되면 유출됨)
+services:
+  - type: web
+    name: snack-be
+    runtime: node
+    plan: free
+    region: singapore # 한국에서 가장 가까운 무료 리전. 기존 DB와 같은 리전으로 맞추면 지연이 줄어듦
+    branch: main # 배포 기준 브랜치 (develop으로 운영하면 변경)
+    # corepack enable: package.json의 packageManager(pnpm)를 사용
+    # prisma generate: 클라이언트 생성 (generated/ 는 gitignore되어 빌드 시 필요)
+    # prisma db push: 스키마 동기화. 파괴적 변경은 기본적으로 막혀 안전. 추후 prisma migrate 전환 권장
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm prisma generate && pnpm prisma db push
+    startCommand: node src/main.js
+    healthCheckPath: /api/ping
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # PORT는 Render가 자동 주입하므로 직접 설정하지 않는다
+      - key: DATABASE_URL
+        sync: false # 기존 DB URL. 끝에 ?sslmode=require 권장
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false # 프론트 배포 도메인 (예: https://snack.vercel.app). 쉼표로 여러 개
+      - key: API_BASE_URL
+        sync: false # Render가 부여한 https://<service>.onrender.com
+      - key: CLIENT_BASE_URL
+        sync: false # 프론트 도메인

@@ -18,13 +18,14 @@ export class TokenProvider {
         grade: user.grade,
       },
       this.#accessSecret,
-      { expiresIn: '15m' },
+      { expiresIn: '15m', algorithm: 'HS256' },
     );
   }
 
   generateRefreshToken(user) {
     return jwt.sign({ userId: user.id }, this.#refreshSecret, {
       expiresIn: '7d',
+      algorithm: 'HS256',
     });
   }
 
@@ -45,7 +46,8 @@ export class TokenProvider {
 
   #verifyToken(token, secret) {
     try {
-      return jwt.verify(token, secret);
+      // 알고리즘을 HS256으로 고정해 alg 혼동(alg:none/비대칭키 주입) 공격을 차단.
+      return jwt.verify(token, secret, { algorithms: ['HS256'] });
     } catch (error) {
       return null;
     }
